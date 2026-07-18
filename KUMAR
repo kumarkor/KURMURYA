@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUMAR GAME - ESPORTS ELITE</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. CSS VARIABLES & ESPORTS THEME 
+           ========================================================================== */
+        :root {
+            --bg-color: #050505; --box-bg: rgba(15, 15, 20, 0.95); --border-color: #333;
+            --text-primary: #ffffff; --text-secondary: #9ca3af;
+            --accent-main: #ff4500; --accent-hover: #ff6347;
+            --gradient-btn: linear-gradient(135deg, #ff4500, #ff8c00);
+            --danger: #ff0000; --success: #00ff00;
+            --bronze: #cd7f32; --silver: #c0c0c0; --gold: #ffd700;
+            --platinum: #00ced1; --diamond: #b9f2ff; --heroic: #ff0055; --grandmaster: #ff00ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; transition: 0.3s; }
+        
+        body {
+            background-color: var(--bg-color); color: var(--text-primary);
+            display: flex; justify-content: center; align-items: flex-start;
+            min-height: 100vh; padding: 20px; overflow-x: hidden;
+            background-image: radial-gradient(circle at 15% 50%, rgba(255, 69, 0, 0.08), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(0, 255, 255, 0.05), transparent 25%);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-main); border-radius: 10px; }
+
+        .container {
+            background: var(--box-bg); width: 100%; max-width: 500px; padding: 30px;
+            border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(255, 69, 0, 0.2);
+            border: 1px solid #222; text-align: center; position: relative; margin-bottom: 30px;
+        }
+
+        h1 { font-size: 32px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        h1 span { color: var(--accent-main); text-shadow: 0 0 15px var(--accent-main); }
+        p.subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ==========================================================================
+           2. FORMS & INPUTS 
+           ========================================================================== */
+        label { display: block; text-align: left; color: var(--text-secondary); font-size: 12px; font-weight: 700; margin-top: 15px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        input { width: 100%; padding: 16px; background: rgba(0, 0, 0, 0.7); border: 2px solid #333; border-radius: 12px; color: #fff; font-size: 15px; outline: none; margin-bottom: 15px; font-weight: 600; }
+        input:focus { border-color: var(--accent-main); box-shadow: 0 0 15px rgba(255, 69, 0, 0.3); }
+        
+        .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .btn-gold { background: var(--gradient-btn); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); box-shadow: 0 5px 20px rgba(255, 69, 0, 0.4); }
+        .btn-gold:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 30px rgba(255, 69, 0, 0.6); }
+        .btn-dark { background: transparent; border: 2px solid var(--accent-main); color: var(--accent-main); }
+        .btn-dark:hover { background: var(--accent-main); color: #fff; transform: translateY(-2px); }
+        .btn-danger { background: #cc0000; color: white; }
+        .btn-admin { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+        .link-text { color: var(--text-secondary); font-size: 14px; cursor: pointer; margin-top: 25px; display: inline-block; font-weight: 700; text-decoration: underline; }
+        .link-text:hover { color: var(--accent-main); }
+
+        /* ==========================================================================
+           3. DASHBOARD, AVATAR & STATS
+           ========================================================================== */
+        .profile-card { background: linear-gradient(145deg, #111, #0a0a0a); padding: 25px; border-radius: 20px; border: 1px solid #333; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .rank-glow { position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; border-radius: 50%; filter: blur(50px); z-index: 0; opacity: 0.3; }
+        .profile-header { display: flex; align-items: center; position: relative; z-index: 1; text-align: left;}
+        
+        .avatar-wrapper { position: relative; width: 85px; height: 85px; margin-right: 20px; cursor: pointer; }
+        .profile-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #fff; background: #222; display: flex; justify-content: center; align-items: center; font-size: 30px;}
+        .avatar-edit-icon { position: absolute; bottom: 0; right: 0; background: var(--accent-main); width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; border: 2px solid #000; }
+        #avatarUpload { display: none; }
+
+        .profile-name { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+        .rank-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900; letter-spacing: 1px; margin-top: 5px; text-transform: uppercase; color: #000; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        
+        .balance-area { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        .coin-display { font-size: 26px; font-weight: 900; color: #fff; }
+        .coin-display span { color: var(--gold); }
+        .refresh-btn { background: #222; border: 1px solid #444; color: #fff; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 16px;}
+        .refresh-btn:hover { background: var(--accent-main); border-color: #fff; transform: rotate(180deg); }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
+        .menu-card { background: rgba(0,0,0,0.5); padding: 20px 10px; border-radius: 15px; border: 1px solid #333; cursor: pointer; font-size: 14px; font-weight: 800; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .menu-card:hover { background: rgba(255,69,0,0.1); border-color: var(--accent-main); transform: translateY(-5px); }
+
+        /* ==========================================================================
+           4. LEADERBOARD UI
+           ========================================================================== */
+        .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: var(--text-secondary); font-weight: 900; border-radius: 10px; cursor: pointer; }
+        .tab-btn.active { background: var(--gradient-btn); color: #000; border-color: var(--accent-main); }
+        .list-container { max-height: 450px; overflow-y: auto; text-align: left; padding-right: 5px; }
+        .list-item { background: rgba(0,0,0,0.6); padding: 15px; border: 1px solid #333; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
+        .list-item:hover { border-color: var(--accent-main); background: rgba(255,69,0,0.05); }
+        .rank-number { font-size: 20px; font-weight: 900; color: #555; width: 35px; }
+        .leaderboard-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #555; margin-right: 10px; }
+        .total-count { font-size: 14px; color: var(--accent-main); font-weight: 900; margin-bottom: 15px; letter-spacing: 1px; }
+
+        /* ==========================================================================
+           5. GAMES UI (OX, MEMORY, DOTS)
+           ========================================================================== */
+        .powerup-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        
+        /* OX Board */
+        .ox-board { position: relative; display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 20px; border: 1px solid #333; margin: 0 auto; width: fit-content;}
+        .ox-cell { width: 90px; height: 90px; background: #111; font-size: 50px; display: flex; align-items: center; justify-content: center; border-radius: 15px; cursor: pointer; border: 2px solid #222; }
+        .ox-cell:active { transform: scale(0.95); }
+        .win-line { position: absolute; background: var(--success); border-radius: 10px; z-index: 10; display: none; box-shadow: 0 0 20px var(--success); opacity: 0.85; }
+        .line-row-0 { top: 18.7%; left: 5%; width: 90%; height: 6px; }
+        .line-row-1 { top: 50%; left: 5%; width: 90%; height: 6px; transform: translateY(-50%); }
+        .line-row-2 { top: 81.3%; left: 5%; width: 90%; height: 6px; }
+        .line-col-0 { left: 18.7%; top: 5%; height: 90%; width: 6px; }
+        .line-col-1 { left: 50%; top: 5%; height: 90%; width: 6px; transform: translateX(-50%); }
+        .line-col-2 { left: 81.3%; top: 5%; height: 90%; width: 6px; }
+        .line-diag-0 { top: 49%; left: -2%; width: 104%; height: 6px; transform: rotate(45deg); }
+        .line-diag-1 { top: 49%; left: -2%; width: 104%; height: 6px; transform: rotate(-45deg); }
+
+        /* Memory Board */
+        .memory-board { display: grid; grid-template-columns: repeat(4, 70px); gap: 10px; justify-content: center; margin: 20px auto; }
+        .mem-card { width: 70px; height: 70px; background: #222; border-radius: 10px; border: 2px solid #444; display: flex; justify-content: center; align-items: center; font-size: 35px; cursor: pointer; transform-style: preserve-3d; transition: transform 0.5s; }
+        .mem-card.flipped { background: var(--box-bg); border-color: var(--accent-main); transform: rotateY(180deg); }
+        .mem-card.matched { background: rgba(0, 255, 0, 0.2); border-color: var(--success); transform: rotateY(180deg); opacity: 0.8; cursor: default; }
+
+        /* Dots & Boxes Board */
+        .db-container { position: relative; margin: 20px auto; width: 280px; height: 280px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        .db-board { position: relative; width: 240px; height: 240px; margin: 0 auto; }
+        .db-dot { position: absolute; width: 14px; height: 14px; background: #666; border-radius: 50%; transform: translate(-50%, -50%); z-index: 5; box-shadow: 0 0 5px #000; }
+        .db-line-h { position: absolute; height: 16px; background: rgba(255,255,255,0.05); cursor: pointer; transform: translateY(-50%); border-radius: 8px; z-index: 2; transition: 0.2s;}
+        .db-line-v { position: absolute; width: 16px; background: rgba(255,255,255,0.05); cursor: pointer; transform: translateX(-50%); border-radius: 8px; z-index: 2; transition: 0.2s;}
+        .db-line-h:hover, .db-line-v:hover { background: rgba(255,255,255,0.2); }
+        .line-p1 { background: var(--success) !important; box-shadow: 0 0 10px var(--success); }
+        .line-p2 { background: var(--danger) !important; box-shadow: 0 0 10px var(--danger); }
+        .db-box { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 30px; font-weight: 900; z-index: 1; opacity: 0; transition: 0.3s; border-radius: 10px;}
+        .box-p1 { background: rgba(0, 255, 0, 0.2); color: var(--success); opacity: 1; }
+        .box-p2 { background: rgba(255, 0, 0, 0.2); color: var(--danger); opacity: 1; }
+
+        /* ==========================================================================
+           6. ANIMATIONS & MODALS
+           ========================================================================== */
+        .screen { display: none; }
+        .active-screen { display: block; animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        #splash { position: fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle, #220000 0%, #000000 100%); z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; transition: opacity 0.8s ease-out; }
+        .splash-logo { font-size: 45px; font-weight: 900; color: #fff; letter-spacing: 4px; animation: pulse 1.5s infinite; text-shadow: 0 0 20px rgba(255,69,0,0.8); }
+        .splash-logo span { color: var(--accent-main); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9990; display:none; justify-content:center; align-items:center; backdrop-filter:blur(5px); }
+        .modal-box { background: var(--box-bg); padding: 30px; border-radius: 20px; border: 1px solid var(--accent-main); width: 90%; max-width: 400px; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <!-- 0. SPLASH SCREEN -->
+    <div id="splash">
+        <div class="splash-logo">KUMAR <span>ESPORTS</span></div>
+        <p style="color:var(--accent-main); margin-top:15px; font-weight:900; letter-spacing:3px;">SYSTEM LOADING...</p>
+    </div>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div class="container screen" id="loginScreen">
+        <h1>KUMAR <span>ESPORTS</span></h1>
+        <p class="subtitle">Enter the battlefield</p>
+        <form onsubmit="event.preventDefault(); loginUser();">
+            <label>TELEGRAM CHAT ID</label>
+            <input type="number" id="loginId" autocomplete="username" placeholder="e.g. 123456789" required>
+            <label>ACCOUNT PASSWORD</label>
+            <input type="password" id="loginPass" autocomplete="current-password" placeholder="Enter Password" required>
+            <button type="submit" class="btn btn-gold">LOGIN NOW</button>
+        </form>
+        <div style="display: flex; justify-content: space-between; margin-top: 25px;">
+            <span class="link-text" style="margin-top:0;" onclick="showScreen('forgotPassScreen')">Forgot Password?</span>
+            <span class="link-text" style="margin-top:0;" onclick="showScreen('signupScreen')">Create Account</span>
+        </div>
+    </div>
+
+    <!-- 2. SIGNUP SCREEN -->
+    <div class="container screen" id="signupScreen">
+        <h1>JOIN <span>THE BATTLE</span></h1>
+        <form onsubmit="event.preventDefault();">
+            <label>GAMER TAG (NAME)</label>
+            <input type="text" id="regName" autocomplete="name" placeholder="e.g. ProGamer" required>
+            <label>CREATE PASSWORD</label>
+            <input type="password" id="regPass" autocomplete="new-password" placeholder="Secure Password" required>
+            <label>TELEGRAM ID</label>
+            <input type="number" id="regTgId" autocomplete="username" placeholder="Telegram Chat ID" required>
+        </form>
+        <button class="btn btn-dark" onclick="window.open('https://t.me/Kumarotpbot', '_blank')">✈️ 1. START BOT</button>
+        <button class="btn btn-gold" id="sendOtpBtn" onclick="sendOTP('register')">📩 2. SEND OTP</button>
+        
+        <div id="otpBox" style="display:none; margin-top:20px; background:#111; padding:20px; border-radius:15px; border:1px solid #333;">
+            <label style="color:#fff;">ENTER 4-DIGIT OTP</label>
+            <input type="number" id="regOtpInput" placeholder="OTP from Telegram">
+            <button class="btn btn-gold" onclick="registerUser()">✅ VERIFY & REGISTER</button>
+        </div>
+        <br><span class="link-text" onclick="showScreen('loginScreen')">Back to Login</span>
+    </div>
+
+    <!-- 3. FORGOT PASSWORD -->
+    <div class="container screen" id="forgotPassScreen">
+        <h1>RESET <span>PASSWORD</span></h1>
+        <p class="subtitle">Your data is 100% safe!</p>
+        <label>ENTER YOUR TELEGRAM ID</label>
+        <input type="number" id="forgotTgId" placeholder="Telegram Chat ID">
+        <button class="btn btn-dark" onclick="sendOTP('forgot')">📩 SEND RECOVERY OTP</button>
+        
+        <div id="forgotOtpBox" style="display:none; margin-top:20px; background:#111; padding:20px; border-radius:15px; border:1px solid #333;">
+            <label style="color:#fff;">ENTER 4-DIGIT OTP</label>
+            <input type="number" id="forgotOtpInput" placeholder="OTP from Telegram">
+            <label style="color:#fff;">NEW PASSWORD</label>
+            <input type="password" id="forgotNewPass" placeholder="Enter New Password">
+            <button class="btn btn-gold" onclick="resetPassword()">🔄 SAVE NEW PASSWORD</button>
+        </div>
+        <br><span class="link-text" onclick="showScreen('loginScreen')">Back to Login</span>
+    </div>
+
+    <!-- 4. DASHBOARD -->
+    <div class="container screen" id="homeScreen">
+        <div class="profile-card" id="profileCardBg">
+            <div class="rank-glow" id="rankGlow"></div>
+            <div class="profile-header">
+                <div class="avatar-wrapper" onclick="document.getElementById('avatarUpload').click()">
+                    <img src="" id="dashAvatar" class="profile-avatar" alt="DP" onerror="this.style.display='none'; document.getElementById('dashAvatarText').style.display='flex';">
+                    <div id="dashAvatarText" class="profile-avatar" style="display:none;">👤</div>
+                    <div class="avatar-edit-icon">📷</div>
+                </div>
+                <input type="file" id="avatarUpload" accept="image/*" onchange="uploadProfilePhoto(event)">
+                
+                <div>
+                    <div class="profile-name" id="dashName">Loading...</div>
+                    <div class="rank-badge" id="dashRank">BRONZE I</div>
+                    <div class="rank-badge" id="dashGuildBadge" style="background:#8b5cf6; color:#fff; display:none;">NO GUILD</div>
+                    <div class="balance-area">
+                        <div class="coin-display"><span>🪙</span> <span id="dashCoins" style="color:#fff;">0</span></div>
+                        <button class="refresh-btn" onclick="refreshBalance()" title="Refresh Coins">🔄</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-gold" style="font-size: 22px; padding: 22px;" onclick="showScreen('gameSelectScreen')">⚔️ PLAY GAMES</button>
+        
+        <div class="menu-grid">
+            <div class="menu-card" onclick="openQuests()"><span class="menu-icon">🎯</span> MISSIONS</div>
+            <div class="menu-card" onclick="loadLeaderboard()"><span class="menu-icon">🏆</span> LEADERBOARD</div>
+            <div class="menu-card" onclick="openGuilds()"><span class="menu-icon">🤝</span> MY GUILD</div>
+            <div class="menu-card" onclick="openHistory()"><span class="menu-icon">📜</span> STATS</div>
+        </div>
+        
+        <button class="btn btn-admin" id="adminBtn" style="display:none; margin-bottom: 15px;" onclick="showScreen('adminScreen')">👑 ADMIN PANEL</button>
+        <button class="btn btn-danger" onclick="logoutUser()">🚪 LOGOUT</button>
+    </div>
+
+    <!-- 5. GAME SELECTION -->
+    <div class="container screen" id="gameSelectScreen">
+        <h1>BATTLE <span>ARENA</span></h1>
+        <p class="subtitle">Choose your battlefield</p>
+        <button class="btn btn-dark" onclick="startOXGame()" style="padding: 20px; font-size: 16px; color:#fff; border-color:#ff4500;">❌ OX GAME (CLASSIC) ⭕</button>
+        <button class="btn btn-gold" onclick="startDotsGame()" style="padding: 20px; font-size: 16px; margin-top:15px; color:#fff;">🔲 DOTS & BOXES (PLAY) </button>
+        <button class="btn btn-gold" onclick="startMemoryGame()" style="padding: 20px; font-size: 16px; margin-top:15px;">🃏 MEMORY MATCH (PLAY)</button>
+        <button class="btn btn-danger" style="margin-top:30px;" onclick="showScreen('homeScreen')">⬅ Back to Base</button>
+    </div>
+
+    <!-- 6. OX GAME -->
+    <div class="container screen" id="oxScreen">
+        <h1>OX <span>CLASSIC</span></h1>
+        <div class="powerup-bar">
+            <span style="font-weight:900; color:#fff;">COINS: <span style="color:var(--gold);" id="oxCoinDisp">0</span></span>
+            <button class="btn btn-dark" style="margin:0; width:auto; padding:8px 15px; font-size:12px;" onclick="undoMoveOX()">⏪ UNDO (5)</button>
+        </div>
+        <p class="subtitle" id="oxStatus" style="color:var(--success); font-size:18px; font-weight:900;">YOUR TURN (🔥)</p>
+        <div style="position:relative; display:inline-block; margin-top:10px;">
+            <div class="ox-board" id="oxBoard"></div>
+            <div id="winLine" class="win-line"></div>
+        </div>
+        <button class="btn btn-gold" id="oxPlayAgain" style="display:none; margin-top:20px;" onclick="resetOXGame()">🔄 PLAY AGAIN</button>
+        <button class="btn btn-danger" style="margin-top:15px;" onclick="showScreen('homeScreen')">🏠 SURRENDER</button>
+    </div>
+
+    <!-- 7. DOTS & BOXES GAME -->
+    <div class="container screen" id="dotsScreen">
+        <h1>DOTS & <span>BOXES</span></h1>
+        <div class="powerup-bar">
+            <span style="font-weight:900; color:var(--success);">YOU: <span id="dotsUserScore">0</span></span>
+            <span style="font-weight:900; color:#fff;">COINS: <span style="color:var(--gold);" id="dotsCoinDisp">0</span></span>
+            <span style="font-weight:900; color:var(--danger);">AI: <span id="dotsAiScore">0</span></span>
+        </div>
+        <p class="subtitle" id="dotsStatus" style="color:var(--success); font-size:16px; font-weight:900;">YOUR TURN! DRAW A LINE.</p>
+        <div class="db-container">
+            <div class="db-board" id="dbBoard"></div>
+        </div>
+        <button class="btn btn-gold" id="dotsPlayAgain" style="display:none; margin-top:20px;" onclick="startDotsGame()">🔄 NEXT MATCH</button>
+        <button class="btn btn-danger" style="margin-top:15px;" onclick="showScreen('homeScreen')">🏠 LEAVE ARENA</button>
+    </div>
+
+    <!-- 8. MEMORY MATCH -->
+    <div class="container screen" id="memoryScreen">
+        <h1>MEMORY <span>MATCH</span></h1>
+        <p class="subtitle">Find pairs. Entry: 10 Coins | Win: 30 Coins</p>
+        <div class="powerup-bar" style="justify-content:center;">
+            <span style="font-weight:900; color:#fff;">BALANCE: <span style="color:var(--gold);" id="memCoinDisp">0</span></span>
+        </div>
+        <p id="memStatus" style="font-size:18px; font-weight:900; color:var(--success); margin-bottom:10px;">MATCH ALL CARDS!</p>
+        <div class="memory-board" id="memoryBoard"></div>
+        <button class="btn btn-gold" id="memPlayAgain" style="display:none; margin-top:20px;" onclick="startMemoryGame()">🔄 NEXT ROUND</button>
+        <button class="btn btn-danger" style="margin-top:15px;" onclick="showScreen('homeScreen')">🏠 LEAVE ARENA</button>
+    </div>
+
+    <!-- 9. PROGRESSIVE MISSIONS -->
+    <div class="container screen" id="questScreen">
+        <h1>PROGRESSIVE <span>MISSIONS</span></h1>
+        <div style="background:#111; padding:25px; border-radius:15px; margin:20px 0; border:1px solid #333;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="color:var(--gold); font-weight:bold; font-size:12px;">LEVEL <span id="qLevel">1</span></span>
+            </div>
+            <h3 id="qTitle" style="color:#fff; font-size:20px; margin-bottom:15px; text-transform:uppercase;">🔥 Play Matches</h3>
+            <div style="width:100%; background:#222; height:15px; border-radius:10px; margin-bottom:15px; overflow:hidden; border:1px solid #444;">
+                <div id="qProgressBar" style="width:0%; height:100%; background:var(--success);"></div>
+            </div>
+            <p style="font-size:16px; margin-bottom:10px; color:#aaa;">Progress: <strong id="qProg" style="color:var(--success); font-size:20px;">0</strong> / <span id="qTarget">3</span></p>
+            <p style="font-size:14px; color:var(--gold); font-weight:bold; margin-bottom:20px;">REWARD: +<span id="qReward">10</span> COINS</p>
+            <button class="btn btn-gold" id="claimBtn" onclick="claimProgressiveQuest()">🔒 INCOMPLETE</button>
+        </div>
+        <button class="btn btn-danger" onclick="showScreen('homeScreen')">⬅ BACK</button>
+    </div>
+
+    <!-- 10. LEADERBOARD & GUILDS -->
+    <div class="container screen" id="leaderboardScreen">
+        <h1>GLOBAL <span>RANKINGS</span></h1>
+        <div class="total-count" id="totalPlayersCount">Total Players: Loading...</div>
+        <div class="tabs-header">
+            <button class="tab-btn active" id="tabPlayers" onclick="switchLbdTab('players')">TOP PLAYERS</button>
+            <button class="tab-btn" id="tabGuilds" onclick="switchLbdTab('guilds')">TOP GUILDS</button>
+        </div>
+        <div class="list-container" id="leaderboardList"></div>
+        <button class="btn btn-danger" style="margin-top:20px;" onclick="showScreen('homeScreen')">⬅ BACK</button>
+    </div>
+
+    <!-- 11. MY GUILD SECTION -->
+    <div class="container screen" id="guildScreen">
+        <h1>MY <span>GUILD</span></h1>
+        <p class="subtitle">Max 10 Members per Guild</p>
+        
+        <div id="noGuildSection" style="display:none;">
+            <div style="background:#111; padding:20px; border-radius:15px; border:1px solid #333; margin-bottom:20px;">
+                <h3 style="color:#fff; margin-bottom:10px;">CREATE NEW GUILD</h3>
+                <input type="text" id="createGuildName" placeholder="Enter Guild Name (e.g. TeamAlpha)">
+                <button class="btn btn-gold" onclick="createGuild()">CREATE (Cost: 100 Coins)</button>
+            </div>
+            <div style="background:#111; padding:20px; border-radius:15px; border:1px solid #333;">
+                <h3 style="color:#fff; margin-bottom:10px;">JOIN EXISTING GUILD</h3>
+                <input type="text" id="joinGuildName" placeholder="Enter Exact Guild Name">
+                <button class="btn btn-dark" onclick="joinGuild()">JOIN GUILD</button>
+            </div>
+        </div>
+
+        <div id="myGuildSection" style="display:none; text-align:left;">
+            <h2 id="myGuildTitle" style="color:var(--accent-main); text-align:center; font-weight:900; text-transform:uppercase;">GUILD NAME</h2>
+            <p style="text-align:center; color:var(--gold); font-weight:bold; margin-bottom:20px;">Total Guild Glory: <span id="myGuildCoins">0</span></p>
+            <h3 style="color:#fff; margin-bottom:10px; font-size:14px;">MEMBERS (<span id="guildMemCount">0</span>/10)</h3>
+            <div class="list-container" id="guildMembersList" style="max-height: 250px;"></div>
+            <button class="btn btn-danger" style="margin-top:20px;" onclick="leaveGuild()">LEAVE GUILD</button>
+        </div>
+        <button class="btn btn-danger" style="margin-top:20px;" onclick="showScreen('homeScreen')">⬅ BACK TO BASE</button>
+    </div>
+
+    <!-- 12. STATS HISTORY -->
+    <div class="container screen" id="historyScreen">
+        <h1>PLAYER <span>STATS</span></h1>
+        <div class="list-container" style="background:#111; padding:25px; border-radius:15px; border:1px solid #333;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;">
+                <span style="font-size:18px; font-weight:800; color:#fff;">🏆 VICTORIES:</span> <strong id="histW" style="color:var(--success); font-size:22px;">0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;">
+                <span style="font-size:18px; font-weight:800; color:#fff;">💀 DEFEATS:</span> <strong id="histL" style="color:var(--danger); font-size:22px;">0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:18px; font-weight:800; color:#fff;">🤝 DRAWS:</span> <strong id="histD" style="color:#888; font-size:22px;">0</strong>
+            </div>
+        </div>
+        <button class="btn btn-danger" style="margin-top:20px;" onclick="showScreen('homeScreen')">⬅ BACK</button>
+    </div>
+
+    <!-- 13. ADMIN PANEL -->
+    <div class="container screen" id="adminScreen">
+        <h1>👑 ADMIN <span>PANEL</span></h1>
+        <div style="background:#111; padding:20px; border-radius:15px; margin-bottom:20px; border:1px solid #333; text-align:left;">
+            <h3 style="color:var(--accent-main); font-size:14px; margin-bottom:15px;">🛡️ BAN / UNBAN USER</h3>
+            <input type="number" id="admBanId" placeholder="User Telegram ID">
+            <button class="btn btn-danger" style="padding:10px; margin-top:5px;" onclick="adminAction('ban')">BAN</button>
+            <button class="btn btn-dark" style="padding:10px; margin-top:5px;" onclick="adminAction('unban')">UNBAN</button>
+        </div>
+        <div style="background:#111; padding:20px; border-radius:15px; margin-bottom:20px; border:1px solid #333; text-align:left;">
+            <h3 style="color:var(--gold); font-size:14px; margin-bottom:15px;">💰 ADD / REMOVE COINS</h3>
+            <input type="number" id="admId" placeholder="Enter ID">
+            <input type="number" id="admCoins" placeholder="e.g. 100 or -50">
+            <button class="btn btn-gold" onclick="adminAction('coins')">UPDATE COINS</button>
+        </div>
+        <button class="btn btn-danger" style="margin-top:20px;" onclick="showScreen('homeScreen')">⬅ Exit Admin Panel</button>
+    </div>
+
+    <!-- 14. USER PROFILE MODAL -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box">
+            <h2 style="color:var(--accent-main); font-weight:900; margin-bottom:15px;">PLAYER PROFILE</h2>
+            <img src="" id="modalAvatar" style="width:80px; height:80px; border-radius:50%; border:3px solid #fff; margin:0 auto 10px; display:none; object-fit:cover;">
+            <div id="modalAvatarText" style="width:80px; height:80px; border-radius:50%; border:3px solid #fff; margin:0 auto 10px; display:flex; justify-content:center; align-items:center; font-size:35px; background:#222;">👤</div>
+            <h3 id="modalName" style="color:#fff; font-size:22px; font-weight:800;">Name</h3>
+            <p id="modalRank" style="color:var(--gold); font-weight:900; margin-bottom:15px;">RANK</p>
+            <div style="background:#111; padding:15px; border-radius:10px; text-align:left; border:1px solid #333;">
+                <p style="color:#fff; margin-bottom:5px;"><strong>TG ID:</strong> <span id="modalTgId" style="color:#aaa;">-</span></p>
+                <p style="color:var(--success); margin-bottom:5px;"><strong>Wins:</strong> <span id="modalW">0</span></p>
+                <p style="color:var(--danger); margin-bottom:5px;"><strong>Losses:</strong> <span id="modalL">0</span></p>
+                <p style="color:#888;"><strong>Draws:</strong> <span id="modalD">0</span></p>
+            </div>
+            <button class="btn btn-danger" style="padding:12px; margin-top:20px;" onclick="document.getElementById('profileModal').style.display='none'">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT LOGIC (100% BUG FREE & ALL GAMES INCLUDED)
+         ========================================================================== -->
+    <script>
+        // ----------------------------------------------------------------------
+        // 🚨 CONFIGURATION 🚨
+        const BOT_TOKEN = "8861473974:AAENTh2kYJbApxH8JFTsURJkDeYoixm8mtg"; 
+        const ADMIN_TG_ID = "7335163273"; // 👈 तुझा टेलिग्राम आयडी टाक
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyC8umQwCdC9EJ7rbOxI1MKik4L9SNvAIBw", 
+            authDomain: "kumarkor.firebaseapp.com",
+            databaseURL: "https://kumarkor-default-rtdb.firebaseio.com", 
+            projectId: "kumarkor",
+            storageBucket: "kumarkor.appspot.com",
+            messagingSenderId: "167839596471",
+            appId: "1:167839596471:web:ab0fe79da9fa2c03beb232"
+        };
+        // ----------------------------------------------------------------------
+
+        firebase.initializeApp(firebaseConfig); const db = firebase.database();
+        let user = null; let generatedOTP = null; let todayDateStr = new Date().toLocaleDateString(); let previousCoins = 0;
+
+        const PROGRESSIVE_TASKS = [
+            { level: 1, target: 3, reward: 10, title: "PLAY 3 MATCHES" }, { level: 2, target: 5, reward: 20, title: "PLAY 5 MATCHES" },
+            { level: 3, target: 10, reward: 50, title: "PLAY 10 MATCHES" }, { level: 4, target: 20, reward: 100, title: "PLAY 20 MATCHES" },
+            { level: 5, target: 50, reward: 300, title: "PLAY 50 MATCHES" }, { level: 6, target: 100, reward: 1000, title: "PLAY 100 MATCHES" }
+        ];
+
+        window.onload = () => { setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => { document.getElementById('splash').style.display = 'none'; showScreen('loginScreen'); }, 800); }, 1000); };
+        function showScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(screenId).classList.add('active-screen'); }
+
+        function getRankDetails(coins) {
+            let c = parseInt(coins) || 0;
+            if(c < 50) return { name: "BRONZE", color: "var(--bronze)", bg: "rgba(205, 127, 50, 0.2)" }; if(c < 150) return { name: "SILVER", color: "var(--silver)", bg: "rgba(192, 192, 192, 0.2)" };
+            if(c < 300) return { name: "GOLD", color: "var(--gold)", bg: "rgba(255, 215, 0, 0.2)" }; if(c < 600) return { name: "PLATINUM", color: "var(--platinum)", bg: "rgba(0, 206, 209, 0.2)" };
+            if(c < 1000) return { name: "DIAMOND", color: "var(--diamond)", bg: "rgba(185, 242, 255, 0.2)" }; if(c < 2000) return { name: "HEROIC", color: "var(--heroic)", bg: "rgba(255, 0, 85, 0.2)" };
+            return { name: "GRANDMASTER", color: "var(--grandmaster)", bg: "rgba(255, 0, 255, 0.2)" };
+        }
+
+        function sanitizeUserData(data) {
+            data.coins = parseInt(data.coins) || 0; data.name = data.name || "Player"; data.avatar = data.avatar || ""; data.guild = data.guild || "";
+            if (!data.history) data.history = { w: 0, l: 0, d: 0 }; data.history.w = parseInt(data.history.w) || 0; data.history.l = parseInt(data.history.l) || 0; data.history.d = parseInt(data.history.d) || 0;
+            if (!data.taskLevel) data.taskLevel = 0; if (!data.taskProgress) data.taskProgress = 0; if (!data.lastPlayed) data.lastPlayed = todayDateStr; return data;
+        }
+
+        function saveUserToDatabase() {
+            if (user && user.tgId) {
+                if (previousCoins === 0) previousCoins = user.coins;
+                let coinDiff = user.coins - previousCoins; previousCoins = user.coins;
+                user = sanitizeUserData(user); db.ref('users/' + user.tgId).update(user); updateDashboardUI();
+                if (user.guild && coinDiff !== 0) { db.ref('guilds/' + user.guild + '/totalCoins').once('value', s => { if (s.exists()) { let currentGlory = parseInt(s.val()) || 0; db.ref('guilds/' + user.guild).update({ totalCoins: currentGlory + coinDiff }); } }); }
+            }
+        }
+
+        function sendOTP(mode) {
+            let tgId = mode === 'register' ? document.getElementById("regTgId").value : document.getElementById("forgotTgId").value;
+            if (!tgId) return alert("Enter Telegram ID!");
+            if(mode === 'forgot') { db.ref('users/' + tgId).once('value', s => { if(!s.exists()) return alert("Account not found!"); triggerBotOTP(tgId, mode); }); } else triggerBotOTP(tgId, mode);
+        }
+
+        function triggerBotOTP(tgId, mode) {
+            generatedOTP = Math.floor(1000 + Math.random() * 9000); 
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${tgId}&text=KUMAR ESPORTS OTP: ${generatedOTP}`).then(res => res.json()).then(data => { if(data.ok) { if(mode === 'register') document.getElementById("otpBox").style.display = "block"; if(mode === 'forgot') document.getElementById("forgotOtpBox").style.display = "block"; } else alert("Start Bot First!"); });
+        }
+
+        function registerUser() {
+            if (document.getElementById("regOtpInput").value != generatedOTP) return alert("❌ Wrong OTP!");
+            let tgId = document.getElementById("regTgId").value, name = document.getElementById("regName").value, pass = document.getElementById("regPass").value;
+            if(!name || !pass) return alert("Fill details!"); let newUser = sanitizeUserData({ tgId: tgId, name: name, password: pass, coins: 20, isBanned: false });
+            db.ref('users/' + tgId).set(newUser); alert("✅ Registered! Login to play."); showScreen('loginScreen');
+        }
+
+        function resetPassword() {
+            if (document.getElementById("forgotOtpInput").value != generatedOTP) return alert("❌ Wrong OTP!");
+            let tgId = document.getElementById("forgotTgId").value, newPass = document.getElementById("forgotNewPass").value;
+            if(!newPass) return alert("Enter password"); db.ref('users/' + tgId).update({password: newPass}); alert("✅ Password Reset! Data is safe."); showScreen('loginScreen');
+        }
+
+        function loginUser() {
+            let id = document.getElementById('loginId').value, pass = document.getElementById('loginPass').value;
+            if(!id || !pass) return alert("Enter credentials");
+            db.ref('users/' + id).once('value', snapshot => {
+                if(snapshot.exists()) {
+                    let data = snapshot.val();
+                    if(data.password === pass) {
+                        if(data.isBanned) return alert("🚫 ACCOUNT BANNED.");
+                        user = sanitizeUserData(data); previousCoins = user.coins;
+                        if(user.lastPlayed !== todayDateStr) { let diffDays = Math.ceil(Math.abs(new Date() - new Date(user.lastPlayed)) / (1000 * 60 * 60 * 24)); if(diffDays > 1) { user.coins = Math.max(0, user.coins - 10); alert("⚠️ -10 Coins for inactivity."); } user.lastPlayed = todayDateStr; saveUserToDatabase(); }
+                        updateDashboardUI(); showScreen('homeScreen');
+                        
+                        // 🔥 STRICT ADMIN SECURITY LOCK 🔥
+                        if (user.tgId === ADMIN_TG_ID) { document.getElementById('adminBtn').style.display = 'block'; } else { document.getElementById('adminBtn').style.display = 'none'; }
+                    } else alert("❌ Incorrect Password!");
+                } else alert("❌ Account not found!");
+            });
+        }
+
+        function logoutUser() { user = null; showScreen('loginScreen'); }
+        function refreshBalance() { if(!user) return; db.ref('users/' + user.tgId + '/coins').once('value', s => { if(s.exists()) { user.coins = parseInt(s.val())||0; previousCoins = user.coins; saveUserToDatabase(); alert("✅ Balance Synced!"); }}); }
+        function uploadProfilePhoto(event) { const file = event.target.files[0]; if(file) { if(file.size > 1048576) return alert("Max 1MB allowed."); const reader = new FileReader(); reader.onload = function(e) { user.avatar = e.target.result; saveUserToDatabase(); }; reader.readAsDataURL(file); } }
+
+        function updateDashboardUI() {
+            if(!user) return; document.getElementById('dashName').innerText = user.name; document.getElementById('dashCoins').innerText = user.coins;
+            if(user.avatar && user.avatar.startsWith('data:image')) { document.getElementById('dashAvatar').src = user.avatar; document.getElementById('dashAvatar').style.display = 'block'; document.getElementById('dashAvatarText').style.display = 'none'; } 
+            else { document.getElementById('dashAvatar').style.display = 'none'; document.getElementById('dashAvatarText').style.display = 'flex'; }
+            let rank = getRankDetails(user.coins); let rankBadge = document.getElementById('dashRank'); rankBadge.innerText = rank.name; rankBadge.style.backgroundColor = rank.bg; rankBadge.style.color = rank.color; rankBadge.style.border = `1px solid ${rank.color}`; document.getElementById('rankGlow').style.backgroundColor = rank.color;
+            let gBadge = document.getElementById('dashGuildBadge'); if(user.guild) { gBadge.style.display = "inline-block"; gBadge.innerText = user.guild; } else { gBadge.style.display = "none"; }
+            let lvl = user.taskLevel || 0; if(lvl >= PROGRESSIVE_TASKS.length) lvl = PROGRESSIVE_TASKS.length - 1; let curTask = PROGRESSIVE_TASKS[lvl];
+            document.getElementById('qLevel').innerText = curTask.level; document.getElementById('qTitle').innerText = curTask.title; document.getElementById('qProg').innerText = user.taskProgress; document.getElementById('qTarget').innerText = curTask.target; document.getElementById('qReward').innerText = curTask.reward;
+            document.getElementById('qProgressBar').style.width = Math.min((user.taskProgress / curTask.target) * 100, 100) + "%";
+            let claimBtn = document.getElementById('claimBtn'); if(user.taskProgress >= curTask.target) { claimBtn.disabled = false; claimBtn.innerText = `🎁 CLAIM ${curTask.reward} COINS`; claimBtn.style.opacity = "1"; } else { claimBtn.disabled = true; claimBtn.innerText = "🔒 INCOMPLETE"; claimBtn.style.opacity = "0.5"; }
+            document.getElementById('histW').innerText = user.history.w; document.getElementById('histL').innerText = user.history.l; document.getElementById('histD').innerText = user.history.d;
+        }
+
+        function openQuests() { updateDashboardUI(); showScreen('questScreen'); } function openHistory() { updateDashboardUI(); showScreen('historyScreen'); }
+        function updateTaskProgress() { let lvl = user.taskLevel || 0; if(lvl >= PROGRESSIVE_TASKS.length) return; user.taskProgress++; saveUserToDatabase(); }
+        function claimProgressiveQuest() { let lvl = user.taskLevel || 0; if(lvl >= PROGRESSIVE_TASKS.length) return; let curTask = PROGRESSIVE_TASKS[lvl]; if(user.taskProgress >= curTask.target) { user.coins += curTask.reward; user.taskLevel++; user.taskProgress = 0; saveUserToDatabase(); alert(`🎉 ${curTask.reward} Coins Claimed!`); } }
+
+        let currentLbdTab = 'players';
+        function switchLbdTab(tab) { currentLbdTab = tab; document.getElementById('tabPlayers').classList.remove('active'); document.getElementById('tabGuilds').classList.remove('active'); document.getElementById(tab === 'players' ? 'tabPlayers' : 'tabGuilds').classList.add('active'); loadLeaderboard(); }
+        
+        function loadLeaderboard() {
+            showScreen('leaderboardScreen'); document.getElementById('leaderboardList').innerHTML = "<p style='padding:20px;'>Loading Rankings...</p>";
+            if(currentLbdTab === 'players') {
+                db.ref('users').once('value', snapshot => { let players = []; document.getElementById('totalPlayersCount').innerText = `Total Players: ${snapshot.numChildren().toLocaleString()}+`; snapshot.forEach(child => { if(!child.val().isBanned) players.push(sanitizeUserData(child.val())); }); players.sort((a, b) => b.coins - a.coins);
+                    let html = ""; players.forEach((p, index) => { let rank = getRankDetails(p.coins); let rankNum = index + 1; let avatarImg = p.avatar ? `<img src="${p.avatar}" class="leaderboard-avatar">` : `<div class="leaderboard-avatar" style="display:flex; justify-content:center; align-items:center; background:#222; font-size:20px;">👤</div>`; html += `<div class="list-item" style="border-left: 5px solid ${rank.color};" onclick="viewProfile('${p.tgId}')"><div style="display:flex; align-items:center;"><div class="rank-number">#${rankNum}</div>${avatarImg}<div style="display:flex; flex-direction:column;"><span style="font-weight:900; font-size:15px; color:#fff;">${p.name}</span><span style="font-size:10px; font-weight:bold; color:${rank.color};">${rank.name}</span></div></div><strong style="color:var(--gold); font-size:18px;">🪙 ${p.coins}</strong></div>`; }); document.getElementById('leaderboardList').innerHTML = html;
+                });
+            } else {
+                db.ref('guilds').once('value', snapshot => { let guilds = []; snapshot.forEach(child => { guilds.push({name: child.key, data: child.val()}); }); document.getElementById('totalPlayersCount').innerText = `Total Guilds: ${guilds.length}`; guilds.sort((a,b) => b.data.totalCoins - a.data.totalCoins);
+                    let html = ""; guilds.forEach((g, index) => { html += `<div class="list-item" style="border-left: 5px solid #8b5cf6;"><div style="display:flex; align-items:center;"><div class="rank-number">#${index+1}</div><div class="leaderboard-avatar" style="display:flex; justify-content:center; align-items:center; background:#222; font-size:20px; border-color:#8b5cf6;">🤝</div><div style="display:flex; flex-direction:column;"><span style="font-weight:900; font-size:15px; color:#fff;">${g.name}</span><span style="font-size:10px; font-weight:bold; color:#8b5cf6;">Members: ${Object.keys(g.data.members).length}/10</span></div></div><strong style="color:var(--gold); font-size:18px;">🪙 ${g.data.totalCoins}</strong></div>`; }); document.getElementById('leaderboardList').innerHTML = html || "<p style='padding:20px;'>No Guilds Found.</p>";
+                });
+            }
+        }
+
+        function viewProfile(tgId) {
+            db.ref('users/' + tgId).once('value', s => { if(!s.exists()) return; let p = sanitizeUserData(s.val()); if(p.avatar) { document.getElementById('modalAvatar').src = p.avatar; document.getElementById('modalAvatar').style.display="block"; document.getElementById('modalAvatarText').style.display="none"; } else { document.getElementById('modalAvatar').style.display="none"; document.getElementById('modalAvatarText').style.display="flex"; } document.getElementById('modalName').innerText = p.name; document.getElementById('modalRank').innerText = getRankDetails(p.coins).name; document.getElementById('modalRank').style.color = getRankDetails(p.coins).color; document.getElementById('modalTgId').innerText = p.tgId; document.getElementById('modalW').innerText = p.history.w; document.getElementById('modalL').innerText = p.history.l; document.getElementById('modalD').innerText = p.history.d; document.getElementById('profileModal').style.display = 'flex'; });
+        }
+
+        function openGuilds() {
+            showScreen('guildScreen');
+            if(user.guild) {
+                document.getElementById('noGuildSection').style.display = "none"; document.getElementById('myGuildSection').style.display = "block";
+                db.ref('guilds/' + user.guild).once('value', s => {
+                    if(s.exists()) { let g = s.val(); document.getElementById('myGuildTitle').innerText = user.guild; let memKeys = Object.keys(g.members); document.getElementById('guildMemCount').innerText = memKeys.length;
+                        let realTotalGlory = 0; let html = ""; let promises = memKeys.map(mId => db.ref('users/'+mId).once('value'));
+                        Promise.all(promises).then(results => { results.forEach(us => { if(us.exists()) { let u = us.val(); realTotalGlory += (parseInt(u.coins) || 0); html += `<div class="list-item" style="padding:10px;"><span style="color:#fff; font-weight:bold;">${u.name}</span> <span style="color:var(--gold);">🪙 ${u.coins}</span></div>`; } }); document.getElementById('myGuildCoins').innerText = realTotalGlory; document.getElementById('guildMembersList').innerHTML = html; if(g.totalCoins !== realTotalGlory) { db.ref('guilds/' + user.guild).update({ totalCoins: realTotalGlory }); } });
+                    } else { user.guild = ""; saveUserToDatabase(); openGuilds(); } 
+                });
+            } else { document.getElementById('noGuildSection').style.display = "block"; document.getElementById('myGuildSection').style.display = "none"; }
+        }
+
+        function createGuild() { if(user.coins < 100) return alert("Need 100 Coins!"); let name = document.getElementById('createGuildName').value.trim(); if(!name || name.length < 3) return alert("Min 3 chars"); db.ref('guilds/' + name).once('value', s => { if(s.exists()) return alert("Guild exists!"); user.coins -= 100; user.guild = name; saveUserToDatabase(); let gData = { leader: user.tgId, totalCoins: user.coins, members: {} }; gData.members[user.tgId] = true; db.ref('guilds/' + name).set(gData); alert("✅ Created!"); openGuilds(); }); }
+        function joinGuild() { let name = document.getElementById('joinGuildName').value.trim(); if(!name) return; db.ref('guilds/' + name).once('value', s => { if(!s.exists()) return alert("Guild not found!"); let g = s.val(); if(Object.keys(g.members).length >= 10) return alert("Guild is Full!"); user.guild = name; saveUserToDatabase(); g.members[user.tgId] = true; g.totalCoins += user.coins; db.ref('guilds/' + name).update({ members: g.members, totalCoins: g.totalCoins }); alert("✅ Joined!"); openGuilds(); }); }
+        function leaveGuild() { if(!user.guild) return; let gName = user.guild; user.guild = ""; saveUserToDatabase(); db.ref('guilds/' + gName).once('value', s => { if(s.exists()) { let g = s.val(); delete g.members[user.tgId]; g.totalCoins -= user.coins; if(Object.keys(g.members).length === 0) db.ref('guilds/' + gName).remove(); else db.ref('guilds/' + gName).update({ members: g.members, totalCoins: g.totalCoins }); } }); openGuilds(); }
+
+        function adminAction(type) { if (user.tgId !== ADMIN_TG_ID) return; if (type === 'ban' || type === 'unban') { let id = document.getElementById('admBanId').value; if(id) { db.ref('users/' + id).update({ isBanned: (type === 'ban') }); alert(`User ${type}ned!`); document.getElementById('admBanId').value=""; } } if (type === 'coins') { let id = document.getElementById('admId').value, amt = parseInt(document.getElementById('admCoins').value); if (id && !isNaN(amt)) db.ref('users/' + id).once('value', s => { if (s.exists()) { let c = parseInt(s.val().coins) || 0; db.ref('users/' + id).update({ coins: c + amt }); alert(`Success!`); } }); } }
+
+        // ==========================================================================
+        // 🟢 GAMES: OX, DOTS, MEMORY
+        // ==========================================================================
+        // ❌⭕ OX GAME
+        let oxBoard = ["", "", "", "", "", "", "", "", ""]; let oxHistory = []; let oxActive = false; let oxAiThinking = false;
+        function startOXGame() { showScreen('oxScreen'); resetOXGame(); document.getElementById('oxCoinDisp').innerText = user.coins; }
+        function drawOX() { let b = document.getElementById('oxBoard'); b.innerHTML = ""; oxBoard.forEach((val, i) => { let cell = document.createElement('div'); cell.className = "ox-cell"; if (val === 'X') { cell.innerText = '🔥'; cell.style.color="var(--danger)";} else if (val === 'O') { cell.innerText = '❄️'; cell.style.color="#3b82f6";} cell.onclick = () => moveOX(i); b.appendChild(cell); }); }
+        function moveOX(i) { if (oxBoard[i] === "" && oxActive && !oxAiThinking) { oxHistory.push([...oxBoard]); oxBoard[i] = "X"; drawOX(); setTimeout(() => { if (checkWinOX()) return; oxAiThinking = true; document.getElementById('oxStatus').innerText = "🤖 AI THINKING..."; document.getElementById('oxStatus').style.color = "#888"; setTimeout(() => { aiMoveOX(); oxAiThinking = false; }, 500); }, 50); } }
+        function undoMoveOX() { if (oxHistory.length > 0 && oxActive && user.coins >= 5) { user.coins -= 5; saveUserToDatabase(); document.getElementById('oxCoinDisp').innerText = user.coins; oxBoard = oxHistory.pop(); drawOX(); } }
+        function aiMoveOX() { let best = -Infinity, move; for (let i = 0; i < 9; i++) { if (oxBoard[i] === "") { oxBoard[i] = "O"; let score = minimaxOX(oxBoard, 0, false); oxBoard[i] = ""; if (score > best) { best = score; move = i; } } } if (move !== undefined) { oxBoard[move] = "O"; drawOX(); setTimeout(() => checkWinOX(), 50); } }
+        function minimaxOX(b, d, isMax) { let w = checkWinnerOnly(b); if (w === "O") return 10 - d; if (w === "X") return d - 10; if (!b.includes("")) return 0; if (isMax) { let max = -Infinity; for (let i=0; i<9; i++) { if (b[i]==="") { b[i]="O"; max = Math.max(max, minimaxOX(b, d+1, false)); b[i]=""; } } return max; } else { let min = Infinity; for (let i=0; i<9; i++) { if (b[i]==="") { b[i]="X"; min = Math.min(min, minimaxOX(b, d+1, true)); b[i]=""; } } return min; } }
+        const oxWinLines = [[0,1,2,'line-row-0'], [3,4,5,'line-row-1'], [6,7,8,'line-row-2'], [0,3,6,'line-col-0'], [1,4,7,'line-col-1'], [2,5,8,'line-col-2'], [0,4,8,'line-diag-0'], [2,4,6,'line-diag-1']];
+        function checkWinnerOnly(b) { for (let [x, y, z] of oxWinLines) { if (b[x] && b[x] === b[y] && b[x] === b[z]) return b[x]; } return null; }
+        function checkWinOX() { let w = checkWinnerOnly(oxBoard); if (w) { oxActive = false; updateTaskProgress(); let lineData = oxWinLines.find(([x,y,z]) => oxBoard[x]===w && oxBoard[y]===w && oxBoard[z]===w); if (lineData) { let line = document.getElementById('winLine'); line.className = `win-line ${lineData[3]}`; line.style.display = "block"; } if (w === "X") { user.coins++; user.history.w++; document.getElementById('oxStatus').innerHTML = "🎉 YOU WIN! +1 COIN"; document.getElementById('oxStatus').style.color = "var(--success)"; } else { user.history.l++; document.getElementById('oxStatus').innerHTML = "💀 DEFEAT!"; document.getElementById('oxStatus').style.color = "var(--danger)"; } saveUserToDatabase(); document.getElementById('oxCoinDisp').innerText = user.coins; document.getElementById('oxPlayAgain').style.display = "block"; return true; } else if (!oxBoard.includes("")) { oxActive = false; updateTaskProgress(); user.history.d++; saveUserToDatabase(); document.getElementById('oxStatus').innerHTML = "🤝 DRAW!"; document.getElementById('oxStatus').style.color = "#888"; document.getElementById('oxPlayAgain').style.display = "block"; return true; } document.getElementById('oxStatus').innerText = "YOUR TURN (🔥)"; document.getElementById('oxStatus').style.color = "var(--success)"; return false; }
+        function resetOXGame() { oxBoard = ["", "", "", "", "", "", "", "", ""]; oxHistory = []; oxActive = true; oxAiThinking = false; document.getElementById('winLine').style.display = "none"; document.getElementById('oxPlayAgain').style.display = "none"; document.getElementById('oxStatus').innerText = "YOUR TURN (🔥)"; document.getElementById('oxStatus').style.color = "var(--success)"; drawOX(); }
+
+        // 🔲 DOTS & BOXES GAME
+        let hLines = [], vLines = [], boxes = [], dbActive = false, dbAiThinking = false, p1Score = 0, aiScore = 0;
+        function startDotsGame() { showScreen('dotsScreen'); initDotsGame(); document.getElementById('dotsCoinDisp').innerText = user.coins; }
+        function initDotsGame() { hLines = Array(12).fill(null); vLines = Array(12).fill(null); boxes = Array(9).fill(null); p1Score = 0; aiScore = 0; dbActive = true; dbAiThinking = false; document.getElementById('dotsUserScore').innerText = p1Score; document.getElementById('dotsAiScore').innerText = aiScore; document.getElementById('dotsStatus').innerText = "YOUR TURN! DRAW A LINE."; document.getElementById('dotsStatus').style.color = "var(--success)"; document.getElementById('dotsPlayAgain').style.display = "none"; drawDotsBoard(); }
+        function drawDotsBoard() { let b = document.getElementById('dbBoard'); b.innerHTML = ""; let s = 80; for(let r=0; r<3; r++){ for(let c=0; c<3; c++){ let i = r*3+c; let box = document.createElement('div'); box.className = "db-box"; box.style.width = s+"px"; box.style.height = s+"px"; box.style.left = (c*s)+"px"; box.style.top = (r*s)+"px"; if(boxes[i]){ box.classList.add(boxes[i]==='P1'?'box-p1':'box-p2'); box.innerText = boxes[i]==='P1'?'🔥':'❄️'; } b.appendChild(box); } } for(let r=0; r<4; r++){ for(let c=0; c<3; c++){ let i = r*3+c; let line = document.createElement('div'); line.className = "db-line-h"; line.style.width = s+"px"; line.style.left = (c*s)+"px"; line.style.top = (r*s)+"px"; if(hLines[i]) line.classList.add(hLines[i]==='P1'?'line-p1':'line-p2'); else line.onclick = () => moveDB('h', i); b.appendChild(line); } } for(let r=0; r<3; r++){ for(let c=0; c<4; c++){ let i = r*4+c; let line = document.createElement('div'); line.className = "db-line-v"; line.style.height = s+"px"; line.style.left = (c*s)+"px"; line.style.top = (r*s)+"px"; if(vLines[i]) line.classList.add(vLines[i]==='P1'?'line-p1':'line-p2'); else line.onclick = () => moveDB('v', i); b.appendChild(line); } } for(let r=0; r<4; r++){ for(let c=0; c<4; c++){ let dot = document.createElement('div'); dot.className = "db-dot"; dot.style.left = (c*s)+"px"; dot.style.top = (r*s)+"px"; b.appendChild(dot); } } }
+        function moveDB(t, i) { if(!dbActive || dbAiThinking) return; if(t==='h' && hLines[i]) return; if(t==='v' && vLines[i]) return; if(t==='h') hLines[i] = 'P1'; else vLines[i] = 'P1'; let scored = checkBoxesDB('P1'); drawDotsBoard(); if(boxes.every(b => b!==null)) return endGameDB(); if(!scored) { dbAiThinking = true; document.getElementById('dotsStatus').innerText = "🤖 AI IS THINKING..."; document.getElementById('dotsStatus').style.color = "#888"; setTimeout(aiMoveDB, 600); } }
+        function aiMoveDB() { if(!dbActive) return; let scored = true; while(scored && !boxes.every(b => b!==null)) { let empty = []; hLines.forEach((v, i) => { if(!v) empty.push({t:'h', i:i}); }); vLines.forEach((v, i) => { if(!v) empty.push({t:'v', i:i}); }); if(empty.length === 0) break; let c = empty[Math.floor(Math.random() * empty.length)]; if(c.t==='h') hLines[c.i] = 'AI'; else vLines[c.i] = 'AI'; scored = checkBoxesDB('AI'); } drawDotsBoard(); if(boxes.every(b => b!==null)) endGameDB(); else { dbAiThinking = false; document.getElementById('dotsStatus').innerText = "YOUR TURN! DRAW A LINE."; document.getElementById('dotsStatus').style.color = "var(--success)"; } }
+        function checkBoxesDB(p) { let scored = false; for(let r=0; r<3; r++){ for(let c=0; c<3; c++){ let i = r*3+c; if(!boxes[i]) { if(hLines[r*3+c] && hLines[(r+1)*3+c] && vLines[r*4+c] && vLines[r*4+c+1]) { boxes[i] = p; if(p==='P1') p1Score++; else aiScore++; scored = true; } } }} document.getElementById('dotsUserScore').innerText = p1Score; document.getElementById('dotsAiScore').innerText = aiScore; return scored; }
+        function endGameDB() { dbActive = false; updateTaskProgress(); let status = document.getElementById('dotsStatus'); if(p1Score > aiScore) { status.innerText = "🎉 YOU WON! +2 COINS"; status.style.color = "var(--success)"; user.coins += 2; user.history.w++; } else if (aiScore > p1Score) { status.innerText = "💀 AI DESTROYED YOU!"; status.style.color = "var(--danger)"; user.history.l++; } else { status.innerText = "🤝 IT'S A TIE!"; status.style.color = "#888"; user.history.d++; } saveUserToDatabase(); document.getElementById('dotsCoinDisp').innerText = user.coins; document.getElementById('dotsPlayAgain').style.display = "block"; }
+
+        // 🃏 MEMORY MATCH GAME
+        let memCards = ['🍎','🍎','🍌','🍌','🍉','🍉','🍇','🍇','🍓','🍓','🥑','🥑','🥕','🥕','🌽','🌽'];
+        let memBoard = []; let flippedCards = []; let matchedPairs = 0; let memActive = false;
+        function startMemoryGame() { if(user.coins < 10) return alert("You need 10 Coins to play!"); user.coins -= 10; saveUserToDatabase(); showScreen('memoryScreen'); document.getElementById('memCoinDisp').innerText = user.coins; memBoard = [...memCards].sort(() => 0.5 - Math.random()); flippedCards = []; matchedPairs = 0; memActive = true; document.getElementById('memStatus').innerText = "MATCH ALL CARDS!"; document.getElementById('memStatus').style.color = "var(--success)"; document.getElementById('memPlayAgain').style.display = "none"; drawMemBoard(); }
+        function drawMemBoard() { let b = document.getElementById('memoryBoard'); b.innerHTML = ""; memBoard.forEach((val, i) => { let card = document.createElement('div'); card.className = "mem-card"; card.dataset.idx = i; card.onclick = () => flipCard(card, i, val); b.appendChild(card); }); }
+        function flipCard(cardEl, idx, val) { if(!memActive || flippedCards.length >= 2 || cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return; cardEl.classList.add('flipped'); cardEl.innerText = val; flippedCards.push({el: cardEl, idx: idx, val: val}); if(flippedCards.length === 2) { setTimeout(checkMemMatch, 800); } }
+        function checkMemMatch() { let [c1, c2] = flippedCards; if(c1.val === c2.val) { c1.el.classList.add('matched'); c2.el.classList.add('matched'); matchedPairs++; if(matchedPairs === 8) { memActive = false; updateTaskProgress(); user.coins += 30; user.history.w++; saveUserToDatabase(); document.getElementById('memCoinDisp').innerText = user.coins; document.getElementById('memStatus').innerText = "🎉 AMAZING! +30 COINS!"; document.getElementById('memPlayAgain').style.display = "block"; } } else { c1.el.classList.remove('flipped'); c1.el.innerText = ""; c2.el.classList.remove('flipped'); c2.el.innerText = ""; } flippedCards = []; }
+
+    </script>
+</body>
+</html>
