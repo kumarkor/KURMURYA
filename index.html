@@ -1,452 +1,152 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra Pay Wallet & Bot System</title>
-    <style>
-        /* ================= STYLISH CSS (Dark Glassmorphism) ================= */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        
-        .container { width: 92%; max-width: 420px; background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        h2 { text-align: center; margin-bottom: 25px; color: #00ffcc; text-transform: uppercase; letter-spacing: 1px; }
-        
-        input { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        input::placeholder { color: #aaa; }
-        input:focus { border-color: #00ffcc; }
-        
-        button { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; background: linear-gradient(90deg, #00ffcc, #00b3ff); color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3); }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 255, 204, 0.5); }
-        
-        .hidden { display: none !important; }
-        .text-center { text-align: center; margin-top: 15px; font-size: 14px; cursor: pointer; color: #00ffcc; transition: 0.2s; }
-        .text-center:hover { text-decoration: underline; color: #fff; }
-        
-        /* Dashboard & Cards */
-        .balance-card { background: linear-gradient(135deg, #ff007a, #7a00ff); padding: 25px; border-radius: 18px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 0, 122, 0.3); }
-        .balance-card h3 { font-size: 16px; font-weight: 300; opacity: 0.9; }
-        .balance-card h1 { font-size: 42px; margin: 10px 0; font-weight: 600; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .grid button { background: rgba(255,255,255,0.1); color: white; box-shadow: none; border: 1px solid rgba(255,255,255,0.2); }
-        .grid button:hover { background: rgba(255,255,255,0.2); transform: none; }
-        
-        /* Admin Panel Button */
-        .admin-btn { background: linear-gradient(90deg, #ff8a00, #e52e71) !important; color: white !important; margin-top: 15px; }
-        
-        /* History Section */
-        .history-list { margin-top: 15px; max-height: 220px; overflow-y: auto; padding-right: 5px; }
-        .history-item { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 14px; border-left: 4px solid #444; }
-        .plus { color: #00ffcc; font-weight: bold; }
-        .minus { color: #ff3366; font-weight: bold; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #00ffcc; border-radius: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dice Game</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#0f172a;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+background:#1e293b;
+padding:30px;
+border-radius:20px;
+text-align:center;
+width:340px;
+color:#fff;
+box-shadow:0 0 20px #000;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+.dice{
+font-size:90px;
+margin:20px 0;
+transition:.2s;
+}
+
+.result{
+font-size:30px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+button{
+width:100%;
+padding:15px;
+margin-top:10px;
+font-size:18px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.roll{
+background:#22c55e;
+color:#fff;
+}
+
+.reset{
+background:#ef4444;
+color:#fff;
+}
+
+.stats{
+margin-top:20px;
+font-size:18px;
+line-height:32px;
+}
+</style>
+
 </head>
 <body>
 
-    <!-- ================= AUTH SECTION ================= -->
-    <div class="container" id="auth-section">
-        <h2 id="form-title">Login</h2>
-        <input type="text" id="telegramId" placeholder="Telegram User ID">
-        <input type="password" id="password" placeholder="Password">
-        
-        <!-- OTP Field (Hidden by default) -->
-        <input type="number" id="otpInput" placeholder="Enter OTP received on Bot" class="hidden">
-        
-        <button id="mainBtn" onclick="handleAuth()">Login</button>
-        <p class="text-center" id="toggleText" onclick="toggleAuth()">Create New Account</p>
-        <p class="text-center" id="forgotText" onclick="forgotPassword()">Forgot Password?</p>
-    </div>
+<div class="container">
 
-    <!-- ================= DASHBOARD SECTION ================= -->
-    <div class="container hidden" id="dashboard-section">
-        <div class="balance-card">
-            <h3>Total Balance</h3>
-            <h1 id="balanceDisplay">₹0</h1>
-            <p id="userIdDisplay" style="font-size:12px; opacity:0.8;">ID: -----</p>
-        </div>
-        
-        <div class="grid">
-            <button onclick="showSection('gift')">🎁 GIFT Code</button>
-            <button onclick="showSection('withdraw')">💸 Withdraw</button>
-        </div>
-        
-        <!-- Admin Panel Button (Will only show to ID 7335163273) -->
-        <button id="adminPanelBtn" class="admin-btn hidden" onclick="showSection('admin')">👑 Admin Panel</button>
-        
-        <h3 style="margin-top:25px; color:#00ffcc; font-size: 16px;">📜 Lifetime History</h3>
-        <div class="history-list" id="historyList">
-            <!-- History loads here -->
-        </div>
-        <button style="background:rgba(255, 51, 102, 0.2); border: 1px solid #ff3366; color:#ff3366; margin-top:20px; box-shadow:none;" onclick="logout()">Log Out</button>
-    </div>
+<h1>🎲 Dice Game</h1>
 
-    <!-- ================= ACTIONS / MODALS ================= -->
-    <div class="container hidden" id="action-section">
-        <h2 id="action-title">Action</h2>
-        
-        <!-- Gift Code Redeem -->
-        <div id="gift-div" class="hidden">
-            <input type="text" id="giftCodeInput" placeholder="Enter GIFT Code">
-            <button onclick="redeemGift()">Redeem Code</button>
-        </div>
+<div class="dice" id="dice">🎲</div>
 
-        <!-- Withdraw -->
-        <div id="withdraw-div" class="hidden">
-            <input type="number" id="withdrawNumber" placeholder="Ultra Pay Number">
-            <input type="number" id="withdrawAmount" placeholder="Amount (₹)">
-            <button onclick="withdrawMoney()">Withdraw Now</button>
-        </div>
+<div class="result" id="number">0</div>
 
-        <!-- Admin Panel (Create Gift) -->
-        <div id="admin-div" class="hidden">
-            <input type="number" id="adminGiftAmount" placeholder="Amount for Gift Code (₹)">
-            <button onclick="createGiftCode()" style="background: #ff8a00; color:white;">Create Code</button>
-            <p id="createdCodeDisplay" style="margin-top:15px; color:#00ffcc; text-align:center; font-weight:bold; font-size:18px; user-select:all;"></p>
-        </div>
+<button class="roll" onclick="rollDice()">
+🎲 Roll Dice
+</button>
 
-        <p class="text-center" onclick="showSection('dashboard')" style="margin-top: 20px;">⬅ Back to Dashboard</p>
-    </div>
+<button class="reset" onclick="resetGame()">
+🔄 Reset
+</button>
 
-    <!-- ================= FIREBASE & LOGIC ================= -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, getDocs, updateDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<div class="stats">
+<div>📊 Roll Count : <span id="count">0</span></div>
+<div>⭐ Best Roll : <span id="best">0</span></div>
+</div>
 
-        // ⚠️ इथे तुमची Firebase Config टाका
-        const firebaseConfig = {
-        apiKey: "AIzaSyB2fd1RdEq6NghpKR3uzYfmyJg2N7Uu8q4",
-        authDomain: "kumarofficialtm.firebaseapp.com",
-        databaseURL: "https://kumarofficialtm-default-rtdb.firebaseio.com",
-        projectId: "kumarofficialtm",
-        storageBucket: "kumarofficialtm.firebasestorage.app",
-        messagingSenderId: "746982907771",
-        appId: "1:746982907771:web:548c3f76e6c4aedef367de",
-        measurementId: "G-7HYJ6V3DP6"
-};
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<script>
 
-        // ⚠️ इथे तुमचा Telegram Bot Token टाका (OTP पाठवण्यासाठी)
-        const BOT_TOKEN = "8725841976:AAErWCibTQK0Hq_JLBCaOi6YR7P5lFubhlM"; 
-        const ADMIN_ID = "7335163273"; // तुमचा Admin ID
+const diceEmoji=[
+"",
+"⚀",
+"⚁",
+"⚂",
+"⚃",
+"⚄",
+"⚅"
+];
 
-        let authState = 'LOGIN'; // LOGIN, REGISTER, FORGOT
-        let generatedOTP = null;
-        let currentUser = null;
+let count=0;
+let best=0;
 
-        // --- Send OTP to Telegram Bot ---
-        async function sendTelegramMessage(chatId, text) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                return data.ok;
-            } catch (error) {
-                console.error("Telegram API Error:", error);
-                return false;
-            }
-        }
+function rollDice(){
 
-        // --- UI Toggles ---
-        window.toggleAuth = () => {
-            authState = authState === 'LOGIN' ? 'REGISTER' : 'LOGIN';
-            document.getElementById('form-title').innerText = authState === 'LOGIN' ? "Login" : "Create Account";
-            document.getElementById('mainBtn').innerText = authState === 'LOGIN' ? "Login" : "Get OTP on Bot";
-            document.getElementById('toggleText').innerText = authState === 'LOGIN' ? "Create New Account" : "Back to Login";
-            document.getElementById('forgotText').classList.remove('hidden');
-            document.getElementById('otpInput').classList.add('hidden');
-        };
+let num=Math.floor(Math.random()*6)+1;
 
-        window.forgotPassword = () => {
-            authState = 'FORGOT';
-            document.getElementById('form-title').innerText = "Forgot Password";
-            document.getElementById('mainBtn').innerText = "Send Reset OTP";
-            document.getElementById('toggleText').innerText = "Back to Login";
-            document.getElementById('forgotText').classList.add('hidden');
-            document.getElementById('otpInput').classList.add('hidden');
-        };
+document.getElementById("number").innerHTML=num;
+document.getElementById("dice").innerHTML=diceEmoji[num];
 
-        window.showSection = (section) => {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('action-section').classList.add('hidden');
-            
-            document.getElementById('gift-div').classList.add('hidden');
-            document.getElementById('withdraw-div').classList.add('hidden');
-            document.getElementById('admin-div').classList.add('hidden');
-            document.getElementById('createdCodeDisplay').innerText = "";
+count++;
+document.getElementById("count").innerHTML=count;
 
-            if(section === 'dashboard') {
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                loadDashboard();
-            } else {
-                document.getElementById('action-section').classList.remove('hidden');
-                if (section === 'gift') {
-                    document.getElementById('gift-div').classList.remove('hidden');
-                    document.getElementById('action-title').innerText = "Redeem GIFT";
-                } else if (section === 'withdraw') {
-                    document.getElementById('withdraw-div').classList.remove('hidden');
-                    document.getElementById('action-title').innerText = "Withdraw Money";
-                } else if (section === 'admin') {
-                    document.getElementById('admin-div').classList.remove('hidden');
-                    document.getElementById('action-title').innerText = "Admin Panel";
-                }
-            }
-        };
+if(num>best){
+best=num;
+document.getElementById("best").innerHTML=best;
+}
 
-        // --- Auth Logic (Login, Register, Forgot) ---
-        window.handleAuth = async () => {
-            const id = document.getElementById('telegramId').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const otpInput = document.getElementById('otpInput');
+}
 
-            if(!id || !pass) return alert("Please fill ID and Password");
+function resetGame(){
 
-            const docRef = doc(db, "users", id);
-            const docSnap = await getDoc(docRef);
+count=0;
+best=0;
 
-            // === LOGIN ===
-            if (authState === 'LOGIN') {
-                if (docSnap.exists() && docSnap.data().password === pass) {
-                    currentUser = id;
-                    document.getElementById('telegramId').value = "";
-                    document.getElementById('password').value = "";
-                    showSection('dashboard');
-                } else {
-                    alert("❌ Wrong Telegram ID or Password!");
-                }
-            } 
-            
-            // === REGISTER ===
-            else if (authState === 'REGISTER') {
-                if(otpInput.classList.contains('hidden')) {
-                    if (docSnap.exists()) return alert("⚠️ Account already exists! Please Login.");
-                    
-                    document.getElementById('mainBtn').innerText = "Sending OTP...";
-                    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    // OTP Telegram Bot वर पाठवणे
-                    const msg = `🔐 *तुमचा Verification OTP आहे:*\n\n\`${generatedOTP}\`\n\nकृपया हा OTP वेबसाईटवर टाका.`;
-                    const sent = await sendTelegramMessage(id, msg);
-                    
-                    if(sent) {
-                        alert("✅ OTP sent to your Telegram Bot!");
-                        otpInput.classList.remove('hidden');
-                        document.getElementById('mainBtn').innerText = "Verify & Create Account";
-                    } else {
-                        alert("❌ Failed to send OTP! कृपया खात्री करा की तुम्ही बॉटला /start केले आहे.");
-                        document.getElementById('mainBtn').innerText = "Get OTP on Bot";
-                    }
-                } else {
-                    if(otpInput.value === generatedOTP) {
-                        document.getElementById('mainBtn').innerText = "Creating...";
-                        await setDoc(docRef, { password: pass, balance: 0, createdAt: serverTimestamp() });
-                        alert("🎉 Account Created Successfully! Please Login.");
-                        authState = 'LOGIN';
-                        toggleAuth(); 
-                        toggleAuth(); // Reset UI
-                    } else {
-                        alert("❌ Invalid OTP!");
-                    }
-                }
-            }
-            
-            // === FORGOT PASSWORD ===
-            else if (authState === 'FORGOT') {
-                if(otpInput.classList.contains('hidden')) {
-                    if (!docSnap.exists()) return alert("⚠️ Account does not exist!");
-                    
-                    document.getElementById('mainBtn').innerText = "Sending OTP...";
-                    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    const msg = `🔑 *Password Reset OTP:*\n\n\`${generatedOTP}\`\n\nवेबसाईटवर हा OTP टाका आणि नवीन पासवर्ड सेट करा.`;
-                    const sent = await sendTelegramMessage(id, msg);
-                    
-                    if(sent) {
-                        alert("✅ Password Reset OTP sent to your Bot!");
-                        otpInput.classList.remove('hidden');
-                        document.getElementById('mainBtn').innerText = "Verify OTP & Update Password";
-                        document.getElementById('password').placeholder = "Enter New Password";
-                    } else {
-                        alert("❌ Failed to send OTP!");
-                        document.getElementById('mainBtn').innerText = "Send Reset OTP";
-                    }
-                } else {
-                    if(otpInput.value === generatedOTP) {
-                        await updateDoc(docRef, { password: pass });
-                        alert("✅ Password Updated Successfully! Please Login.");
-                        document.getElementById('password').placeholder = "Password";
-                        authState = 'LOGIN';
-                        toggleAuth();
-                        toggleAuth();
-                    } else {
-                        alert("❌ Invalid OTP!");
-                    }
-                }
-            }
-        };
+document.getElementById("number").innerHTML=0;
+document.getElementById("dice").innerHTML="🎲";
 
-        window.logout = () => {
-            currentUser = null;
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('adminPanelBtn').classList.add('hidden');
-            authState = 'LOGIN';
-        };
+document.getElementById("count").innerHTML=0;
+document.getElementById("best").innerHTML=0;
 
-        // --- Load Dashboard & History ---
-        async function loadDashboard() {
-            if(!currentUser) return;
-            const userSnap = await getDoc(doc(db, "users", currentUser));
-            const data = userSnap.data();
-            
-            document.getElementById('balanceDisplay').innerText = `₹${data.balance}`;
-            document.getElementById('userIdDisplay').innerText = `ID: ${currentUser}`;
+}
 
-            // Show Admin button only to admin
-            if(currentUser === ADMIN_ID) {
-                document.getElementById('adminPanelBtn').classList.remove('hidden');
-            }
+</script>
 
-            // Load History (Lifetime)
-            const q = query(collection(db, "users", currentUser, "history"), orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-            const historyList = document.getElementById('historyList');
-            historyList.innerHTML = "";
-            
-            if(querySnapshot.empty) {
-                historyList.innerHTML = "<p style='text-align:center; color:#888; font-size:14px;'>No transactions yet.</p>";
-            } else {
-                querySnapshot.forEach((doc) => {
-                    const h = doc.data();
-                    const isCredit = h.type === 'GIFT_CODE';
-                    const date = h.timestamp ? h.timestamp.toDate().toLocaleDateString() : '';
-                    historyList.innerHTML += `
-                        <div class="history-item" style="border-left-color: ${isCredit ? '#00ffcc' : '#ff3366'}">
-                            <div>
-                                <span style="display:block;">${h.details}</span>
-                                <span style="font-size:10px; color:#aaa;">${date}</span>
-                            </div>
-                            <span class="${isCredit ? 'plus' : 'minus'}">${isCredit ? '+' : '-'} ₹${h.amount}</span>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        // --- Admin: Create Gift Code ---
-        window.createGiftCode = async () => {
-            if(currentUser !== ADMIN_ID) return alert("❌ Access Denied");
-            const amt = parseInt(document.getElementById('adminGiftAmount').value);
-            if(isNaN(amt) || amt <= 0) return alert("Enter valid amount");
-
-            const code = 'GIFT-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-            
-            await setDoc(doc(db, "giftcodes", code), {
-                amount: amt,
-                used: false,
-                createdAt: serverTimestamp()
-            });
-
-            document.getElementById('createdCodeDisplay').innerText = `Code: ${code}`;
-            document.getElementById('adminGiftAmount').value = "";
-        };
-
-        // --- Redeem Gift Code ---
-        window.redeemGift = async () => {
-            const code = document.getElementById('giftCodeInput').value.trim();
-            if(!code) return alert("Enter code");
-            document.getElementById('action-title').innerText = "Processing...";
-
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const codeRef = doc(db, "giftcodes", code);
-                    const codeDoc = await transaction.get(codeRef);
-
-                    if (!codeDoc.exists()) throw "Invalid Code";
-                    if (codeDoc.data().used) throw "Code already used";
-
-                    const userRef = doc(db, "users", currentUser);
-                    const userDoc = await transaction.get(userRef);
-                    const newBalance = userDoc.data().balance + codeDoc.data().amount;
-
-                    transaction.update(userRef, { balance: newBalance });
-                    transaction.update(codeRef, { used: true, usedBy: currentUser });
-                    
-                    window.tempGiftAmount = codeDoc.data().amount; 
-                });
-
-                if(window.tempGiftAmount) {
-                    await addDoc(collection(db, "users", currentUser, "history"), {
-                        type: "GIFT_CODE", amount: window.tempGiftAmount, details: `Code: ${code}`, timestamp: serverTimestamp()
-                    });
-                    alert(`✅ Successfully added ₹${window.tempGiftAmount} to your wallet!`);
-                    document.getElementById('giftCodeInput').value = "";
-                    showSection('dashboard');
-                }
-            } catch (e) {
-                alert(`❌ Error: ${e}`);
-                document.getElementById('action-title').innerText = "Redeem GIFT";
-            }
-        };
-
-        // --- Ultra Pay Withdrawal ---
-        window.withdrawMoney = async () => {
-            const num = document.getElementById('withdrawNumber').value;
-            const amt = parseInt(document.getElementById('withdrawAmount').value);
-            
-            if(!num || isNaN(amt) || amt <= 0) return alert("Enter valid details");
-
-            const userRef = doc(db, "users", currentUser);
-            const userSnap = await getDoc(userRef);
-            let currentBalance = userSnap.data().balance;
-
-            if (currentBalance < amt) return alert(`❌ Insufficient Balance! You have ₹${currentBalance}`);
-
-            document.getElementById('action-title').innerText = "Processing Payment...";
-
-            // API Params (Emojis Removed for URL safety)
-            const apiUrl = 'https://ultra-pay.store/APIs/api';
-            const params = new URLSearchParams({
-                token: 'RkWBrleuTppU4EFrwuhn0GRNgdtuxcX2ksS9GG', 
-                key: 'BJ7O3Y2s21yq',
-                paytoNumber: num,
-                amount: amt.toString(),
-                comment: `Web Withdrawal ${currentUser}`
-            });
-
-            try {
-                const response = await fetch(`${apiUrl}?${params}`);
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    await updateDoc(userRef, { balance: currentBalance - amt });
-                    await addDoc(collection(db, "users", currentUser, "history"), {
-                        type: "WITHDRAWAL", amount: amt, details: `To Ultra Pay: ${num}`, timestamp: serverTimestamp()
-                    });
-                    alert(`✅ Withdrawal Successful! ₹${amt} sent to ${num}`);
-                    document.getElementById('withdrawNumber').value = "";
-                    document.getElementById('withdrawAmount').value = "";
-                    showSection('dashboard');
-                } else {
-                    alert(`❌ Payment Failed: ${data.message}`);
-                    document.getElementById('action-title').innerText = "Withdraw Money";
-                }
-            } catch (error) {
-                alert('❌ Server/API Error! Please try again.');
-                console.error(error);
-                document.getElementById('action-title').innerText = "Withdraw Money";
-            }
-        };
-    </script>
 </body>
 </html>
