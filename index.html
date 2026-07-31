@@ -3,450 +3,809 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra Pay Wallet & Bot System</title>
+    <title>Ultra Pay Pro | Telegram Wallet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ================= STYLISH CSS (Dark Glassmorphism) ================= */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        
-        .container { width: 92%; max-width: 420px; background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        h2 { text-align: center; margin-bottom: 25px; color: #00ffcc; text-transform: uppercase; letter-spacing: 1px; }
-        
-        input { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        input::placeholder { color: #aaa; }
-        input:focus { border-color: #00ffcc; }
-        
-        button { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; background: linear-gradient(90deg, #00ffcc, #00b3ff); color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3); }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 255, 204, 0.5); }
-        
-        .hidden { display: none !important; }
-        .text-center { text-align: center; margin-top: 15px; font-size: 14px; cursor: pointer; color: #00ffcc; transition: 0.2s; }
-        .text-center:hover { text-decoration: underline; color: #fff; }
-        
-        /* Dashboard & Cards */
-        .balance-card { background: linear-gradient(135deg, #ff007a, #7a00ff); padding: 25px; border-radius: 18px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 0, 122, 0.3); }
-        .balance-card h3 { font-size: 16px; font-weight: 300; opacity: 0.9; }
-        .balance-card h1 { font-size: 42px; margin: 10px 0; font-weight: 600; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .grid button { background: rgba(255,255,255,0.1); color: white; box-shadow: none; border: 1px solid rgba(255,255,255,0.2); }
-        .grid button:hover { background: rgba(255,255,255,0.2); transform: none; }
-        
-        /* Admin Panel Button */
-        .admin-btn { background: linear-gradient(90deg, #ff8a00, #e52e71) !important; color: white !important; margin-top: 15px; }
-        
+        /* =========================================================
+           ADVANCED STYLISH CSS (Glassmorphism + Neon Cyberpunk)
+           ========================================================= */
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --danger: #ff0844;
+            --success: #00b09b;
+            --dark: #0a0f16;
+            --panel-bg: rgba(20, 25, 35, 0.6);
+            --border-light: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 242, 254, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 8, 68, 0.08), transparent 25%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Particles (CSS Only) */
+        .bg-particles {
+            position: absolute; width: 100%; height: 100%; z-index: -1; overflow: hidden; top: 0; left: 0;
+        }
+        .particle {
+            position: absolute; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary);
+            animation: floatUp 10s infinite linear; opacity: 0.3;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 0.5; transform: scale(1.5); }
+            100% { transform: translateY(-10vh) scale(0); opacity: 0; }
+        }
+
+        /* Container Styling */
+        .app-container {
+            width: 100%; max-width: 450px; padding: 20px; z-index: 10;
+        }
+
+        /* View Panels (Separate Pages Effect) */
+        .view-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 35px 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+            display: none; /* Hidden by default */
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUpFade 0.5s forwards;
+        }
+        .view-panel.active { display: block; }
+
+        @keyframes slideUpFade {
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Typography & Headings */
+        h2 { text-align: center; margin-bottom: 25px; font-weight: 600; font-size: 26px; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
+        .subtitle { text-align: center; color: #8892b0; font-size: 14px; margin-bottom: 30px; margin-top: -15px; }
+
+        /* Input Fields */
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group input {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 16px 20px;
+            border-radius: 12px; font-size: 15px; outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); background: rgba(0,0,0,0.5); }
+        .input-group label {
+            position: absolute; top: 16px; left: 20px; color: #8892b0; font-size: 15px; pointer-events: none; transition: 0.3s;
+        }
+        .input-group input:focus ~ label, .input-group input:valid ~ label {
+            top: -10px; left: 15px; font-size: 12px; background: var(--dark); padding: 0 5px; color: var(--primary); border-radius: 4px;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; position: relative; overflow: hidden;
+            background: linear-gradient(135deg, var(--secondary), var(--primary)); color: #fff; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 242, 254, 0.5); }
+        .btn:active { transform: translateY(1px); }
+        .btn-danger { background: linear-gradient(135deg, #ff0844, #ffb199); box-shadow: 0 4px 15px rgba(255, 8, 68, 0.3); }
+        .btn-danger:hover { box-shadow: 0 8px 25px rgba(255, 8, 68, 0.5); }
+        .btn-admin { background: linear-gradient(135deg, #f6d365, #fda085); box-shadow: 0 4px 15px rgba(253, 160, 133, 0.3); color: #000; margin-top: 15px;}
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-outline:hover { background: rgba(0, 242, 254, 0.1); }
+
+        /* Links */
+        .link-text { display: block; text-align: center; margin-top: 20px; color: #8892b0; font-size: 14px; cursor: pointer; text-decoration: none; }
+        .link-text:hover { color: var(--primary); }
+        .link-highlight { color: var(--primary); font-weight: 500; }
+
+        /* Dashboard Styles */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(255,8,68,0.8), rgba(255,177,153,0.8));
+            border-radius: 20px; padding: 30px 20px; text-align: center; margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(255,8,68,0.3); position: relative; overflow: hidden;
+        }
+        .balance-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%); transform: rotate(30deg); pointer-events: none; }
+        .balance-title { font-size: 14px; font-weight: 400; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px; }
+        .balance-amount { font-size: 48px; font-weight: 700; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .user-id-badge { display: inline-block; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px; font-size: 12px; backdrop-filter: blur(5px); }
+
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .action-box {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px 10px;
+            text-align: center; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .action-box:hover { background: rgba(0, 242, 254, 0.1); border-color: rgba(0, 242, 254, 0.3); transform: translateY(-3px); }
+        .action-icon { font-size: 30px; margin-bottom: 10px; }
+        .action-text { font-size: 14px; font-weight: 500; }
+
         /* History Section */
-        .history-list { margin-top: 15px; max-height: 220px; overflow-y: auto; padding-right: 5px; }
-        .history-item { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 14px; border-left: 4px solid #444; }
-        .plus { color: #00ffcc; font-weight: bold; }
-        .minus { color: #ff3366; font-weight: bold; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .history-header h3 { font-size: 16px; color: var(--primary); }
+        .history-container { max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .history-container::-webkit-scrollbar { width: 4px; }
+        .history-container::-webkit-scrollbar-thumb { background: rgba(0,242,254,0.5); border-radius: 4px; }
         
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #00ffcc; border-radius: 10px; }
+        .history-item {
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #444; transition: 0.3s;
+        }
+        .history-item:hover { background: rgba(0,0,0,0.4); }
+        .history-item.credit { border-left-color: var(--success); }
+        .history-item.debit { border-left-color: var(--danger); }
+        .hist-details { display: flex; flex-direction: column; }
+        .hist-title { font-size: 14px; font-weight: 500; color: #e6f1ff; }
+        .hist-date { font-size: 11px; color: #8892b0; margin-top: 4px; }
+        .hist-amount { font-size: 16px; font-weight: 600; }
+        .credit .hist-amount { color: var(--success); }
+        .debit .hist-amount { color: var(--danger); }
+
+        /* Custom Toast Notifications (Replaces ugly alerts) */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            min-width: 250px; padding: 15px 20px; border-radius: 12px; color: white; font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(120%); animation: slideInRight 0.4s forwards; backdrop-filter: blur(10px);
+        }
+        .toast.success { background: rgba(0, 176, 155, 0.9); border-left: 4px solid #00ff88; }
+        .toast.error { background: rgba(255, 8, 68, 0.9); border-left: 4px solid #ff0000; }
+        .toast.info { background: rgba(0, 242, 254, 0.9); border-left: 4px solid #00a8ff; }
+        .toast.fade-out { animation: slideOutRight 0.4s forwards; }
+        
+        @keyframes slideInRight { to { transform: translateX(0); } }
+        @keyframes slideOutRight { to { transform: translateX(120%); } }
+
+        /* Loading Overlay */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,15,22,0.9);
+            z-index: 10000; display: none; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px);
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(0,242,254,0.2); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loader-text { margin-top: 20px; color: var(--primary); font-weight: 500; letter-spacing: 1px; }
+
+        .hidden { display: none !important; }
+        .generated-code { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; margin-top: 20px; letter-spacing: 2px; border: 1px dashed var(--primary); user-select: all; }
     </style>
 </head>
 <body>
 
-    <!-- ================= AUTH SECTION ================= -->
-    <div class="container" id="auth-section">
-        <h2 id="form-title">Login</h2>
-        <input type="text" id="telegramId" placeholder="Telegram User ID">
-        <input type="password" id="password" placeholder="Password">
-        
-        <!-- OTP Field (Hidden by default) -->
-        <input type="number" id="otpInput" placeholder="Enter OTP received on Bot" class="hidden">
-        
-        <button id="mainBtn" onclick="handleAuth()">Login</button>
-        <p class="text-center" id="toggleText" onclick="toggleAuth()">Create New Account</p>
-        <p class="text-center" id="forgotText" onclick="forgotPassword()">Forgot Password?</p>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <div id="loader-text">Processing...</div>
     </div>
 
-    <!-- ================= DASHBOARD SECTION ================= -->
-    <div class="container hidden" id="dashboard-section">
-        <div class="balance-card">
-            <h3>Total Balance</h3>
-            <h1 id="balanceDisplay">₹0</h1>
-            <p id="userIdDisplay" style="font-size:12px; opacity:0.8;">ID: -----</p>
+    <div class="app-container">
+
+        <!-- ================= 1. LOGIN PAGE ================= -->
+        <div class="view-panel active" id="view-login">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Secure Telegram Wallet</p>
+            
+            <div class="input-group">
+                <input type="number" id="loginId" required>
+                <label>Telegram User ID</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="loginPass" required>
+                <label>Password</label>
+            </div>
+            
+            <button class="btn" onclick="appLogin()">Secure Login</button>
+            
+            <span class="link-text" onclick="switchView('view-register')">New user? <span class="link-highlight">Create Account</span></span>
+            <span class="link-text" onclick="switchView('view-forgot')" style="margin-top: 10px;">Forgot Password?</span>
         </div>
-        
-        <div class="grid">
-            <button onclick="showSection('gift')">🎁 GIFT Code</button>
-            <button onclick="showSection('withdraw')">💸 Withdraw</button>
+
+
+        <!-- ================= 2. CREATE ACCOUNT PAGE ================= -->
+        <div class="view-panel" id="view-register">
+            <h2>Create Account</h2>
+            <p class="subtitle">Join Ultra Pay Network</p>
+            
+            <div id="reg-step-1">
+                <div class="input-group">
+                    <input type="number" id="regId" required>
+                    <label>Telegram User ID</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="regPass" required>
+                    <label>Set New Password</label>
+                </div>
+                <button class="btn" onclick="sendRegOTP()">Get OTP on Telegram</button>
+            </div>
+
+            <div id="reg-step-2" class="hidden">
+                <p style="text-align:center; color:#00f2fe; margin-bottom:15px; font-size:13px;">OTP has been sent to your Bot.</p>
+                <div class="input-group">
+                    <input type="number" id="regOtp" required>
+                    <label>Enter 6-Digit OTP</label>
+                </div>
+                <button class="btn" onclick="verifyRegOTP()">Verify & Create Account</button>
+            </div>
+            
+            <span class="link-text" onclick="switchView('view-login')">⬅ Back to Login</span>
         </div>
-        
-        <!-- Admin Panel Button (Will only show to ID 7335163273) -->
-        <button id="adminPanelBtn" class="admin-btn hidden" onclick="showSection('admin')">👑 Admin Panel</button>
-        
-        <h3 style="margin-top:25px; color:#00ffcc; font-size: 16px;">📜 Lifetime History</h3>
-        <div class="history-list" id="historyList">
-            <!-- History loads here -->
+
+
+        <!-- ================= 3. FORGOT PASSWORD PAGE ================= -->
+        <div class="view-panel" id="view-forgot">
+            <h2>Reset Password</h2>
+            <p class="subtitle">Recover your access</p>
+            
+            <div id="forgot-step-1">
+                <div class="input-group">
+                    <input type="number" id="forgotId" required>
+                    <label>Registered Telegram ID</label>
+                </div>
+                <button class="btn" onclick="sendForgotOTP()">Send Reset OTP</button>
+            </div>
+
+            <div id="forgot-step-2" class="hidden">
+                <div class="input-group">
+                    <input type="number" id="forgotOtp" required>
+                    <label>Enter OTP</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="forgotNewPass" required>
+                    <label>Enter New Password</label>
+                </div>
+                <button class="btn" onclick="resetPassword()">Update Password</button>
+            </div>
+
+            <span class="link-text" onclick="switchView('view-login')">⬅ Back to Login</span>
         </div>
-        <button style="background:rgba(255, 51, 102, 0.2); border: 1px solid #ff3366; color:#ff3366; margin-top:20px; box-shadow:none;" onclick="logout()">Log Out</button>
+
+
+        <!-- ================= 4. MAIN DASHBOARD PAGE ================= -->
+        <div class="view-panel" id="view-dashboard">
+            <div class="balance-card">
+                <div class="balance-title">Available Balance</div>
+                <div class="balance-amount" id="dashBalance">₹0</div>
+                <div class="user-id-badge" id="dashUserId">ID: Loading...</div>
+            </div>
+
+            <div class="action-grid">
+                <div class="action-box" onclick="switchView('view-gift')">
+                    <div class="action-icon">🎁</div>
+                    <div class="action-text">Redeem Gift</div>
+                </div>
+                <div class="action-box" onclick="switchView('view-withdraw')">
+                    <div class="action-icon">💸</div>
+                    <div class="action-text">Withdraw</div>
+                </div>
+            </div>
+
+            <button id="adminBtn" class="btn btn-admin hidden" onclick="switchView('view-admin')">👑 Admin Panel</button>
+
+            <div class="history-header" style="margin-top:25px;">
+                <h3>📜 Lifetime History</h3>
+                <span style="font-size:12px; color:#888;">Auto-sync</span>
+            </div>
+            <div class="history-container" id="historyList">
+                <!-- History loads here dynamically -->
+            </div>
+
+            <button class="btn btn-outline" style="margin-top:20px;" onclick="appLogout()">Log Out Securely</button>
+        </div>
+
+
+        <!-- ================= 5. GIFT CODE REDEEM PAGE ================= -->
+        <div class="view-panel" id="view-gift">
+            <h2>Redeem Code</h2>
+            <p class="subtitle">Enter code to add funds</p>
+            
+            <div class="input-group">
+                <input type="text" id="giftCodeInput" style="text-transform:uppercase;" required>
+                <label>GIFT Code</label>
+            </div>
+            
+            <button class="btn" onclick="processGiftRedeem()">Redeem Now</button>
+            <span class="link-text" onclick="switchView('view-dashboard')">⬅ Back to Dashboard</span>
+        </div>
+
+
+        <!-- ================= 6. WITHDRAWAL PAGE ================= -->
+        <div class="view-panel" id="view-withdraw">
+            <h2>Withdraw Funds</h2>
+            <p class="subtitle">Transfer to Ultra Pay</p>
+            
+            <div class="input-group">
+                <input type="number" id="withdrawNum" required>
+                <label>Ultra Pay Registered Number</label>
+            </div>
+            <div class="input-group">
+                <input type="number" id="withdrawAmt" required>
+                <label>Amount (₹)</label>
+            </div>
+            
+            <button class="btn btn-danger" onclick="processWithdraw()">Withdraw Now</button>
+            <span class="link-text" onclick="switchView('view-dashboard')">⬅ Back to Dashboard</span>
+        </div>
+
+
+        <!-- ================= 7. ADMIN PANEL PAGE ================= -->
+        <div class="view-panel" id="view-admin">
+            <h2 style="background: linear-gradient(to right, #f6d365, #fda085); -webkit-background-clip: text;">Admin Control</h2>
+            <p class="subtitle">Generate Secure Gift Codes</p>
+            
+            <div class="input-group">
+                <input type="number" id="adminGiftAmt" required>
+                <label>Gift Value (₹)</label>
+            </div>
+            
+            <button class="btn btn-admin" onclick="generateAdminGift()">Create GIFT Code</button>
+            
+            <div id="adminCodeResult" class="generated-code hidden"></div>
+            
+            <span class="link-text" onclick="switchView('view-dashboard')">⬅ Back to Dashboard</span>
+        </div>
+
     </div>
 
-    <!-- ================= ACTIONS / MODALS ================= -->
-    <div class="container hidden" id="action-section">
-        <h2 id="action-title">Action</h2>
-        
-        <!-- Gift Code Redeem -->
-        <div id="gift-div" class="hidden">
-            <input type="text" id="giftCodeInput" placeholder="Enter GIFT Code">
-            <button onclick="redeemGift()">Redeem Code</button>
-        </div>
-
-        <!-- Withdraw -->
-        <div id="withdraw-div" class="hidden">
-            <input type="number" id="withdrawNumber" placeholder="Ultra Pay Number">
-            <input type="number" id="withdrawAmount" placeholder="Amount (₹)">
-            <button onclick="withdrawMoney()">Withdraw Now</button>
-        </div>
-
-        <!-- Admin Panel (Create Gift) -->
-        <div id="admin-div" class="hidden">
-            <input type="number" id="adminGiftAmount" placeholder="Amount for Gift Code (₹)">
-            <button onclick="createGiftCode()" style="background: #ff8a00; color:white;">Create Code</button>
-            <p id="createdCodeDisplay" style="margin-top:15px; color:#00ffcc; text-align:center; font-weight:bold; font-size:18px; user-select:all;"></p>
-        </div>
-
-        <p class="text-center" onclick="showSection('dashboard')" style="margin-top: 20px;">⬅ Back to Dashboard</p>
-    </div>
-
-    <!-- ================= FIREBASE & LOGIC ================= -->
+    <!-- =========================================================
+         ADVANCED JAVASCRIPT (Firebase + Telegram API + Logic)
+         ========================================================= -->
     <script type="module">
+        // 1. Firebase Imports (v10 SDK)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, getDocs, updateDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ⚠️ इथे तुमची Firebase Config टाका
+        /* ---------------------------------------------------------
+           ⚠️ 1. YOUR FIREBASE CONFIGURATION HERE ⚠️
+           Firebase Console मधून प्रोजेक्ट सेटिंग्ज मध्ये जाऊन हे डिटेल्स टाका.
+        --------------------------------------------------------- */
         const firebaseConfig = {
-        apiKey: "AIzaSyB2fd1RdEq6NghpKR3uzYfmyJg2N7Uu8q4",
-        authDomain: "kumarofficialtm.firebaseapp.com",
-        databaseURL: "https://kumarofficialtm-default-rtdb.firebaseio.com",
-        projectId: "kumarofficialtm",
-        storageBucket: "kumarofficialtm.firebasestorage.app",
-        messagingSenderId: "746982907771",
-        appId: "1:746982907771:web:548c3f76e6c4aedef367de",
-        measurementId: "G-7HYJ6V3DP6"
+  apiKey: "AIzaSyB2fd1RdEq6NghpKR3uzYfmyJg2N7Uu8q4",
+  authDomain: "kumarofficialtm.firebaseapp.com",
+  databaseURL: "https://kumarofficialtm-default-rtdb.firebaseio.com",
+  projectId: "kumarofficialtm",
+  storageBucket: "kumarofficialtm.firebasestorage.app",
+  messagingSenderId: "746982907771",
+  appId: "1:746982907771:web:548c3f76e6c4aedef367de",
+  measurementId: "G-7HYJ6V3DP6"
 };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+            showToast("Firebase Config is missing or invalid! Edit the code.", "error");
+        }
 
-        // ⚠️ इथे तुमचा Telegram Bot Token टाका (OTP पाठवण्यासाठी)
+        /* ---------------------------------------------------------
+           ⚠️ 2. YOUR TELEGRAM BOT TOKEN HERE ⚠️
+           BotFather कडून मिळालेला टोकन इथे पेस्ट करा.
+        --------------------------------------------------------- */
         const BOT_TOKEN = "8725841976:AAErWCibTQK0Hq_JLBCaOi6YR7P5lFubhlM"; 
-        const ADMIN_ID = "7335163273"; // तुमचा Admin ID
+        const ADMIN_ID = "7335163273"; // तुझा Admin ID
 
-        let authState = 'LOGIN'; // LOGIN, REGISTER, FORGOT
+        // Global State Variables
+        let currentUserId = null;
         let generatedOTP = null;
-        let currentUser = null;
 
-        // --- Send OTP to Telegram Bot ---
-        async function sendTelegramMessage(chatId, text) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+        // --- Custom UI Functions ---
+        window.switchView = (viewId) => {
+            document.querySelectorAll('.view-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+            
+            // Reset forms on view change
+            if(viewId === 'view-register') {
+                document.getElementById('reg-step-1').classList.remove('hidden');
+                document.getElementById('reg-step-2').classList.add('hidden');
+            }
+            if(viewId === 'view-forgot') {
+                document.getElementById('forgot-step-1').classList.remove('hidden');
+                document.getElementById('forgot-step-2').classList.add('hidden');
+            }
+            if(viewId === 'view-dashboard') loadDashboardData();
+        };
+
+        window.showLoader = (text = "Processing...") => {
+            document.getElementById('loader-text').innerText = text;
+            document.getElementById('loader').style.display = 'flex';
+        };
+        window.hideLoader = () => {
+            document.getElementById('loader').style.display = 'none';
+        };
+
+        window.showToast = (msg, type = 'info') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'ℹ️';
+            if(type === 'success') icon = '✅';
+            if(type === 'error') icon = '❌';
+            
+            toast.innerHTML = `<span>${icon}</span> <div>${msg}</div>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        };
+
+        // --- Telegram Bot API Call ---
+        async function sendBotOTP(telegramId, otpTypeStr) {
+            if(BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") {
+                showToast("Developer Error: Please put BOT_TOKEN in code.", "error");
+                return false;
+            }
+            
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            const msgText = `🔐 *Ultra Pay ${otpTypeStr}*\n\nYour OTP is: \`${generatedOTP}\`\n\nDo not share this with anyone.`;
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            
             try {
-                const response = await fetch(url);
+                const response = await fetch(`${url}?chat_id=${telegramId}&text=${encodeURIComponent(msgText)}&parse_mode=Markdown`);
                 const data = await response.json();
-                return data.ok;
-            } catch (error) {
-                console.error("Telegram API Error:", error);
+                
+                if (data.ok) return true;
+                else {
+                    if (data.error_code === 403 || data.error_code === 400) {
+                        showToast(`Bot Error: User ${telegramId} has not started the bot. Open bot and send /start`, "error");
+                    } else {
+                        showToast(`Telegram API Error: ${data.description}`, "error");
+                    }
+                    return false;
+                }
+            } catch (e) {
+                showToast("Network Error: Could not connect to Telegram", "error");
                 return false;
             }
         }
 
-        // --- UI Toggles ---
-        window.toggleAuth = () => {
-            authState = authState === 'LOGIN' ? 'REGISTER' : 'LOGIN';
-            document.getElementById('form-title').innerText = authState === 'LOGIN' ? "Login" : "Create Account";
-            document.getElementById('mainBtn').innerText = authState === 'LOGIN' ? "Login" : "Get OTP on Bot";
-            document.getElementById('toggleText').innerText = authState === 'LOGIN' ? "Create New Account" : "Back to Login";
-            document.getElementById('forgotText').classList.remove('hidden');
-            document.getElementById('otpInput').classList.add('hidden');
-        };
+        // ==========================================
+        // 1. LOGIN LOGIC
+        // ==========================================
+        window.appLogin = async () => {
+            const id = document.getElementById('loginId').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            if(!id || !pass) return showToast("Enter Telegram ID and Password", "error");
 
-        window.forgotPassword = () => {
-            authState = 'FORGOT';
-            document.getElementById('form-title').innerText = "Forgot Password";
-            document.getElementById('mainBtn').innerText = "Send Reset OTP";
-            document.getElementById('toggleText').innerText = "Back to Login";
-            document.getElementById('forgotText').classList.add('hidden');
-            document.getElementById('otpInput').classList.add('hidden');
-        };
-
-        window.showSection = (section) => {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('action-section').classList.add('hidden');
-            
-            document.getElementById('gift-div').classList.add('hidden');
-            document.getElementById('withdraw-div').classList.add('hidden');
-            document.getElementById('admin-div').classList.add('hidden');
-            document.getElementById('createdCodeDisplay').innerText = "";
-
-            if(section === 'dashboard') {
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                loadDashboard();
-            } else {
-                document.getElementById('action-section').classList.remove('hidden');
-                if (section === 'gift') {
-                    document.getElementById('gift-div').classList.remove('hidden');
-                    document.getElementById('action-title').innerText = "Redeem GIFT";
-                } else if (section === 'withdraw') {
-                    document.getElementById('withdraw-div').classList.remove('hidden');
-                    document.getElementById('action-title').innerText = "Withdraw Money";
-                } else if (section === 'admin') {
-                    document.getElementById('admin-div').classList.remove('hidden');
-                    document.getElementById('action-title').innerText = "Admin Panel";
-                }
-            }
-        };
-
-        // --- Auth Logic (Login, Register, Forgot) ---
-        window.handleAuth = async () => {
-            const id = document.getElementById('telegramId').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const otpInput = document.getElementById('otpInput');
-
-            if(!id || !pass) return alert("Please fill ID and Password");
-
-            const docRef = doc(db, "users", id);
-            const docSnap = await getDoc(docRef);
-
-            // === LOGIN ===
-            if (authState === 'LOGIN') {
+            showLoader("Authenticating...");
+            try {
+                const docSnap = await getDoc(doc(db, "users", id));
                 if (docSnap.exists() && docSnap.data().password === pass) {
-                    currentUser = id;
-                    document.getElementById('telegramId').value = "";
-                    document.getElementById('password').value = "";
-                    showSection('dashboard');
+                    currentUserId = id;
+                    document.getElementById('loginId').value = "";
+                    document.getElementById('loginPass').value = "";
+                    showToast("Login Successful!", "success");
+                    switchView('view-dashboard');
                 } else {
-                    alert("❌ Wrong Telegram ID or Password!");
-                }
-            } 
-            
-            // === REGISTER ===
-            else if (authState === 'REGISTER') {
-                if(otpInput.classList.contains('hidden')) {
-                    if (docSnap.exists()) return alert("⚠️ Account already exists! Please Login.");
-                    
-                    document.getElementById('mainBtn').innerText = "Sending OTP...";
-                    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    // OTP Telegram Bot वर पाठवणे
-                    const msg = `🔐 *तुमचा Verification OTP आहे:*\n\n\`${generatedOTP}\`\n\nकृपया हा OTP वेबसाईटवर टाका.`;
-                    const sent = await sendTelegramMessage(id, msg);
-                    
-                    if(sent) {
-                        alert("✅ OTP sent to your Telegram Bot!");
-                        otpInput.classList.remove('hidden');
-                        document.getElementById('mainBtn').innerText = "Verify & Create Account";
-                    } else {
-                        alert("❌ Failed to send OTP! कृपया खात्री करा की तुम्ही बॉटला /start केले आहे.");
-                        document.getElementById('mainBtn').innerText = "Get OTP on Bot";
-                    }
-                } else {
-                    if(otpInput.value === generatedOTP) {
-                        document.getElementById('mainBtn').innerText = "Creating...";
-                        await setDoc(docRef, { password: pass, balance: 0, createdAt: serverTimestamp() });
-                        alert("🎉 Account Created Successfully! Please Login.");
-                        authState = 'LOGIN';
-                        toggleAuth(); 
-                        toggleAuth(); // Reset UI
-                    } else {
-                        alert("❌ Invalid OTP!");
-                    }
-                }
-            }
-            
-            // === FORGOT PASSWORD ===
-            else if (authState === 'FORGOT') {
-                if(otpInput.classList.contains('hidden')) {
-                    if (!docSnap.exists()) return alert("⚠️ Account does not exist!");
-                    
-                    document.getElementById('mainBtn').innerText = "Sending OTP...";
-                    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    const msg = `🔑 *Password Reset OTP:*\n\n\`${generatedOTP}\`\n\nवेबसाईटवर हा OTP टाका आणि नवीन पासवर्ड सेट करा.`;
-                    const sent = await sendTelegramMessage(id, msg);
-                    
-                    if(sent) {
-                        alert("✅ Password Reset OTP sent to your Bot!");
-                        otpInput.classList.remove('hidden');
-                        document.getElementById('mainBtn').innerText = "Verify OTP & Update Password";
-                        document.getElementById('password').placeholder = "Enter New Password";
-                    } else {
-                        alert("❌ Failed to send OTP!");
-                        document.getElementById('mainBtn').innerText = "Send Reset OTP";
-                    }
-                } else {
-                    if(otpInput.value === generatedOTP) {
-                        await updateDoc(docRef, { password: pass });
-                        alert("✅ Password Updated Successfully! Please Login.");
-                        document.getElementById('password').placeholder = "Password";
-                        authState = 'LOGIN';
-                        toggleAuth();
-                        toggleAuth();
-                    } else {
-                        alert("❌ Invalid OTP!");
-                    }
-                }
-            }
-        };
-
-        window.logout = () => {
-            currentUser = null;
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('adminPanelBtn').classList.add('hidden');
-            authState = 'LOGIN';
-        };
-
-        // --- Load Dashboard & History ---
-        async function loadDashboard() {
-            if(!currentUser) return;
-            const userSnap = await getDoc(doc(db, "users", currentUser));
-            const data = userSnap.data();
-            
-            document.getElementById('balanceDisplay').innerText = `₹${data.balance}`;
-            document.getElementById('userIdDisplay').innerText = `ID: ${currentUser}`;
-
-            // Show Admin button only to admin
-            if(currentUser === ADMIN_ID) {
-                document.getElementById('adminPanelBtn').classList.remove('hidden');
-            }
-
-            // Load History (Lifetime)
-            const q = query(collection(db, "users", currentUser, "history"), orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-            const historyList = document.getElementById('historyList');
-            historyList.innerHTML = "";
-            
-            if(querySnapshot.empty) {
-                historyList.innerHTML = "<p style='text-align:center; color:#888; font-size:14px;'>No transactions yet.</p>";
-            } else {
-                querySnapshot.forEach((doc) => {
-                    const h = doc.data();
-                    const isCredit = h.type === 'GIFT_CODE';
-                    const date = h.timestamp ? h.timestamp.toDate().toLocaleDateString() : '';
-                    historyList.innerHTML += `
-                        <div class="history-item" style="border-left-color: ${isCredit ? '#00ffcc' : '#ff3366'}">
-                            <div>
-                                <span style="display:block;">${h.details}</span>
-                                <span style="font-size:10px; color:#aaa;">${date}</span>
-                            </div>
-                            <span class="${isCredit ? 'plus' : 'minus'}">${isCredit ? '+' : '-'} ₹${h.amount}</span>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        // --- Admin: Create Gift Code ---
-        window.createGiftCode = async () => {
-            if(currentUser !== ADMIN_ID) return alert("❌ Access Denied");
-            const amt = parseInt(document.getElementById('adminGiftAmount').value);
-            if(isNaN(amt) || amt <= 0) return alert("Enter valid amount");
-
-            const code = 'GIFT-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-            
-            await setDoc(doc(db, "giftcodes", code), {
-                amount: amt,
-                used: false,
-                createdAt: serverTimestamp()
-            });
-
-            document.getElementById('createdCodeDisplay').innerText = `Code: ${code}`;
-            document.getElementById('adminGiftAmount').value = "";
-        };
-
-        // --- Redeem Gift Code ---
-        window.redeemGift = async () => {
-            const code = document.getElementById('giftCodeInput').value.trim();
-            if(!code) return alert("Enter code");
-            document.getElementById('action-title').innerText = "Processing...";
-
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const codeRef = doc(db, "giftcodes", code);
-                    const codeDoc = await transaction.get(codeRef);
-
-                    if (!codeDoc.exists()) throw "Invalid Code";
-                    if (codeDoc.data().used) throw "Code already used";
-
-                    const userRef = doc(db, "users", currentUser);
-                    const userDoc = await transaction.get(userRef);
-                    const newBalance = userDoc.data().balance + codeDoc.data().amount;
-
-                    transaction.update(userRef, { balance: newBalance });
-                    transaction.update(codeRef, { used: true, usedBy: currentUser });
-                    
-                    window.tempGiftAmount = codeDoc.data().amount; 
-                });
-
-                if(window.tempGiftAmount) {
-                    await addDoc(collection(db, "users", currentUser, "history"), {
-                        type: "GIFT_CODE", amount: window.tempGiftAmount, details: `Code: ${code}`, timestamp: serverTimestamp()
-                    });
-                    alert(`✅ Successfully added ₹${window.tempGiftAmount} to your wallet!`);
-                    document.getElementById('giftCodeInput').value = "";
-                    showSection('dashboard');
-                }
-            } catch (e) {
-                alert(`❌ Error: ${e}`);
-                document.getElementById('action-title').innerText = "Redeem GIFT";
-            }
-        };
-
-        // --- Ultra Pay Withdrawal ---
-        window.withdrawMoney = async () => {
-            const num = document.getElementById('withdrawNumber').value;
-            const amt = parseInt(document.getElementById('withdrawAmount').value);
-            
-            if(!num || isNaN(amt) || amt <= 0) return alert("Enter valid details");
-
-            const userRef = doc(db, "users", currentUser);
-            const userSnap = await getDoc(userRef);
-            let currentBalance = userSnap.data().balance;
-
-            if (currentBalance < amt) return alert(`❌ Insufficient Balance! You have ₹${currentBalance}`);
-
-            document.getElementById('action-title').innerText = "Processing Payment...";
-
-            // API Params (Emojis Removed for URL safety)
-            const apiUrl = 'https://ultra-pay.store/APIs/api';
-            const params = new URLSearchParams({
-                token: 'RkWBrleuTppU4EFrwuhn0GRNgdtuxcX2ksS9GG', 
-                key: 'BJ7O3Y2s21yq',
-                paytoNumber: num,
-                amount: amt.toString(),
-                comment: `Web Withdrawal ${currentUser}`
-            });
-
-            try {
-                const response = await fetch(`${apiUrl}?${params}`);
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    await updateDoc(userRef, { balance: currentBalance - amt });
-                    await addDoc(collection(db, "users", currentUser, "history"), {
-                        type: "WITHDRAWAL", amount: amt, details: `To Ultra Pay: ${num}`, timestamp: serverTimestamp()
-                    });
-                    alert(`✅ Withdrawal Successful! ₹${amt} sent to ${num}`);
-                    document.getElementById('withdrawNumber').value = "";
-                    document.getElementById('withdrawAmount').value = "";
-                    showSection('dashboard');
-                } else {
-                    alert(`❌ Payment Failed: ${data.message}`);
-                    document.getElementById('action-title').innerText = "Withdraw Money";
+                    showToast("Invalid Telegram ID or Password!", "error");
                 }
             } catch (error) {
-                alert('❌ Server/API Error! Please try again.');
+                showToast("Database Error! Check console.", "error");
                 console.error(error);
-                document.getElementById('action-title').innerText = "Withdraw Money";
             }
+            hideLoader();
         };
+
+        // ==========================================
+        // 2. CREATE ACCOUNT LOGIC
+        // ==========================================
+        window.sendRegOTP = async () => {
+            const id = document.getElementById('regId').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+            if(!id || !pass) return showToast("Enter ID and Password first", "error");
+
+            showLoader("Checking User...");
+            try {
+                const docSnap = await getDoc(doc(db, "users", id));
+                if (docSnap.exists()) {
+                    hideLoader();
+                    return showToast("Account already exists! Please Login.", "error");
+                }
+                
+                document.getElementById('loader-text').innerText = "Sending OTP to Telegram...";
+                const sent = await sendBotOTP(id, "Account Verification");
+                
+                if (sent) {
+                    document.getElementById('reg-step-1').classList.add('hidden');
+                    document.getElementById('reg-step-2').classList.remove('hidden');
+                    showToast("OTP Sent! Check Telegram.", "success");
+                }
+            } catch (e) { console.error(e); showToast("Error sending OTP", "error"); }
+            hideLoader();
+        };
+
+        window.verifyRegOTP = async () => {
+            const otp = document.getElementById('regOtp').value.trim();
+            const id = document.getElementById('regId').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+
+            if (otp !== generatedOTP) return showToast("Invalid OTP!", "error");
+
+            showLoader("Creating Account...");
+            try {
+                await setDoc(doc(db, "users", id), {
+                    password: pass,
+                    balance: 0,
+                    createdAt: serverTimestamp()
+                });
+                showToast("Account Created! You can now login.", "success");
+                switchView('view-login');
+                document.getElementById('regId').value = ""; document.getElementById('regPass').value = ""; document.getElementById('regOtp').value = "";
+            } catch (e) { showToast("Error creating account.", "error"); }
+            hideLoader();
+        };
+
+        // ==========================================
+        // 3. FORGOT PASSWORD LOGIC
+        // ==========================================
+        window.sendForgotOTP = async () => {
+            const id = document.getElementById('forgotId').value.trim();
+            if(!id) return showToast("Enter registered Telegram ID", "error");
+
+            showLoader("Checking Database...");
+            try {
+                const docSnap = await getDoc(doc(db, "users", id));
+                if (!docSnap.exists()) {
+                    hideLoader();
+                    return showToast("Account not found!", "error");
+                }
+                
+                document.getElementById('loader-text').innerText = "Sending Password Reset OTP...";
+                const sent = await sendBotOTP(id, "Password Reset");
+                
+                if (sent) {
+                    document.getElementById('forgot-step-1').classList.add('hidden');
+                    document.getElementById('forgot-step-2').classList.remove('hidden');
+                    showToast("Reset OTP Sent!", "success");
+                }
+            } catch (e) { showToast("Error connecting.", "error"); }
+            hideLoader();
+        };
+
+        window.resetPassword = async () => {
+            const otp = document.getElementById('forgotOtp').value.trim();
+            const id = document.getElementById('forgotId').value.trim();
+            const newPass = document.getElementById('forgotNewPass').value.trim();
+            if(!newPass) return showToast("Enter new password", "error");
+
+            if (otp !== generatedOTP) return showToast("Invalid OTP!", "error");
+
+            showLoader("Updating Password...");
+            try {
+                await updateDoc(doc(db, "users", id), { password: newPass });
+                showToast("Password Reset Successfully!", "success");
+                switchView('view-login');
+                document.getElementById('forgotId').value = ""; document.getElementById('forgotOtp').value = ""; document.getElementById('forgotNewPass').value = "";
+            } catch (e) { showToast("Update failed.", "error"); }
+            hideLoader();
+        };
+
+        // ==========================================
+        // 4. DASHBOARD & HISTORY LOGIC
+        // ==========================================
+        async function loadDashboardData() {
+            if(!currentUserId) return;
+            
+            // Handle Admin Button Visibility
+            if(currentUserId === ADMIN_ID) {
+                document.getElementById('adminBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('adminBtn').classList.add('hidden');
+            }
+
+            try {
+                // Get Balance
+                const userSnap = await getDoc(doc(db, "users", currentUserId));
+                if(userSnap.exists()) {
+                    document.getElementById('dashBalance').innerText = `₹${userSnap.data().balance}`;
+                    document.getElementById('dashUserId').innerText = `ID: ${currentUserId}`;
+                }
+
+                // Get History (Lifetime)
+                const histList = document.getElementById('historyList');
+                histList.innerHTML = `<p style="text-align:center; color:#888; font-size:12px; margin-top:20px;">Loading History...</p>`;
+                
+                const q = query(collection(db, "users", currentUserId, "history"), orderBy("timestamp", "desc"));
+                const qSnap = await getDocs(q);
+                
+                histList.innerHTML = "";
+                if(qSnap.empty) {
+                    histList.innerHTML = `<p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">No transactions yet.</p>`;
+                } else {
+                    qSnap.forEach(doc => {
+                        const h = doc.data();
+                        const isCredit = h.type === 'GIFT_CODE';
+                        const dateStr = h.timestamp ? h.timestamp.toDate().toLocaleString('en-IN') : 'Just now';
+                        
+                        histList.innerHTML += `
+                            <div class="history-item ${isCredit ? 'credit' : 'debit'}">
+                                <div class="hist-details">
+                                    <span class="hist-title">${h.details}</span>
+                                    <span class="hist-date">${dateStr}</span>
+                                </div>
+                                <div class="hist-amount">${isCredit ? '+' : '-'} ₹${h.amount}</div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (e) { console.error("Dashboard Load Error:", e); }
+        }
+
+        window.appLogout = () => {
+            currentUserId = null;
+            showToast("Logged out securely.", "info");
+            switchView('view-login');
+        };
+
+        // ==========================================
+        // 5. REDEEM GIFT CODE
+        // ==========================================
+        window.processGiftRedeem = async () => {
+            const code = document.getElementById('giftCodeInput').value.trim().toUpperCase();
+            if(!code) return showToast("Enter code", "error");
+
+            showLoader("Verifying Code...");
+            try {
+                let addedAmount = 0;
+                await runTransaction(db, async (t) => {
+                    const codeRef = doc(db, "giftcodes", code);
+                    const codeDoc = await t.get(codeRef);
+
+                    if (!codeDoc.exists()) throw "Invalid Gift Code!";
+                    if (codeDoc.data().used) throw "Code is already used!";
+
+                    const userRef = doc(db, "users", currentUserId);
+                    const userDoc = await t.get(userRef);
+                    
+                    addedAmount = codeDoc.data().amount;
+                    const newBal = userDoc.data().balance + addedAmount;
+
+                    t.update(userRef, { balance: newBal });
+                    t.update(codeRef, { used: true, usedBy: currentUserId, usedAt: serverTimestamp() });
+                });
+
+                // Transaction successful, add history separately
+                await addDoc(collection(db, "users", currentUserId, "history"), {
+                    type: "GIFT_CODE", amount: addedAmount, details: `Redeemed: ${code}`, timestamp: serverTimestamp()
+                });
+                
+                showToast(`Success! ₹${addedAmount} added to balance.`, "success");
+                document.getElementById('giftCodeInput').value = "";
+                switchView('view-dashboard');
+
+            } catch (err) {
+                showToast(typeof err === 'string' ? err : "Error processing code", "error");
+            }
+            hideLoader();
+        };
+
+        // ==========================================
+        // 6. WITHDRAW TO ULTRA PAY
+        // ==========================================
+        window.processWithdraw = async () => {
+            const num = document.getElementById('withdrawNum').value.trim();
+            const amt = parseInt(document.getElementById('withdrawAmt').value);
+            
+            if(!num || isNaN(amt) || amt <= 0) return showToast("Enter valid details", "error");
+
+            showLoader("Checking Balance...");
+            try {
+                const userRef = doc(db, "users", currentUserId);
+                const userSnap = await getDoc(userRef);
+                const currentBal = userSnap.data().balance;
+
+                if (currentBal < amt) {
+                    hideLoader();
+                    return showToast(`Insufficient balance! You have ₹${currentBal}`, "error");
+                }
+
+                document.getElementById('loader-text').innerText = "Processing Ultra Pay Payment...";
+
+                // API Calling (Your Provided API)
+                const apiUrl = 'https://ultra-pay.store/APIs/api';
+                const params = new URLSearchParams({
+                    token: 'RkWBrleuTppU4EFrwuhn0GRNgdtuxcX2ksS9GG', 
+                    key: 'BJ7O3Y2s21yq',
+                    paytoNumber: num,
+                    amount: amt.toString(),
+                    comment: `App_Withdraw_${currentUserId}`
+                });
+
+                const apiRes = await fetch(`${apiUrl}?${params}`);
+                const apiData = await apiRes.json();
+
+                if (apiData.status === 'success') {
+                    // Update Firebase DB
+                    await updateDoc(userRef, { balance: currentBal - amt });
+                    await addDoc(collection(db, "users", currentUserId, "history"), {
+                        type: "WITHDRAWAL", amount: amt, details: `Ultra Pay to ${num}`, timestamp: serverTimestamp()
+                    });
+                    
+                    showToast(`Withdrawal Successful! ₹${amt} sent.`, "success");
+                    document.getElementById('withdrawNum').value = ""; document.getElementById('withdrawAmt').value = "";
+                    switchView('view-dashboard');
+                } else {
+                    showToast(`API Failed: ${apiData.message}`, "error");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("Server error during withdrawal.", "error");
+            }
+            hideLoader();
+        };
+
+        // ==========================================
+        // 7. ADMIN: CREATE GIFT CODE
+        // ==========================================
+        window.generateAdminGift = async () => {
+            if(currentUserId !== ADMIN_ID) return showToast("Access Denied", "error");
+            
+            const amt = parseInt(document.getElementById('adminGiftAmt').value);
+            if(isNaN(amt) || amt <= 0) return showToast("Enter valid amount", "error");
+
+            showLoader("Generating...");
+            try {
+                const code = 'GIFT-' + Math.random().toString(36).substring(2, 12).toUpperCase();
+                
+                await setDoc(doc(db, "giftcodes", code), {
+                    amount: amt,
+                    used: false,
+                    createdBy: currentUserId,
+                    createdAt: serverTimestamp()
+                });
+
+                const displayObj = document.getElementById('adminCodeResult');
+                displayObj.innerText = code;
+                displayObj.classList.remove('hidden');
+                document.getElementById('adminGiftAmt').value = "";
+                
+                showToast("Code created successfully!", "success");
+            } catch(e) {
+                showToast("Error creating code.", "error");
+            }
+            hideLoader();
+        };
+
+        // Initialize particles dynamically
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for(let i=0; i<30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                p.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+
     </script>
 </body>
 </html>
