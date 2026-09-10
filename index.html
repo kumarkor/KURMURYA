@@ -1,68 +1,79 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Storage Bot Web</title>
+    <title>Smart Storage App</title>
+    <!-- Link to manifest for App Installation -->
+    <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #f0f2f5; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 10px; background: #f0f2f5; margin: 0; }
+        .header-bar { background: #0088cc; color: white; padding: 15px; border-radius: 0 0 12px 12px; display: flex; justify-content: space-between; align-items: center; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: 15px auto; }
-        h2 { color: #333; margin-bottom: 10px; font-size: 22px; }
-        p { color: #666; font-size: 14px; margin-bottom: 15px; }
-        input, select { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; outline: none; }
-        input:focus, select:focus { border-color: #0088cc; }
+        h2 { color: #333; margin-bottom: 10px; font-size: 20px; }
+        input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; outline: none; }
+        input:focus { border-color: #0088cc; }
         input[type="file"] { background: #f9f9f9; padding: 10px; font-size: 13px; }
         
         .btn { width: 98%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; }
-        .btn-blue { background: #0088cc; }
-        .btn-blue:hover { background: #006699; }
-        .btn-green { background: #28a745; }
-        .btn-green:hover { background: #218838; }
-        .btn-orange { background: #ff9800; }
-        .btn-orange:hover { background: #e68a00; }
+        .btn-blue { background: #0088cc; } .btn-blue:hover { background: #006699; }
+        .btn-green { background: #28a745; } .btn-green:hover { background: #218838; }
+        .btn-orange { background: #ff9800; } .btn-orange:hover { background: #e68a00; }
+        .btn-install { background: white; color: #0088cc; padding: 8px 15px; border-radius: 20px; font-size: 14px; display: none; }
         
         .message { margin-top: 15px; font-weight: bold; font-size: 14px; padding: 10px; border-radius: 8px; display: none; }
         .success { background: #d4edda; color: #155724; display: block; }
         .error { background: #f8d7da; color: #721c24; display: block; }
         .info { background: #fff3cd; color: #856404; display: block; }
-        hr { border: 0; height: 1px; background: #ddd; margin: 25px 0; }
+        
+        /* Offline Gallery Styles */
+        .offline-item { background: #eee; padding: 10px; margin-top: 10px; border-radius: 8px; text-align: left; word-break: break-all; }
+        .offline-item a { color: #0088cc; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
+<div class="header-bar">
+    <b>📦 Storage App</b>
+    <button id="installAppBtn" class="btn btn-install">⬇️ Install App</button>
+</div>
+
 <!-- User Section: Get File -->
 <div class="container">
-    <h2>📥 फाईल मिळवा (Get File)</h2>
-    <p>फाईल मिळवण्यासाठी कोड टाका आणि खालीलपैकी एक पर्याय निवडा.</p>
+    <h2>📥 Get File</h2>
+    <input type="text" id="fileCode" placeholder="Enter File Code (e.g. VIP01)" required>
+    <input type="text" id="chatId" placeholder="Your Telegram ID (For Bot transfer)">
     
-    <input type="text" id="fileCode" placeholder="6-अंकी फाईल कोड टाका" required>
-    <input type="text" id="chatId" placeholder="तुमचा Telegram ID (फक्त Bot ला पाठवण्यासाठी)">
-    
-    <button id="downloadBtn" class="btn btn-green">⬇️ Gallery मध्ये Download करा</button>
-    <button id="sendBtn" class="btn btn-blue">🚀 Telegram Bot वर पाठवा</button>
+    <button id="downloadBtn" class="btn btn-green">⬇️ Download & Save in App</button>
+    <button id="sendBtn" class="btn btn-blue">🚀 Send to Telegram Bot</button>
     
     <div id="getMsg" class="message"></div>
 </div>
 
 <!-- Admin Section: Upload File -->
 <div class="container">
-    <h2>📤 फाईल अपलोड करा (Admin)</h2>
-    <p>नवीन फोटो/व्हिडिओ अपलोड करून कोड तयार करा.</p>
-    
+    <h2>📤 Admin Upload</h2>
     <input type="file" id="fileInput" accept="image/*,video/*" required>
-    <input type="password" id="uploadPass" placeholder="Admin Password टाका" required>
+    <input type="text" id="customCodeInput" placeholder="Create a Custom Code (e.g. MYPIC99)" required>
+    <input type="password" id="uploadPass" placeholder="Admin Password" required>
     
-    <button id="uploadBtn" class="btn btn-orange">☁️ Upload & Generate Code</button>
+    <button id="uploadBtn" class="btn btn-orange">☁️ Upload File</button>
     
     <div id="uploadMsg" class="message"></div>
 </div>
 
-<!-- Firebase SDKs -->
+<!-- Offline Storage Gallery -->
+<div class="container" id="offlineGallery" style="display: none;">
+    <h2>📂 My Offline Storage</h2>
+    <p style="font-size:12px; color:gray;">Files you downloaded are saved here offline.</p>
+    <div id="offlineList"></div>
+</div>
+
+<!-- Firebase & Logic Scripts -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
         authDomain: "coming-886f7.firebaseapp.com",
@@ -70,14 +81,12 @@
         projectId: "coming-886f7",
         storageBucket: "coming-886f7.firebasestorage.app",
         messagingSenderId: "750181985724",
-        appId: "1:750181985724:web:9ea95bd47645e54d774fb9",
-        measurementId: "G-CXY55VR2WV"
+        appId: "1:750181985724:web:9ea95bd47645e54d774fb9"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Bot Details
     const BOT_TOKEN = "8664714790:AAEaoe1zgvQoJn5vvvFWV8SBE3QNJgxwQM0";
     const ADMIN_CHAT_ID = "7335163273"; 
     const ADMIN_PASS = "25032010";
@@ -88,146 +97,166 @@
         box.className = `message ${type}`;
     }
 
-    // ==========================================
-    // 1. ADMIN UPLOAD FUNCTION
-    // ==========================================
+    // --- PWA INSTALLATION LOGIC ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installAppBtn').style.display = 'block';
+    });
+
+    document.getElementById('installAppBtn').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') { document.getElementById('installAppBtn').style.display = 'none'; }
+            deferredPrompt = null;
+        }
+    });
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(() => console.log("Service Worker Registered"));
+    }
+
+    // --- INDEXED DB FOR OFFLINE STORAGE ---
+    let localDB;
+    const request = indexedDB.open("AppStorageDB", 1);
+    request.onupgradeneeded = (e) => {
+        localDB = e.target.result;
+        localDB.createObjectStore("files", { keyPath: "code" });
+    };
+    request.onsuccess = (e) => { localDB = e.target.result; loadOfflineFiles(); };
+
+    function saveToAppStorage(code, blob, fileType) {
+        const tx = localDB.transaction("files", "readwrite");
+        const store = tx.objectStore("files");
+        store.put({ code: code, fileData: blob, type: fileType });
+        loadOfflineFiles();
+    }
+
+    function loadOfflineFiles() {
+        const tx = localDB.transaction("files", "readonly");
+        const store = tx.objectStore("files");
+        const getReq = store.getAll();
+        getReq.onsuccess = (e) => {
+            const files = e.target.result;
+            const listDiv = document.getElementById("offlineList");
+            if (files.length > 0) {
+                document.getElementById("offlineGallery").style.display = "block";
+                listDiv.innerHTML = "";
+                files.forEach(f => {
+                    const url = URL.createObjectURL(f.fileData);
+                    const name = `Offline File: ${f.code}`;
+                    listDiv.innerHTML += `<div class="offline-item">📄 <b>${f.code}</b> <br> <a href="${url}" download="${f.code}">⬇️ View/Download Again</a></div>`;
+                });
+            }
+        };
+    }
+
+    // --- ADMIN UPLOAD WITH CUSTOM CODE ---
     document.getElementById("uploadBtn").addEventListener("click", async () => {
         const fileInput = document.getElementById("fileInput").files[0];
+        const customCode = document.getElementById("customCodeInput").value.trim().toUpperCase();
         const pass = document.getElementById("uploadPass").value;
         
-        if(!fileInput) return showMsg("uploadMsg", "❌ कृपया एखादी फाईल निवडा.", "error");
-        if(pass !== ADMIN_PASS) return showMsg("uploadMsg", "❌ चुकीचा Password!", "error");
+        if(!fileInput) return showMsg("uploadMsg", "❌ Please select a file.", "error");
+        if(!customCode) return showMsg("uploadMsg", "❌ Please enter a custom code.", "error");
+        if(pass !== ADMIN_PASS) return showMsg("uploadMsg", "❌ Incorrect Password!", "error");
 
-        showMsg("uploadMsg", "⏳ फाईल अपलोड होत आहे, कृपया थांबा...", "info");
+        showMsg("uploadMsg", "⏳ Uploading... Please wait.", "info");
 
-        // Telegram वर फाईल पाठवून File ID मिळवणे
         const formData = new FormData();
         formData.append("chat_id", ADMIN_CHAT_ID);
+        let endpoint = fileInput.type.startsWith("image/") ? "sendPhoto" : "sendVideo";
+        formData.append(endpoint.replace("send", "").toLowerCase(), fileInput);
         
-        let endpoint = "sendDocument";
-        let fileTypeStr = "document";
-        
-        if (fileInput.type.startsWith("image/")) {
-            endpoint = "sendPhoto";
-            formData.append("photo", fileInput);
-            fileTypeStr = "photo";
-        } else if (fileInput.type.startsWith("video/")) {
-            endpoint = "sendVideo";
-            formData.append("video", fileInput);
-            fileTypeStr = "video";
-        }
-
         try {
-            const uploadRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, {
-                method: "POST",
-                body: formData
-            });
+            const uploadRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, { method: "POST", body: formData });
             const tgData = await uploadRes.json();
+            if (!tgData.ok) throw new Error("Telegram Upload Failed");
 
-            if (!tgData.ok) throw new Error(tgData.description);
+            let fileId = fileInput.type.startsWith("image/") ? tgData.result.photo[tgData.result.photo.length - 1].file_id : tgData.result.video.file_id;
 
-            // Telegram File ID काढणे
-            let fileId = "";
-            if(fileTypeStr === "photo") {
-                fileId = tgData.result.photo[tgData.result.photo.length - 1].file_id;
-            } else if(fileTypeStr === "video") {
-                fileId = tgData.result.video.file_id;
-            } else {
-                fileId = tgData.result.document.file_id;
-            }
+            // Save Custom Code to Firebase
+            await set(ref(db, 'files/' + customCode), { id: fileId, type: endpoint.replace("send", "").toLowerCase() });
 
-            // 6-अंकी Random Code तयार करणे
-            const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-            // Firebase मध्ये सेव्ह करणे
-            await set(ref(db, 'files/' + code), {
-                id: fileId,
-                type: fileTypeStr
-            });
-
-            showMsg("uploadMsg", `✅ यशस्वी! तुमचा फाईल कोड आहे: <b>${code}</b>`, "success");
+            showMsg("uploadMsg", `✅ Success! File saved with code: <b>${customCode}</b>`, "success");
             document.getElementById("fileInput").value = ""; 
-
+            document.getElementById("customCodeInput").value = ""; 
         } catch (error) {
-            console.error(error);
-            showMsg("uploadMsg", "❌ अपलोड फेल. (फाईल साईझ जास्त असू शकते)", "error");
+            showMsg("uploadMsg", "❌ Upload failed. File might be too large.", "error");
         }
     });
 
-    // ==========================================
-    // 2. GET FILE - SEND TO BOT
-    // ==========================================
+    // --- GET FILE: SEND TO TELEGRAM ---
     document.getElementById("sendBtn").addEventListener("click", async () => {
-        const code = document.getElementById("fileCode").value.trim();
+        const code = document.getElementById("fileCode").value.trim().toUpperCase();
         const chatId = document.getElementById("chatId").value.trim();
-
-        if(!code || !chatId) return showMsg("getMsg", "❌ कृपया कोड आणि Telegram ID दोन्ही टाका.", "error");
-        showMsg("getMsg", "⏳ शोधत आहे...", "info");
-
+        if(!code || !chatId) return showMsg("getMsg", "❌ Enter Code & Telegram ID.", "error");
+        
+        showMsg("getMsg", "⏳ Searching...", "info");
         try {
             const snapshot = await get(ref(db, 'files/' + code));
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                
-                let tgUrl = `https://api.telegram.org/bot${BOT_TOKEN}/`;
+                let endpoint = data.type === "photo" ? "sendPhoto" : "sendVideo";
                 let bodyData = { chat_id: chatId };
+                bodyData[data.type] = data.id;
 
-                if (data.type === "photo") { tgUrl += "sendPhoto"; bodyData.photo = data.id; } 
-                else if (data.type === "video") { tgUrl += "sendVideo"; bodyData.video = data.id; }
-                else { tgUrl += "sendDocument"; bodyData.document = data.id; }
-
-                const response = await fetch(tgUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(bodyData)
+                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, {
+                    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyData)
                 });
-
-                const tgResult = await response.json();
-                if (tgResult.ok) showMsg("getMsg", "✅ यशस्वी! फाईल तुमच्या Telegram बॉटमध्ये आली आहे.", "success");
-                else showMsg("getMsg", "❌ Telegram Error: तुम्ही बॉटला Start केले नसेल.", "error");
-
+                
+                const tgRes = await res.json();
+                if (tgRes.ok) showMsg("getMsg", "✅ File sent to your Telegram Bot!", "success");
+                else showMsg("getMsg", "❌ Error: Did you START the bot?", "error");
             } else {
-                showMsg("getMsg", "❌ चुकीचा कोड! फाईल सापडली नाही.", "error");
+                showMsg("getMsg", "❌ Invalid Code!", "error");
             }
-        } catch (error) {
-            showMsg("getMsg", "❌ सर्व्हर एरर! कृपया पुन्हा प्रयत्न करा.", "error");
-        }
+        } catch (e) { showMsg("getMsg", "❌ Server Error.", "error"); }
     });
 
-    // ==========================================
-    // 3. GET FILE - DOWNLOAD TO GALLERY
-    // ==========================================
+    // --- GET FILE: DOWNLOAD & SAVE OFFLINE ---
     document.getElementById("downloadBtn").addEventListener("click", async () => {
-        const code = document.getElementById("fileCode").value.trim();
+        const code = document.getElementById("fileCode").value.trim().toUpperCase();
+        if(!code) return showMsg("getMsg", "❌ Please enter file code.", "error");
         
-        if(!code) return showMsg("getMsg", "❌ कृपया फाईल डाउनलोड करण्यासाठी कोड टाका.", "error");
-        showMsg("getMsg", "⏳ डाउनलोड लिंक तयार करत आहे...", "info");
-
+        showMsg("getMsg", "⏳ Fetching and saving to App Storage...", "info");
         try {
             const snapshot = await get(ref(db, 'files/' + code));
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 
-                // Telegram कडून Download File Path मिळवणे
                 const pathRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${data.id}`);
                 const pathData = await pathRes.json();
 
                 if(pathData.ok) {
-                    const filePath = pathData.result.file_path;
-                    const downloadUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+                    const downloadUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${pathData.result.file_path}`;
                     
-                    // थेट दुसऱ्या टॅबमध्ये फाईल ओपन/डाउनलोड करणे
-                    window.open(downloadUrl, "_blank");
-                    showMsg("getMsg", "✅ डाउनलोड सुरु झाले आहे!", "success");
+                    // Fetch file as Blob to save offline
+                    const fileResponse = await fetch(downloadUrl);
+                    const fileBlob = await fileResponse.blob();
+                    
+                    // Save to App's internal storage
+                    saveToAppStorage(code, fileBlob, data.type);
+
+                    // Also download to user's regular gallery
+                    const tempUrl = URL.createObjectURL(fileBlob);
+                    const a = document.createElement("a");
+                    a.href = tempUrl;
+                    a.download = `Downloaded_${code}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    showMsg("getMsg", "✅ Downloaded & Saved in App Storage!", "success");
                 } else {
-                    showMsg("getMsg", "❌ फाईल खूप मोठी आहे, थेट डाउनलोड करता येणार नाही. (Bot वर पाठवा वापरा)", "error");
+                    showMsg("getMsg", "❌ File too large for direct download. Use Send to Bot.", "error");
                 }
             } else {
-                showMsg("getMsg", "❌ चुकीचा कोड! फाईल सापडली नाही.", "error");
+                showMsg("getMsg", "❌ Invalid Code!", "error");
             }
-        } catch (error) {
-            showMsg("getMsg", "❌ सर्व्हर एरर!", "error");
-        }
+        } catch (e) { showMsg("getMsg", "❌ Download Error.", "error"); }
     });
 
 </script>
