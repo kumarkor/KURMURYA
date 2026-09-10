@@ -27,9 +27,10 @@
         .info { background: #fff3cd; color: #856404; display: block; }
         
         /* Offline Gallery Styles */
-        .offline-item { background: #e3f2fd; padding: 12px; margin-top: 10px; border-radius: 8px; text-align: left; border-left: 4px solid #0088cc; }
-        .offline-item b { font-size: 16px; color: #333; }
-        .offline-item a { color: #0088cc; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 8px; }
+        .offline-item { background: #e3f2fd; padding: 15px; margin-top: 10px; border-radius: 8px; text-align: left; border-left: 5px solid #0088cc; display: flex; flex-direction: column; }
+        .offline-item b { font-size: 16px; color: #333; margin-bottom: 5px; }
+        .offline-item img, .offline-item video { max-width: 100%; border-radius: 8px; margin-top: 8px; }
+        .offline-item a { color: #0088cc; text-decoration: none; font-weight: bold; margin-top: 10px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -42,7 +43,7 @@
 <!-- 1. User Section: Get File -->
 <div class="container">
     <h2>📥 Get File</h2>
-    <input type="text" id="fileCode" placeholder="Enter File Code (e.g. VIP01)" required>
+    <input type="text" id="fileCode" placeholder="Enter File Code (e.g. 1000)" required>
     <input type="text" id="chatId" placeholder="Your Telegram ID (For Bot transfer)">
     
     <button id="downloadBtn" class="btn btn-green">⬇️ Download & Save in App</button>
@@ -55,7 +56,7 @@
 <div class="container">
     <h2>📤 Admin Upload</h2>
     <input type="file" id="fileInput" accept="image/*,video/*" required>
-    <input type="text" id="customCodeInput" placeholder="Create a Custom Code (e.g. MYPIC99)" required>
+    <input type="text" id="customCodeInput" placeholder="Create a Custom Code (e.g. 1000)" required>
     <input type="password" id="uploadPass" placeholder="Admin Password" required>
     
     <button id="uploadBtn" class="btn btn-orange">☁️ Upload File</button>
@@ -65,8 +66,8 @@
 
 <!-- 3. Offline Storage Gallery -->
 <div class="container" id="offlineGallery" style="display: none;">
-    <h2>📂 My Offline Saved Images</h2>
-    <p style="font-size:12px; color:gray;">Files you downloaded are saved here permanently.</p>
+    <h2>📂 My Offline Store</h2>
+    <p style="font-size:12px; color:gray;">Files saved offline. Accessible without internet.</p>
     <div id="offlineList"></div>
 </div>
 
@@ -100,26 +101,13 @@
         box.className = `message ${type}`;
     }
 
-    // --- PWA INSTALLATION LOGIC ---
+    // PWA Install Logic
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         document.getElementById('installAppBtn').style.display = 'block';
     });
-
-    document.getElementById('installAppBtn').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') { document.getElementById('installAppBtn').style.display = 'none'; }
-            deferredPrompt = null;
-        }
-    });
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(() => console.log("Service Worker Active"));
-    }
 
     // --- INDEXED DB FOR OFFLINE STORAGE ---
     let localDB;
@@ -137,7 +125,7 @@
         const tx = localDB.transaction("files", "readwrite");
         const store = tx.objectStore("files");
         store.put({ code: code, fileData: blob, type: fileType });
-        loadOfflineFiles(); // Refresh gallery immediately
+        loadOfflineFiles(); // Immediately reloads the offline gallery
     }
 
     function loadOfflineFiles() {
@@ -150,19 +138,24 @@
             if (files.length > 0) {
                 document.getElementById("offlineGallery").style.display = "block";
                 listDiv.innerHTML = "";
-                files.forEach(f => {
+                files.reverse().forEach(f => {
                     const url = URL.createObjectURL(f.fileData);
+                    let mediaTag = f.type === 'photo' 
+                        ? `<img src="${url}" alt="Offline Image">` 
+                        : `<video src="${url}" controls></video>`;
+                        
                     listDiv.innerHTML += `
                         <div class="offline-item">
-                            📄 Code: <b>${f.code}</b> <br> 
-                            <a href="${url}" download="${f.code}_offline">⬇️ View / Download</a>
+                            <b>📄 Code: ${f.code}</b> 
+                            ${mediaTag}
+                            <a href="${url}" download="${f.code}_offline_file">⬇️ Download to Gallery</a>
                         </div>`;
                 });
             }
         };
     }
 
-    // --- ADMIN UPLOAD WITH PASSWORD & CUSTOM CODE ---
+    // --- ADMIN UPLOAD ---
     document.getElementById("uploadBtn").addEventListener("click", async () => {
         const fileInput = document.getElementById("fileInput").files[0];
         const customCode = document.getElementById("customCodeInput").value.trim().toUpperCase();
@@ -170,7 +163,7 @@
         
         if(!fileInput) return showMsg("uploadMsg", "❌ Please select a file.", "error");
         if(!customCode) return showMsg("uploadMsg", "❌ Please enter a custom code.", "error");
-        if(pass !== ADMIN_PASS) return showMsg("uploadMsg", "❌ Incorrect Admin Password!", "error"); // Password Check
+        if(pass !== ADMIN_PASS) return showMsg("uploadMsg", "❌ Incorrect Admin Password!", "error"); 
 
         showMsg("uploadMsg", "⏳ Uploading to server... Please wait.", "info");
 
@@ -184,10 +177,8 @@
             const tgData = await uploadRes.json();
             
             if (!tgData.ok) throw new Error("Upload Failed");
-
             let fileId = fileInput.type.startsWith("image/") ? tgData.result.photo[tgData.result.photo.length - 1].file_id : tgData.result.video.file_id;
 
-            // Save to Firebase Database
             await set(ref(db, 'files/' + customCode), { id: fileId, type: endpoint.replace("send", "").toLowerCase() });
 
             showMsg("uploadMsg", `✅ Success! File saved with code: <b>${customCode}</b>`, "success");
@@ -227,12 +218,18 @@
         } catch (e) { showMsg("getMsg", "❌ Server Error.", "error"); }
     });
 
-    // --- GET FILE: DOWNLOAD & SAVE OFFLINE (CORS BYPASS APPLIED) ---
+    // --- GET FILE: DOWNLOAD & SAVE OFFLINE (WITH PERMISSION PROMPT) ---
     document.getElementById("downloadBtn").addEventListener("click", async () => {
         const code = document.getElementById("fileCode").value.trim().toUpperCase();
         if(!code) return showMsg("getMsg", "❌ Please enter file code.", "error");
         
-        showMsg("getMsg", "⏳ Fetching and saving to Offline App Storage...", "info");
+        // 1. STORAGE PERMISSION ALERT
+        const permission = confirm("Storage Permission Required:\n\nAllow 'Storage App' to access photos, media, and save files to your Offline Store and Device Gallery?");
+        if(!permission) {
+            return showMsg("getMsg", "❌ Permission Denied. Cannot save file.", "error");
+        }
+
+        showMsg("getMsg", "⏳ Downloading & saving to Offline Store...", "info");
         try {
             const snapshot = await get(ref(db, 'files/' + code));
             if (snapshot.exists()) {
@@ -244,18 +241,25 @@
                 if(pathData.ok) {
                     const downloadUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${pathData.result.file_path}`;
                     
-                    // CORS Bypass Proxy (To allow saving inside the app offline)
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(downloadUrl)}`;
+                    // NEW PROXY SYSTEM TO BYPASS CORS ERROR
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(downloadUrl)}`;
                     
-                    const fileResponse = await fetch(proxyUrl);
+                    let fileResponse;
+                    try {
+                        fileResponse = await fetch(downloadUrl); // Try Direct
+                        if(!fileResponse.ok) throw new Error("Direct fetch failed");
+                    } catch(err) {
+                        fileResponse = await fetch(proxyUrl); // Use Proxy if direct fails
+                    }
+                    
                     if(!fileResponse.ok) throw new Error("Network issue");
                     
                     const fileBlob = await fileResponse.blob();
                     
-                    // 1. Save to App's internal offline storage (Gallery updates immediately)
+                    // Save to App's offline storage (Will reflect instantly)
                     saveToAppStorage(code, fileBlob, data.type);
 
-                    // 2. Trigger automatic download to phone's gallery/downloads
+                    // Auto-Download to Phone Gallery
                     const tempUrl = URL.createObjectURL(fileBlob);
                     const a = document.createElement("a");
                     a.href = tempUrl;
@@ -264,16 +268,16 @@
                     a.click();
                     document.body.removeChild(a);
 
-                    showMsg("getMsg", "✅ Saved successfully to 'My Offline Saved Images'!", "success");
+                    showMsg("getMsg", "✅ Saved successfully! Scroll down to view in 'My Offline Store'.", "success");
                 } else {
                     showMsg("getMsg", "❌ File too large for direct download. Use Send to Bot.", "error");
                 }
             } else {
-                showMsg("getMsg", "❌ Invalid Code!", "error");
+                showMsg("getMsg", "❌ Invalid Code! File not found.", "error");
             }
         } catch (e) { 
             console.error(e);
-            showMsg("getMsg", "❌ Download Error: Network Issue. Try again.", "error"); 
+            showMsg("getMsg", "❌ Download Error: Check network connection.", "error"); 
         }
     });
 
