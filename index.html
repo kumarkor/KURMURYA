@@ -1,1 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Photo By Code</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h2 { color: #333; margin-bottom: 5px; }
+        p { color: #666; font-size: 14px; margin-bottom: 20px; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        input:focus { border-color: #0088cc; }
+        button { width: 98%; padding: 12px; margin-top: 15px; background: #0088cc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #006699; }
+        #message { margin-top: 20px; font-weight: bold; font-size: 15px; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h2>📥 मिळवा Photo / Video</h2>
+    <p>फाईल मिळवण्यासाठी कोड आणि तुमचा Telegram ID टाका</p>
+    
+    <input type="text" id="fileCode" placeholder="6-अंकी फाईल कोड टाका (उदा. 123456)" required>
+    <!-- Telegram ID टाकला नाही तर बॉटला समजणार नाही फाईल कोणाला पाठवायची -->
+    <input type="text" id="chatId" placeholder="तुमचा Telegram Chat ID टाका" required>
+    
+    <button id="sendBtn">माझ्या Telegram वर पाठवा 🚀</button>
+    
+    <div id="message"></div>
+</div>
+
+<!-- Firebase SDKs (Web Modular API) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // तुझे Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
+        authDomain: "coming-886f7.firebaseapp.com",
+        databaseURL: "https://coming-886f7-default-rtdb.firebaseio.com",
+        projectId: "coming-886f7",
+        storageBucket: "coming-886f7.firebasestorage.app",
+        messagingSenderId: "750181985724",
+        appId: "1:750181985724:web:9ea95bd47645e54d774fb9",
+        measurementId: "G-CXY55VR2WV"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // तुझा Telegram Bot Token
+    const BOT_TOKEN = "8664714790:AAEaoe1zgvQoJn5vvvFWV8SBE3QNJgxwQM0";
+
+    document.getElementById("sendBtn").addEventListener("click", async () => {
+        const code = document.getElementById("fileCode").value.trim();
+        const chatId = document.getElementById("chatId").value.trim();
+        const msgBox = document.getElementById("message");
+
+        if(!code || !chatId) {
+            msgBox.innerHTML = "❌ कृपया फाईल कोड आणि Telegram ID दोन्ही टाका.";
+            msgBox.style.color = "red";
+            return;
+        }
+
+        msgBox.innerHTML = "⏳ Firebase मधून शोधत आहे...";
+        msgBox.style.color = "#ff9800"; // Orange color
+
+        try {
+            // Firebase मधून डेटा वाचणे (files/CODE)
+            const dbRef = ref(db, 'files/' + code);
+            const snapshot = await get(dbRef);
+
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const fileId = data.id;
+                const fileType = data.type; // "photo" किंवा "video"
+
+                msgBox.innerHTML = "⏳ Telegram वर फाईल पाठवत आहे...";
+
+                // Telegram API ला पाठवण्यासाठी डेटा तयार करणे
+                let tgUrl = `https://api.telegram.org/bot${BOT_TOKEN}/`;
+                let bodyData = { chat_id: chatId };
+
+                if (fileType === "photo") {
+                    tgUrl += "sendPhoto";
+                    bodyData.photo = fileId;
+                } else if (fileType === "video") {
+                    tgUrl += "sendVideo";
+                    bodyData.video = fileId;
+                }
+
+                // बॉटकडून युजरला मेसेज पाठवणे (HTTP POST Request)
+                const response = await fetch(tgUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(bodyData)
+                });
+
+                const tgResult = await response.json();
+
+                if (tgResult.ok) {
+                    msgBox.innerHTML = "✅ यशस्वी! फाईल तुमच्या Telegram बॉटमध्ये आली आहे.";
+                    msgBox.style.color = "green";
+                } else {
+                    msgBox.innerHTML = "❌ Telegram Error: (कदाचित तुम्ही बॉटला Start केले नसेल)";
+                    msgBox.style.color = "red";
+                }
+
+            } else {
+                msgBox.innerHTML = "❌ चुकीचा कोड! फाईल सापडली नाही.";
+                msgBox.style.color = "red";
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            msgBox.innerHTML = "❌ सर्व्हर एरर! कृपया थोड्या वेळाने प्रयत्न करा.";
+            msgBox.style.color = "red";
+        }
+    });
+</script>
+
+</body>
+</html>
