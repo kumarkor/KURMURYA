@@ -1,42 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Photo By Code</title>
+    <title>Smart Storage Bot Web</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background: #f0f2f5; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        h2 { color: #333; margin-bottom: 5px; }
-        p { color: #666; font-size: 14px; margin-bottom: 20px; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
-        input:focus { border-color: #0088cc; }
-        button { width: 98%; padding: 12px; margin-top: 15px; background: #0088cc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #006699; }
-        #message { margin-top: 20px; font-weight: bold; font-size: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #f0f2f5; margin: 0; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: 15px auto; }
+        h2 { color: #333; margin-bottom: 10px; font-size: 22px; }
+        p { color: #666; font-size: 14px; margin-bottom: 15px; }
+        input, select { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; outline: none; }
+        input:focus, select:focus { border-color: #0088cc; }
+        input[type="file"] { background: #f9f9f9; padding: 10px; font-size: 13px; }
+        
+        .btn { width: 98%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; }
+        .btn-blue { background: #0088cc; }
+        .btn-blue:hover { background: #006699; }
+        .btn-green { background: #28a745; }
+        .btn-green:hover { background: #218838; }
+        .btn-orange { background: #ff9800; }
+        .btn-orange:hover { background: #e68a00; }
+        
+        .message { margin-top: 15px; font-weight: bold; font-size: 14px; padding: 10px; border-radius: 8px; display: none; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        .info { background: #fff3cd; color: #856404; display: block; }
+        hr { border: 0; height: 1px; background: #ddd; margin: 25px 0; }
     </style>
 </head>
 <body>
 
+<!-- User Section: Get File -->
 <div class="container">
-    <h2>📥 मिळवा Photo / Video</h2>
-    <p>फाईल मिळवण्यासाठी कोड आणि तुमचा Telegram ID टाका</p>
+    <h2>📥 फाईल मिळवा (Get File)</h2>
+    <p>फाईल मिळवण्यासाठी कोड टाका आणि खालीलपैकी एक पर्याय निवडा.</p>
     
-    <input type="text" id="fileCode" placeholder="6-अंकी फाईल कोड टाका (उदा. 123456)" required>
-    <!-- Telegram ID टाकला नाही तर बॉटला समजणार नाही फाईल कोणाला पाठवायची -->
-    <input type="text" id="chatId" placeholder="तुमचा Telegram Chat ID टाका" required>
+    <input type="text" id="fileCode" placeholder="6-अंकी फाईल कोड टाका" required>
+    <input type="text" id="chatId" placeholder="तुमचा Telegram ID (फक्त Bot ला पाठवण्यासाठी)">
     
-    <button id="sendBtn">माझ्या Telegram वर पाठवा 🚀</button>
+    <button id="downloadBtn" class="btn btn-green">⬇️ Gallery मध्ये Download करा</button>
+    <button id="sendBtn" class="btn btn-blue">🚀 Telegram Bot वर पाठवा</button>
     
-    <div id="message"></div>
+    <div id="getMsg" class="message"></div>
 </div>
 
-<!-- Firebase SDKs (Web Modular API) -->
+<!-- Admin Section: Upload File -->
+<div class="container">
+    <h2>📤 फाईल अपलोड करा (Admin)</h2>
+    <p>नवीन फोटो/व्हिडिओ अपलोड करून कोड तयार करा.</p>
+    
+    <input type="file" id="fileInput" accept="image/*,video/*" required>
+    <input type="password" id="uploadPass" placeholder="Admin Password टाका" required>
+    
+    <button id="uploadBtn" class="btn btn-orange">☁️ Upload & Generate Code</button>
+    
+    <div id="uploadMsg" class="message"></div>
+</div>
+
+<!-- Firebase SDKs -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    // तुझे Firebase Configuration
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
         authDomain: "coming-886f7.firebaseapp.com",
@@ -48,52 +74,108 @@
         measurementId: "G-CXY55VR2WV"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // तुझा Telegram Bot Token
+    // Bot Details
     const BOT_TOKEN = "8664714790:AAEaoe1zgvQoJn5vvvFWV8SBE3QNJgxwQM0";
+    const ADMIN_CHAT_ID = "7335163273"; 
+    const ADMIN_PASS = "25032010";
 
+    function showMsg(boxId, text, type) {
+        const box = document.getElementById(boxId);
+        box.innerHTML = text;
+        box.className = `message ${type}`;
+    }
+
+    // ==========================================
+    // 1. ADMIN UPLOAD FUNCTION
+    // ==========================================
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
+        const fileInput = document.getElementById("fileInput").files[0];
+        const pass = document.getElementById("uploadPass").value;
+        
+        if(!fileInput) return showMsg("uploadMsg", "❌ कृपया एखादी फाईल निवडा.", "error");
+        if(pass !== ADMIN_PASS) return showMsg("uploadMsg", "❌ चुकीचा Password!", "error");
+
+        showMsg("uploadMsg", "⏳ फाईल अपलोड होत आहे, कृपया थांबा...", "info");
+
+        // Telegram वर फाईल पाठवून File ID मिळवणे
+        const formData = new FormData();
+        formData.append("chat_id", ADMIN_CHAT_ID);
+        
+        let endpoint = "sendDocument";
+        let fileTypeStr = "document";
+        
+        if (fileInput.type.startsWith("image/")) {
+            endpoint = "sendPhoto";
+            formData.append("photo", fileInput);
+            fileTypeStr = "photo";
+        } else if (fileInput.type.startsWith("video/")) {
+            endpoint = "sendVideo";
+            formData.append("video", fileInput);
+            fileTypeStr = "video";
+        }
+
+        try {
+            const uploadRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, {
+                method: "POST",
+                body: formData
+            });
+            const tgData = await uploadRes.json();
+
+            if (!tgData.ok) throw new Error(tgData.description);
+
+            // Telegram File ID काढणे
+            let fileId = "";
+            if(fileTypeStr === "photo") {
+                fileId = tgData.result.photo[tgData.result.photo.length - 1].file_id;
+            } else if(fileTypeStr === "video") {
+                fileId = tgData.result.video.file_id;
+            } else {
+                fileId = tgData.result.document.file_id;
+            }
+
+            // 6-अंकी Random Code तयार करणे
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // Firebase मध्ये सेव्ह करणे
+            await set(ref(db, 'files/' + code), {
+                id: fileId,
+                type: fileTypeStr
+            });
+
+            showMsg("uploadMsg", `✅ यशस्वी! तुमचा फाईल कोड आहे: <b>${code}</b>`, "success");
+            document.getElementById("fileInput").value = ""; 
+
+        } catch (error) {
+            console.error(error);
+            showMsg("uploadMsg", "❌ अपलोड फेल. (फाईल साईझ जास्त असू शकते)", "error");
+        }
+    });
+
+    // ==========================================
+    // 2. GET FILE - SEND TO BOT
+    // ==========================================
     document.getElementById("sendBtn").addEventListener("click", async () => {
         const code = document.getElementById("fileCode").value.trim();
         const chatId = document.getElementById("chatId").value.trim();
-        const msgBox = document.getElementById("message");
 
-        if(!code || !chatId) {
-            msgBox.innerHTML = "❌ कृपया फाईल कोड आणि Telegram ID दोन्ही टाका.";
-            msgBox.style.color = "red";
-            return;
-        }
-
-        msgBox.innerHTML = "⏳ Firebase मधून शोधत आहे...";
-        msgBox.style.color = "#ff9800"; // Orange color
+        if(!code || !chatId) return showMsg("getMsg", "❌ कृपया कोड आणि Telegram ID दोन्ही टाका.", "error");
+        showMsg("getMsg", "⏳ शोधत आहे...", "info");
 
         try {
-            // Firebase मधून डेटा वाचणे (files/CODE)
-            const dbRef = ref(db, 'files/' + code);
-            const snapshot = await get(dbRef);
-
+            const snapshot = await get(ref(db, 'files/' + code));
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const fileId = data.id;
-                const fileType = data.type; // "photo" किंवा "video"
-
-                msgBox.innerHTML = "⏳ Telegram वर फाईल पाठवत आहे...";
-
-                // Telegram API ला पाठवण्यासाठी डेटा तयार करणे
+                
                 let tgUrl = `https://api.telegram.org/bot${BOT_TOKEN}/`;
                 let bodyData = { chat_id: chatId };
 
-                if (fileType === "photo") {
-                    tgUrl += "sendPhoto";
-                    bodyData.photo = fileId;
-                } else if (fileType === "video") {
-                    tgUrl += "sendVideo";
-                    bodyData.video = fileId;
-                }
+                if (data.type === "photo") { tgUrl += "sendPhoto"; bodyData.photo = data.id; } 
+                else if (data.type === "video") { tgUrl += "sendVideo"; bodyData.video = data.id; }
+                else { tgUrl += "sendDocument"; bodyData.document = data.id; }
 
-                // बॉटकडून युजरला मेसेज पाठवणे (HTTP POST Request)
                 const response = await fetch(tgUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -101,26 +183,53 @@
                 });
 
                 const tgResult = await response.json();
-
-                if (tgResult.ok) {
-                    msgBox.innerHTML = "✅ यशस्वी! फाईल तुमच्या Telegram बॉटमध्ये आली आहे.";
-                    msgBox.style.color = "green";
-                } else {
-                    msgBox.innerHTML = "❌ Telegram Error: (कदाचित तुम्ही बॉटला Start केले नसेल)";
-                    msgBox.style.color = "red";
-                }
+                if (tgResult.ok) showMsg("getMsg", "✅ यशस्वी! फाईल तुमच्या Telegram बॉटमध्ये आली आहे.", "success");
+                else showMsg("getMsg", "❌ Telegram Error: तुम्ही बॉटला Start केले नसेल.", "error");
 
             } else {
-                msgBox.innerHTML = "❌ चुकीचा कोड! फाईल सापडली नाही.";
-                msgBox.style.color = "red";
+                showMsg("getMsg", "❌ चुकीचा कोड! फाईल सापडली नाही.", "error");
             }
         } catch (error) {
-            console.error("Error:", error);
-            msgBox.innerHTML = "❌ सर्व्हर एरर! कृपया थोड्या वेळाने प्रयत्न करा.";
-            msgBox.style.color = "red";
+            showMsg("getMsg", "❌ सर्व्हर एरर! कृपया पुन्हा प्रयत्न करा.", "error");
         }
     });
-</script>
 
+    // ==========================================
+    // 3. GET FILE - DOWNLOAD TO GALLERY
+    // ==========================================
+    document.getElementById("downloadBtn").addEventListener("click", async () => {
+        const code = document.getElementById("fileCode").value.trim();
+        
+        if(!code) return showMsg("getMsg", "❌ कृपया फाईल डाउनलोड करण्यासाठी कोड टाका.", "error");
+        showMsg("getMsg", "⏳ डाउनलोड लिंक तयार करत आहे...", "info");
+
+        try {
+            const snapshot = await get(ref(db, 'files/' + code));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Telegram कडून Download File Path मिळवणे
+                const pathRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${data.id}`);
+                const pathData = await pathRes.json();
+
+                if(pathData.ok) {
+                    const filePath = pathData.result.file_path;
+                    const downloadUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+                    
+                    // थेट दुसऱ्या टॅबमध्ये फाईल ओपन/डाउनलोड करणे
+                    window.open(downloadUrl, "_blank");
+                    showMsg("getMsg", "✅ डाउनलोड सुरु झाले आहे!", "success");
+                } else {
+                    showMsg("getMsg", "❌ फाईल खूप मोठी आहे, थेट डाउनलोड करता येणार नाही. (Bot वर पाठवा वापरा)", "error");
+                }
+            } else {
+                showMsg("getMsg", "❌ चुकीचा कोड! फाईल सापडली नाही.", "error");
+            }
+        } catch (error) {
+            showMsg("getMsg", "❌ सर्व्हर एरर!", "error");
+        }
+    });
+
+</script>
 </body>
 </html>
