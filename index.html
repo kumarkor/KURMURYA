@@ -9,16 +9,29 @@
 <body class="bg-slate-900 text-white h-screen flex flex-col justify-between">
 
     <!-- Header -->
-    <header class="bg-slate-800 p-4 text-center shadow-md flex justify-between items-center px-6">
+    <header class="bg-slate-800 p-4 shadow-md flex justify-between items-center px-6">
         <h1 class="text-xl font-bold text-cyan-400">⚡ Gemini AI मराठी असिस्टंट</h1>
-        <span class="text-xs bg-emerald-600 px-3 py-1 rounded-full">Active 🟢</span>
+        <button onclick="openSettings()" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-2 rounded-lg text-cyan-300 transition">⚙️ API Key सेट करा</button>
     </header>
+
+    <!-- API Key Modal / Setup Box -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
+        gemini-3.5-flash-lite
+        <div class="bg-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4 border border-slate-700 shadow-2xl">
+            <h3 class="text-lg font-bold text-cyan-400">तुमची Gemini API Key टाка</h3>
+            <p class="text-xs text-slate-400">ही Key फक्त तुमच्या ब्राउझरमध्ये सेव्ह राहील, GitHub वर लीक होणार नाही.</p>
+            <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-900 text-white px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <div class="flex justify-end gap-2">
+                <button onclick="saveApiKey()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-5 py-2 rounded-xl transition">सेव्ह करा</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Chat Box -->
     <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-2xl w-full mx-auto">
         <div class="flex justify-start">
             <div class="bg-slate-700 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">
-                नमस्कार भावा! मी तयार आहे. मराठीत बोला, काय मदत करू?
+                नमस्कार भावा! आपली वेबसाईट एकदम सुरक्षित आणि तयार आहे. वरच्या सेटिंग बटणवर जाऊन तुझी नवीन API Key टाक आणि बोलायला सुरुवात कर! 🚀
             </div>
         </div>
     </div>
@@ -26,7 +39,7 @@
     <!-- Input Box -->
     <div class="bg-slate-800 p-4 shadow-lg">
         <div class="max-w-2xl mx-auto flex gap-2">
-            <input type="text" id="user-input" placeholder="इथे मेसेज टाईप कर..." class="flex-1 bg-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400" onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="काहीतरी मेसेज टाईप कर..." class="flex-1 bg-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400" onkeypress="checkEnter(event)">
             <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-3 rounded-xl transition">पाठव</button>
         </div>
     </div>
@@ -49,29 +62,51 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
-        // तुझी Gemini API Key इथे टाक
-        const geminiApiKey = "AQ.Ab8RN6LiFoi8T2OlHnTS_18XSxXB53B2MQrGaopPoy8MQ7sQog";
-
         const chatContainer = document.getElementById("chat-container");
         const chatRef = ref(db, 'chats/');
-        
-        // फक्त स्क्रीनवर जुने मेसेज एकदाच लोड करण्यासाठी
-        let isLoaded = false;
+
+        // लोकल स्टोरेजमधून API Key तपासणे
+        window.openSettings = function() {
+            document.getElementById("settings-modal").classList.remove("hidden");
+        }
+
+        window.saveApiKey = function() {
+            let key = document.getElementById("api-key-input").value.trim();
+            if(key) {
+                localStorage.setItem("gemini_user_key", key);
+                document.getElementById("settings-modal").classList.add("hidden");
+                alert("API Key यशस्वीरीत्या सेव्ह झाली!");
+            } else {
+                alert("कृपया योग्य Key टाका.");
+            }
+        }
+
+        // पेज लोड झाल्यावर जर Key नसेल तर बॉक्स उघडणे
+        window.onload = function() {
+            if(!localStorage.getItem("gemini_user_key")) {
+                openSettings();
+            }
+        }
+
+        // Firebase मधून जुने मेसेज लोड करणे
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
-            // डुप्लिकेट टाळण्यासाठी फक्त नवीन किंवा युजरने पाठवलेले मेसेज पाहू
             appendMessage(data.sender, data.text);
         });
 
         window.sendMessage = async function() {
+            let geminiApiKey = localStorage.getItem("gemini_user_key");
+            if (!geminiApiKey) {
+                alert("पहिले '⚙️ API Key सेट करा' वर क्लिक करून तुमची Key टाका!");
+                openSettings();
+                return;
+            }
+
             const inputField = document.getElementById("user-input");
             const message = inputField.value.trim();
             if (!message) return;
 
             inputField.value = "";
-
-            // युजरचा मेसेज Firebase मध्ये सेव्ह करणे
             push(chatRef, { sender: 'user', text: message });
 
             const loadingId = "loading-" + Date.now();
@@ -82,7 +117,6 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             try {
-                // सुलभ आणि एरर फ्री सिस्टीम (फक्त नवीन मेसेज आणि सिस्टीम इन्स्ट्रक्शन)
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiApiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -102,8 +136,6 @@
 
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     let botReply = data.candidates[0].content.parts[0].text;
-                    
-                    // बॉटचा रिप्लाय Firebase मध्ये सेव्ह करणे
                     push(chatRef, { sender: 'bot', text: botReply });
                 } else if (data.error) {
                     appendMessage('bot', 'गुगल एरर: ' + data.error.message);
