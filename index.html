@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>माझा भारी AI चॅटबॉट</title>
-    <!-- सुंदर डिझाईनसाठी Tailwind CSS -->
+    <title>माझा भारी AI चॅटबॉट (Firebase History)</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-white h-screen flex flex-col justify-between">
 
     <!-- Header -->
-    <header class="bg-slate-800 p-4 text-center shadow-md">
+    <header class="bg-slate-800 p-4 text-center shadow-md flex justify-between items-center px-6">
         <h1 class="text-xl font-bold text-cyan-400">⚡ Gemini AI मराठी असिस्टंट</h1>
+        <span class="text-xs bg-emerald-600 px-3 py-1 rounded-full">Firebase Connected 🟢</span>
     </header>
 
     <!-- Chat Box -->
     <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-2xl w-full mx-auto">
         <div class="flex justify-start">
             <div class="bg-slate-700 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">
-                नमस्कार भावा! मी तुझा AI मित्र तयार आहे. आज काय गप्पा मारूया?
+                नमस्कार भावा! तुझा चॅट आता Firebase मध्ये सुरक्षित राहील. बोल, आज काय मदत करू?
             </div>
         </div>
     </div>
@@ -26,32 +26,54 @@
     <!-- Input Box -->
     <div class="bg-slate-800 p-4 shadow-lg">
         <div class="max-w-2xl mx-auto flex gap-2">
-            <input type="text" id="user-input" placeholder="इथे काहीतरी मेसेज टाईप कर..." class="flex-1 bg-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <input type="text" id="user-input" placeholder="इथे काहीतरी मेसेज टाईप कर..." class="flex-1 bg-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400" onkeypress="checkEnter(event)">
             <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-3 rounded-xl transition">पाठव</button>
         </div>
     </div>
 
-    <!-- JavaScript लॉजिक -->
-    <script>
-        const apiKey = "AQ.Ab8RN6LiFoi8T2OlHnTS_18XSxXB53B2MQrGaopPoy8MQ7sQog";
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        async function sendMessage() {
+        // तुझी Firebase कॉन्फिगरेशन माहिती
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
+            authDomain: "coming-886f7.firebaseapp.com",
+            databaseURL: "https://coming-886f7-default-rtdb.firebaseio.com",
+            projectId: "coming-886f7",
+            storageBucket: "coming-886f7.firebasestorage.app",
+            messagingSenderId: "750181985724",
+            appId: "1:750181985724:web:9ea95bd47645e54d774fb9",
+            measurementId: "G-CXY55VR2WV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Gemini API Key (सुरक्षेसाठी इथे टाकावी लागेल)
+        const geminiApiKey = "AQ.Ab8RN6LiFoi8T2OlHnTS_18XSxXB53B2MQrGaopPoy8MQ7sQog";
+
+        const chatContainer = document.getElementById("chat-container");
+
+        // Firebase मधून जुने मेसेजेस लोड करणे
+        const chatRef = ref(db, 'chats/');
+        onChildAdded(chatRef, (snapshot) => {
+            const data = snapshot.val();
+            appendMessage(data.sender, data.text);
+        });
+
+        window.sendMessage = async function() {
             const inputField = document.getElementById("user-input");
-            const chatContainer = document.getElementById("chat-container");
             const message = inputField.value.trim();
-
             if (!message) return;
 
-            // युजरचा मेसेज स्क्रीनवर दाखवूया
-            chatContainer.innerHTML += `
-                <div class="flex justify-end">
-                    <div class="bg-cyan-600 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">${message}</div>
-                </div>`;
-            
             inputField.value = "";
-            chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // लोडिंग मेसेज
+            // युजरचा मेसेज Firebase मध्ये सेव्ह करणे
+            push(chatRef, { sender: 'user', text: message });
+
+            // लोडिंग मेसेज दाखवणे
             const loadingId = "loading-" + Date.now();
             chatContainer.innerHTML += `
                 <div id="${loadingId}" class="flex justify-start">
@@ -60,8 +82,8 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             try {
-                // गुगलच्या नवीन 3.5-flash-lite मॉडेलला थेट रिक्वेस्ट पाठवूया
-                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+                // Gemini API ला रिक्वेस्ट पाठवणे
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiApiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -77,18 +99,31 @@
 
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     let botReply = data.candidates[0].content.parts[0].text;
-                    chatContainer.innerHTML += `
-                        <div class="flex justify-start">
-                            <div class="bg-slate-700 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">${botReply}</div>
-                        </div>`;
+                    // बॉटचा रिप्लाय Firebase मध्ये सेव्ह करणे
+                    push(chatRef, { sender: 'bot', text: botReply });
                 } else {
                     throw new Error("डेटा मिळाला नाही");
                 }
             } catch (error) {
                 document.getElementById(loadingId).remove();
+                appendMessage('bot', 'काहीतरी तांत्रिक अडचण आली भावा!');
+            }
+        }
+
+        window.checkEnter = function(event) {
+            if (event.key === "Enter") { sendMessage(); }
+        }
+
+        function appendMessage(sender, text) {
+            if (sender === 'user') {
+                chatContainer.innerHTML += `
+                    <div class="flex justify-end">
+                        <div class="bg-cyan-600 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">${text}</div>
+                    </div>`;
+            } else {
                 chatContainer.innerHTML += `
                     <div class="flex justify-start">
-                        <div class="bg-red-500 text-white p-3 rounded-2xl">काहीतरी तांत्रिक अडचण आली भावा!</div>
+                        <div class="bg-slate-700 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">${text}</div>
                     </div>`;
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
