@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>माझा भारी AI चॅटबॉट</title>
-    <!-- फक्त डिझाईन आणि कॉपी फीचरसाठी -->
+    <!-- फक्त डिझाईन आणि कॉपी बॉक्ससाठी या दोन फाईल्स आहेत -->
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -24,7 +24,7 @@
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center p-4 z-50">
         <div class="bg-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4 border border-slate-700 shadow-2xl transition-all">
             <h3 class="text-xl font-bold text-cyan-400">🔐 API Key सेट करा</h3>
-            <p class="text-sm text-slate-400">ही Key फक्त तुमच्या ब्राउझरमध्ये सुरक्षित राहील, GitHub वर लीक होणार नाही.</p>
+            <p class="text-sm text-slate-400">ही Key फक्त तुमच्या ब्राउझरमध्ये सेव्ह राहील, GitHub वर लीक होणार नाही.</p>
             <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-900 text-white px-4 py-3 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
             <div class="flex justify-end gap-3 mt-4">
                 <button onclick="saveApiKey()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-2 rounded-xl transition shadow-lg shadow-cyan-500/30">सेव्ह करा</button>
@@ -36,38 +36,38 @@
     <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl w-full mx-auto pb-6 scroll-smooth">
         <div class="flex justify-start">
             <div class="bg-gradient-to-br from-slate-800 to-slate-700 text-white px-5 py-4 rounded-2xl rounded-tl-sm max-w-[90%] md:max-w-xl shadow-lg border border-slate-600">
-                नमस्कार भावा! आपली वेबसाईट आता एकदम फिक्स आणि स्टायलिश झाली आहे! मी तुझं नाव लक्षात ठेवीन आणि आता सिस्टीम क्रॅश होणार नाही! बोल काय चाललंय? 🚀
+                नमस्कार भावा! आता मी तुझं नाव आणि आपण केलेल्या सगळ्या गप्पा कायम लक्षात ठेवीन. बोल काय चाललंय? 🚀
             </div>
         </div>
     </div>
 
-    <!-- Input Box (Stylish + Safe Lock) -->
+    <!-- Input Box (Stylish) -->
     <div class="bg-slate-800 p-3 md:p-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)] border-t border-slate-700">
         <div class="max-w-3xl mx-auto flex gap-2">
-            <input type="text" id="user-input" placeholder="इथे मराठीत मेसेज टाईप कर..." class="flex-1 bg-slate-900 text-white px-5 py-3.5 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition pr-2 disabled:opacity-50" onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="इथे मराठीत मेसेज टाईप कर..." class="flex-1 bg-slate-900 text-white px-5 py-3.5 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition" onkeypress="checkEnter(event)">
             
-            <button id="send-btn" onclick="sendMessage()" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold px-5 md:px-8 py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/25 flex items-center justify-center disabled:opacity-50">
+            <button onclick="sendMessage()" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold px-5 md:px-8 py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/25 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 md:hidden"><path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" /></svg>
                 <span class="hidden md:inline text-lg tracking-wide">पाठव</span>
             </button>
         </div>
     </div>
 
-    <!-- Firebase & Logic Script -->
+    <!-- Firebase & Logic Script (तुझाच १००% मूळ कोड) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // --- कॉपी बॉक्ससाठी डिझाईन कोड ---
+        // --- फक्त कॉपी ब्लॉकचे डिझाईन ---
         const renderer = new marked.Renderer();
         renderer.code = function(code, language) {
             const langText = language ? language.toUpperCase() : 'COPY BOX';
             const encodedCode = encodeURIComponent(code);
             return `
-            <div class="my-4 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
-                <div class="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-700">
+            <div class="my-4 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden shadow-xl">
+                <div class="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
                     <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest">${langText}</span>
-                    <button onclick="copyRawText('${encodedCode}', this)" class="flex items-center gap-1 text-xs text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg border border-slate-600 transition">
+                    <button onclick="copyRawText('${encodedCode}', this)" class="flex items-center gap-1 text-xs text-white bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded border border-slate-600 transition">
                         📋 Copy
                     </button>
                 </div>
@@ -81,13 +81,14 @@
             navigator.clipboard.writeText(rawText).then(() => {
                 let originalHTML = btn.innerHTML;
                 btn.innerHTML = `✅ Copied!`;
-                btn.classList.add("bg-emerald-600", "border-emerald-500");
+                btn.classList.add("text-emerald-400");
                 setTimeout(() => { 
                     btn.innerHTML = originalHTML; 
-                    btn.classList.remove("bg-emerald-600", "border-emerald-500");
+                    btn.classList.remove("text-emerald-400");
                 }, 2000);
             });
         }
+        // ------------------------------------
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
@@ -105,9 +106,9 @@
         const chatContainer = document.getElementById("chat-container");
         const chatRef = ref(db, 'chats/');
 
-        let chatData = []; 
-        window.isBotThinking = false; // <--- हे लॉक सिस्टीम वाचवेल
+        let chatData = []; // सर्व चॅट लक्षात ठेवण्यासाठी नवीन Array
 
+        // लोकल स्टोरेजमधून API Key तपासणे
         window.openSettings = function() {
             document.getElementById("settings-modal").classList.remove("hidden");
         }
@@ -129,16 +130,14 @@
             }
         }
 
+        // Firebase मधून जुने मेसेज लोड करणे आणि मेमरीत साठवणे
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
-            chatData.push(data); 
+            chatData.push(data); // मेमरीत मेसेज जोडणे
             appendMessage(data.sender, data.text);
         });
 
         window.sendMessage = async function() {
-            // जर बॉट विचार करत असेल, तर थांबवा (हँग होण्यापासून वाचवण्यासाठी)
-            if (window.isBotThinking) return;
-
             let geminiApiKey = localStorage.getItem("gemini_user_key");
             if (!geminiApiKey) {
                 alert("पहिले '⚙️ API Key सेट करा' वर क्लिक करून तुमची Key टाका!");
@@ -147,20 +146,16 @@
             }
 
             const inputField = document.getElementById("user-input");
-            const sendBtn = document.getElementById("send-btn");
             const message = inputField.value.trim();
             if (!message) return;
 
-            // बॉक्स लॉक करणे
-            window.isBotThinking = true;
             inputField.value = "";
-            inputField.disabled = true;
-            sendBtn.disabled = true;
-            inputField.placeholder = "बॉट विचार करत आहे, थांबा...";
             
+            // युजरचा मेसेज Firebase मध्ये पाठवणे (हे आपोआप स्क्रीनवर दिसेल)
             push(chatRef, { sender: 'user', text: message });
 
             const loadingId = "loading-" + Date.now();
+            // थोडा वेळ थांबून लोडिंग दाखवूया (Stylish Bouncing Dots)
             setTimeout(() => {
                 chatContainer.innerHTML += `
                     <div id="${loadingId}" class="flex justify-start mb-4">
@@ -174,59 +169,52 @@
             }, 100);
 
             try {
+                // --- स्मार्ट मेमरी बिल्डर (तुझाच सेम कोड) ---
+                // गुगलला एरर येऊ नये म्हणून, सलग आलेले युजरचे मेसेज एकत्र करणे
                 let geminiHistory = [];
+                // जुने खूप मेसेज असतील तर फक्त शेवटचे ३० मेसेज पाठवू (लिमिटसाठी)
                 let recentChat = chatData.slice(-30); 
                 
                 recentChat.forEach(msg => {
                     let role = (msg.sender === 'user') ? 'user' : 'model';
+                    // जर आधीचा रोल आणि आत्ताचा रोल सेम असेल, तर मेसेज एकत्र जोडणे
                     if (geminiHistory.length > 0 && geminiHistory[geminiHistory.length - 1].role === role) {
                         geminiHistory[geminiHistory.length - 1].parts[0].text += "\n" + msg.text;
                     } else {
                         geminiHistory.push({ role: role, parts: [{ text: msg.text }] });
                     }
                 });
-
-                // गुगलचा नियम: चॅटची सुरुवात नेहमी युजरने व्हायला हवी!
-                while(geminiHistory.length > 0 && geminiHistory[0].role !== 'user') {
-                    geminiHistory.shift();
-                }
+                // ----------------------------------------------------
 
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiApiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         "systemInstruction": {
-                            "parts": [{ "text": "तू माझा एक खूप जवळचा, हुशार आणि मजेशीर AI मित्र आहेस. युजरने स्वतःबद्दल सांगितलेली माहिती (उदा. त्याचे नाव) नेहमी लक्षात ठेव. जेव्हा युजर कॉपी करण्यासाठी काही मागेल, तेव्हा मार्कडाऊन कोड ब्लॉक (```) वापर. मराठीत मैत्रीपूर्ण भाषेत Emojis वापरून उत्तरे दे." }]
+                            "parts": [{ "text": "तू माझा एक खूप जवळचा, हुशार आणि मजेशीर AI मित्र आहेस. युजरने स्वतःबद्दल सांगितलेली माहिती (उदा. त्याचे नाव) नेहमी लक्षात ठेव. जर युजरने काहीही कॉपी करायला मागितले, तर ते कोड ब्लॉकमध्ये (```) दे. मराठीत मैत्रीपूर्ण भाषेत Emojis वापरून उत्तरे दे." }]
                         },
-                        "contents": geminiHistory
+                        "contents": geminiHistory // हा आहे तुझा परफेक्ट जुना इतिहास
                     })
                 });
 
                 let data = await response.json();
+                
                 let loadElem = document.getElementById(loadingId);
                 if(loadElem) loadElem.remove();
 
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     let botReply = data.candidates[0].content.parts[0].text;
+                    // बॉटचा रिप्लाय Firebase मध्ये सेव्ह करणे
                     push(chatRef, { sender: 'bot', text: botReply });
-                } else if (data.promptFeedback && data.promptFeedback.blockReason) {
-                    push(chatRef, { sender: 'bot', text: "⚠️ गुगलने हा मेसेज ब्लॉक केला आहे! कृपया काहीतरी वेगळं विचार." });
                 } else if (data.error) {
-                    push(chatRef, { sender: 'bot', text: 'गुगल एरर: ' + data.error.message });
+                    appendMessage('bot', 'गुगल एरर: ' + data.error.message);
                 } else {
                     throw new Error("डेटा मिळाला नाही");
                 }
             } catch (error) {
                 let loadElem = document.getElementById(loadingId);
                 if(loadElem) loadElem.remove();
-                push(chatRef, { sender: 'bot', text: 'काहीतरी तांत्रिक अडचण आली भावा! रिफ्रेश करून बघ.' });
-            } finally {
-                // मेसेज पूर्ण झाल्यावर बॉक्स अनलॉक करणे
-                window.isBotThinking = false;
-                inputField.disabled = false;
-                sendBtn.disabled = false;
-                inputField.placeholder = "इथे मराठीत मेसेज टाईप कर...";
-                inputField.focus();
+                appendMessage('bot', 'काहीतरी तांत्रिक अडचण आली भावा!');
             }
         }
 
@@ -247,13 +235,13 @@
                 
                 chatContainer.innerHTML += `
                     <div class="flex justify-start mb-4 group w-full">
-                        <div class="bg-slate-800 text-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm max-w-[95%] md:max-w-2xl shadow-lg border border-slate-700 hover:border-slate-600 transition-colors relative pb-10">
+                        <div class="bg-slate-800 text-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm max-w-[95%] md:max-w-2xl shadow-lg border border-slate-700 relative pb-10">
                             <div class="prose prose-invert prose-cyan max-w-none text-sm md:text-base leading-relaxed">
                                 ${formattedText}
                             </div>
                             <!-- संपूर्ण मेसेज कॉपी करण्यासाठी छोटे बटण -->
-                            <button onclick="copyRawText('${encodedText}', this)" class="absolute bottom-2 right-3 flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-cyan-400 bg-slate-900/50 hover:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700/50 hover:border-cyan-900 transition-all">
-                                📋 संपूर्ण मेसेज कॉपी करा
+                            <button onclick="copyRawText('${encodedText}', this)" class="absolute bottom-2 right-3 flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-cyan-400 bg-slate-900/50 hover:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700/50 transition-all">
+                                📋 कॉपी करा
                             </button>
                         </div>
                     </div>`;
