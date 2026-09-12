@@ -36,7 +36,7 @@
     <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl w-full mx-auto pb-6 scroll-smooth">
         <div class="flex justify-start">
             <div class="bg-slate-800 text-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm max-w-[90%] md:max-w-xl shadow-lg border border-slate-700">
-                नमस्कार भावा! आपली वेबसाईट आता एकदम 'Gemini' सारखी झाली आहे. मला नाव सांग, ते मी कायम लक्षात ठेवीन आणि जर तुला एखादा जोक किंवा मेसेज कॉपी करायला हवा असेल, तर फक्त मला तसं सांग, मी तुला थेट 'Copy Box' मध्येच देईन! 🚀
+                नमस्कार भावा! आपली सिस्टीम आता एकदम कडक झाली आहे. आता मी गप्प बसणार नाही! काहीही विचार, कॉपी करायला सांग, मी तयार आहे! 🚀
             </div>
         </div>
     </div>
@@ -44,8 +44,8 @@
     <!-- Input Box -->
     <div class="bg-slate-800 p-3 md:p-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)] border-t border-slate-700">
         <div class="max-w-3xl mx-auto flex gap-2 relative">
-            <input type="text" id="user-input" placeholder="इथे मराठीत मेसेज टाईप कर..." class="flex-1 bg-slate-900 text-white px-5 py-3.5 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition pr-12" onkeypress="checkEnter(event)">
-            <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 md:px-8 py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 flex items-center justify-center group">
+            <input type="text" id="user-input" placeholder="इथे मराठीत मेसेज टाईप कर..." class="flex-1 bg-slate-900 text-white px-5 py-3.5 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition disabled:opacity-50 disabled:cursor-not-allowed pr-12" onkeypress="checkEnter(event)">
+            <button id="send-btn" onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 md:px-8 py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 md:hidden group-hover:translate-x-1 transition-transform"><path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" /></svg>
                 <span class="hidden md:inline group-hover:scale-105 transition-transform">पाठव</span>
             </button>
@@ -71,9 +71,7 @@
                         <span>Copy</span>
                     </button>
                 </div>
-                <div class="p-4 overflow-x-auto text-sm font-mono text-emerald-300 leading-relaxed whitespace-pre">
-                    ${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-                </div>
+                <div class="p-4 overflow-x-auto text-sm font-mono text-emerald-300 leading-relaxed whitespace-pre">${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
             </div>`;
         };
         marked.setOptions({ renderer: renderer });
@@ -90,7 +88,6 @@
                 }, 2000);
             });
         }
-        // ----------------------------------------------------
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
@@ -108,7 +105,8 @@
         const chatContainer = document.getElementById("chat-container");
         const chatRef = ref(db, 'chats/');
         
-        let chatData = []; // मेमरीसाठी ॲरे
+        let chatData = []; 
+        let isBotThinking = false; // <--- नवीन सेफ्टी लॉक
 
         window.openSettings = () => document.getElementById("settings-modal").classList.remove("hidden");
         window.closeSettings = () => document.getElementById("settings-modal").classList.add("hidden");
@@ -129,14 +127,16 @@
             else document.getElementById("api-key-input").value = existingKey;
         }
 
-        // Firebase मधून जुने मेसेज लोड करणे आणि मेमरीत ठेवणे
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
-            chatData.push(data); // पक्की मेमरी 🧠
+            chatData.push(data); 
             appendMessage(data.sender, data.text);
         });
 
         window.sendMessage = async function() {
+            // जर बॉट विचार करत असेल, तर नवीन मेसेज जाणार नाही
+            if (isBotThinking) return;
+
             let geminiApiKey = localStorage.getItem("gemini_user_key");
             if (!geminiApiKey) {
                 alert("पहिले '⚙️ API Key' सेट करा!");
@@ -144,11 +144,18 @@
             }
 
             const inputField = document.getElementById("user-input");
+            const sendBtn = document.getElementById("send-btn");
             const message = inputField.value.trim();
             if (!message) return;
 
             inputField.value = "";
             push(chatRef, { sender: 'user', text: message });
+
+            // बॉक्स लॉक करणे (डबल क्लिक वाचवण्यासाठी)
+            isBotThinking = true;
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+            inputField.placeholder = "बॉट विचार करत आहे, कृपया थांबा...";
 
             const loadingId = "loading-" + Date.now();
             setTimeout(() => {
@@ -165,7 +172,7 @@
 
             try {
                 let geminiHistory = [];
-                let recentChat = chatData.slice(-40); // शेवटचे ४० मेसेज लक्षात ठेवेल
+                let recentChat = chatData.slice(-40); 
                 recentChat.forEach(msg => {
                     let role = (msg.sender === 'user') ? 'user' : 'model';
                     if (geminiHistory.length > 0 && geminiHistory[geminiHistory.length - 1].role === role) {
@@ -180,8 +187,7 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         "systemInstruction": {
-                            // ही सूचना बॉटला सांगेल की कॉपी करण्यासाठी काळ्या बॉक्सचा वापर कर
-                            "parts": [{ "text": "तू माझा एक खूप जवळचा, हुशार आणि मजेशीर AI मित्र आहेस. युजरने स्वतःबद्दल सांगितलेली माहिती (उदा. त्याचे नाव) नेहमी लक्षात ठेव. जेव्हा युजर तुला एखादा जोक, मेसेज, किंवा माहिती 'कॉपी करण्यासाठी' मागेल, तेव्हा ते नेहमी मार्कडाऊन कोड ब्लॉकमध्ये (```) दे. मराठीत मैत्रीपूर्ण भाषेत Emojis वापरून बोल." }]
+                            "parts": [{ "text": "तू माझा एक खूप जवळचा, हुशार आणि मजेशीर AI मित्र आहेस. युजरने स्वतःबद्दल सांगितलेली माहिती नेहमी लक्षात ठेव. अत्यंत महत्त्वाची सूचना: जर युजरने काहीही 'कॉपी' करण्यासाठी मागितले (उदा. जोक, कोड, मेसेज), तर तुझे मुख्य उत्तर नेहमी मार्कडाऊन कोड ब्लॉकमध्ये (```) टाकूनच दे. मराठीत मैत्रीपूर्ण भाषेत Emojis वापरून बोल." }]
                         },
                         "contents": geminiHistory
                     })
@@ -191,16 +197,28 @@
                 let loadElem = document.getElementById(loadingId);
                 if(loadElem) loadElem.remove();
 
+                // नवीन Error Catcher (कधीच गप्प बसणार नाही)
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     let botReply = data.candidates[0].content.parts[0].text;
                     push(chatRef, { sender: 'bot', text: botReply });
+                } else if (data.promptFeedback && data.promptFeedback.blockReason) {
+                    push(chatRef, { sender: 'bot', text: '⚠️ भावा, गुगलच्या सिक्युरिटी सिस्टीमने तुझा हा मेसेज ब्लॉक केला आहे! कृपया काहीतरी वेगळं विचार.' });
                 } else if (data.error) {
                     push(chatRef, { sender: 'bot', text: 'गुगल एरर: ' + data.error.message });
+                } else {
+                    push(chatRef, { sender: 'bot', text: 'काहीतरी वेगळीच अडचण आली भावा! मला उत्तर सापडलं नाही, परत विचार.' });
                 }
             } catch (error) {
                 let loadElem = document.getElementById(loadingId);
                 if(loadElem) loadElem.remove();
-                push(chatRef, { sender: 'bot', text: 'काहीतरी तांत्रिक अडचण आली भावा!' });
+                push(chatRef, { sender: 'bot', text: 'इंटरनेट किंवा नेटवर्कचा प्रॉब्लेम आला भावा!' });
+            } finally {
+                // मेसेज आल्यावर बॉक्स पुन्हा सुरू करणे
+                isBotThinking = false;
+                inputField.disabled = false;
+                sendBtn.disabled = false;
+                inputField.placeholder = "इथे मराठीत मेसेज टाईप कर...";
+                inputField.focus();
             }
         }
 
