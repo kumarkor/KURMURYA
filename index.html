@@ -4,42 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>माझा भारी AI चॅटबॉट</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="bg-slate-900 text-white h-screen flex flex-col justify-between">
+<body class="bg-slate-900 text-white h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-white">
 
     <!-- Header -->
-    <header class="bg-slate-800 p-4 shadow-md flex justify-between items-center px-6">
-        <h1 class="text-xl font-bold text-cyan-400">⚡ Gemini AI मराठी असिस्टंट</h1>
-        <button onclick="openSettings()" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-2 rounded-lg text-cyan-300 transition">⚙️ API Key सेट करा</button>
+    <header class="bg-slate-800 p-4 shadow-[0_4px_30px_rgba(0,0,0,0.5)] flex justify-between items-center px-4 md:px-6 sticky top-0 z-40 border-b border-slate-700">
+        <h1 class="text-lg md:text-xl font-bold text-cyan-400 flex items-center gap-2">
+            ⚡ Gemini AI मराठी
+        </h1>
+        <button onclick="openSettings()" class="bg-slate-700 hover:bg-slate-600 text-xs px-4 py-2 rounded-lg text-cyan-300 transition shadow-sm border border-slate-600 flex items-center gap-2">
+            ⚙️ <span class="hidden md:inline">API Key</span>
+        </button>
     </header>
 
-    <!-- API Key Modal / Setup Box -->
-    <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
-        <div class="bg-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4 border border-slate-700 shadow-2xl">
-            <h3 class="text-lg font-bold text-cyan-400">तुमची Gemini API Key टाका</h3>
-            <p class="text-xs text-slate-400">ही Key फक्त तुमच्या ब्राउझरमध्ये सेव्ह राहील, GitHub वर लीक होणार नाही.</p>
-            <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-900 text-white px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-400">
-            <div class="flex justify-end gap-2">
-                <button onclick="saveApiKey()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-5 py-2 rounded-xl transition">सेव्ह करा</button>
+    <!-- API Key Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+        <div class="bg-slate-800 p-6 rounded-2xl max-w-md w-full space-y-4 border border-slate-700 shadow-2xl transition-all">
+            <h3 class="text-xl font-bold text-cyan-400 flex items-center gap-2">🔐 API Key सेट करा</h3>
+            <p class="text-sm text-slate-400">ही Key फक्त तुमच्या ब्राउझरमध्ये सुरक्षित राहील, इंटरनेटवर लीक होणार नाही.</p>
+            <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-900 text-white px-4 py-3 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="closeSettings()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl transition">बंद करा</button>
+                <button onclick="saveApiKey()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-2 rounded-xl transition shadow-lg shadow-cyan-500/30">सेव्ह करा</button>
             </div>
         </div>
     </div>
 
     <!-- Chat Box -->
-    <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-2xl w-full mx-auto">
+    <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl w-full mx-auto pb-6 scroll-smooth">
         <div class="flex justify-start">
-            <div class="bg-slate-700 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow">
-                नमस्कार भावा! आता मी तुझं नाव आणि आपण केलेल्या सगळ्या गप्पा कायम लक्षात ठेवीन. बोल काय चाललंय? 🚀
+            <div class="bg-slate-800 text-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm max-w-[90%] md:max-w-xl shadow-lg border border-slate-700">
+                नमस्कार भावा! आपली वेबसाईट आता एकदम 'Gemini' सारखी झाली आहे. मला नाव सांग, ते मी कायम लक्षात ठेवीन आणि जर तुला एखादा जोक किंवा मेसेज कॉपी करायला हवा असेल, तर फक्त मला तसं सांग, मी तुला थेट 'Copy Box' मध्येच देईन! 🚀
             </div>
         </div>
     </div>
 
     <!-- Input Box -->
-    <div class="bg-slate-800 p-4 shadow-lg">
-        <div class="max-w-2xl mx-auto flex gap-2">
-            <input type="text" id="user-input" placeholder="काहीतरी मेसेज टाईप कर..." class="flex-1 bg-slate-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400" onkeypress="checkEnter(event)">
-            <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-3 rounded-xl transition">पाठव</button>
+    <div class="bg-slate-800 p-3 md:p-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)] border-t border-slate-700">
+        <div class="max-w-3xl mx-auto flex gap-2 relative">
+            <input type="text" id="user-input" placeholder="इथे मराठीत मेसेज टाईप कर..." class="flex-1 bg-slate-900 text-white px-5 py-3.5 rounded-xl border border-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition pr-12" onkeypress="checkEnter(event)">
+            <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 md:px-8 py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 flex items-center justify-center group">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 md:hidden group-hover:translate-x-1 transition-transform"><path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" /></svg>
+                <span class="hidden md:inline group-hover:scale-105 transition-transform">पाठव</span>
+            </button>
         </div>
     </div>
 
@@ -47,6 +56,41 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // --- Custom Renderer for Gemini-like Code Blocks ---
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            const langText = language ? language.toUpperCase() : 'TEXT';
+            const encodedCode = encodeURIComponent(code);
+            return `
+            <div class="my-4 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
+                <div class="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
+                    <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest">${langText}</span>
+                    <button onclick="copyCodeBox(this, '${encodedCode}')" class="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg border border-slate-600 hover:border-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <div class="p-4 overflow-x-auto text-sm font-mono text-emerald-300 leading-relaxed whitespace-pre">
+                    ${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                </div>
+            </div>`;
+        };
+        marked.setOptions({ renderer: renderer });
+
+        window.copyCodeBox = function(btn, encodedText) {
+            let rawText = decodeURIComponent(encodedText);
+            navigator.clipboard.writeText(rawText).then(() => {
+                let originalHTML = btn.innerHTML;
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-emerald-400"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> <span class="font-bold text-emerald-400">Copied!</span>`;
+                btn.classList.add("bg-emerald-500/10", "border-emerald-500/50");
+                setTimeout(() => { 
+                    btn.innerHTML = originalHTML; 
+                    btn.classList.remove("bg-emerald-500/10", "border-emerald-500/50");
+                }, 2000);
+            });
+        }
+        // ----------------------------------------------------
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2Fokyta-OqM1xQKmsoFyMsJcAfsJtftw",
@@ -63,44 +107,40 @@
         const db = getDatabase(app);
         const chatContainer = document.getElementById("chat-container");
         const chatRef = ref(db, 'chats/');
+        
+        let chatData = []; // मेमरीसाठी ॲरे
 
-        let chatData = []; // सर्व चॅट लक्षात ठेवण्यासाठी नवीन Array
-
-        // लोकल स्टोरेजमधून API Key तपासणे
-        window.openSettings = function() {
-            document.getElementById("settings-modal").classList.remove("hidden");
-        }
+        window.openSettings = () => document.getElementById("settings-modal").classList.remove("hidden");
+        window.closeSettings = () => document.getElementById("settings-modal").classList.add("hidden");
 
         window.saveApiKey = function() {
             let key = document.getElementById("api-key-input").value.trim();
             if(key) {
                 localStorage.setItem("gemini_user_key", key);
-                document.getElementById("settings-modal").classList.add("hidden");
-                alert("API Key यशस्वीरीत्या सेव्ह झाली!");
+                closeSettings();
             } else {
                 alert("कृपया योग्य Key टाका.");
             }
         }
 
         window.onload = function() {
-            if(!localStorage.getItem("gemini_user_key")) {
-                openSettings();
-            }
+            let existingKey = localStorage.getItem("gemini_user_key");
+            if(!existingKey) openSettings();
+            else document.getElementById("api-key-input").value = existingKey;
         }
 
-        // Firebase मधून जुने मेसेज लोड करणे आणि मेमरीत साठवणे
+        // Firebase मधून जुने मेसेज लोड करणे आणि मेमरीत ठेवणे
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
-            chatData.push(data); // मेमरीत मेसेज जोडणे
+            chatData.push(data); // पक्की मेमरी 🧠
             appendMessage(data.sender, data.text);
         });
 
         window.sendMessage = async function() {
             let geminiApiKey = localStorage.getItem("gemini_user_key");
             if (!geminiApiKey) {
-                alert("पहिले '⚙️ API Key सेट करा' वर क्लिक करून तुमची Key टाका!");
-                openSettings();
-                return;
+                alert("पहिले '⚙️ API Key' सेट करा!");
+                openSettings(); return;
             }
 
             const inputField = document.getElementById("user-input");
@@ -108,67 +148,59 @@
             if (!message) return;
 
             inputField.value = "";
-            
-            // युजरचा मेसेज Firebase मध्ये पाठवणे (हे आपोआप स्क्रीनवर दिसेल)
             push(chatRef, { sender: 'user', text: message });
 
             const loadingId = "loading-" + Date.now();
-            // थोडा वेळ थांबून लोडिंग दाखवूया
             setTimeout(() => {
                 chatContainer.innerHTML += `
-                    <div id="${loadingId}" class="flex justify-start">
-                        <div class="bg-slate-700 text-slate-400 p-3 rounded-2xl">विचार करत आहे...</div>
+                    <div id="${loadingId}" class="flex justify-start mb-4">
+                        <div class="bg-slate-800 text-slate-400 px-5 py-4 rounded-2xl rounded-tl-sm shadow-md border border-slate-700 flex items-center gap-2">
+                            <div class="w-2 h-2 bg-cyan-500 rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
                     </div>`;
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 100);
+            }, 50);
 
             try {
-                // --- स्मार्ट मेमरी बिल्डर (Smart Memory System) ---
-                // गुगलला एरर येऊ नये म्हणून, सलग आलेले युजरचे मेसेज एकत्र करणे
                 let geminiHistory = [];
-                // जुने खूप मेसेज असतील तर फक्त शेवटचे ३० मेसेज पाठवू (लिमिटसाठी)
-                let recentChat = chatData.slice(-30); 
-                
+                let recentChat = chatData.slice(-40); // शेवटचे ४० मेसेज लक्षात ठेवेल
                 recentChat.forEach(msg => {
                     let role = (msg.sender === 'user') ? 'user' : 'model';
-                    // जर आधीचा रोल आणि आत्ताचा रोल सेम असेल, तर मेसेज एकत्र जोडणे
                     if (geminiHistory.length > 0 && geminiHistory[geminiHistory.length - 1].role === role) {
                         geminiHistory[geminiHistory.length - 1].parts[0].text += "\n" + msg.text;
                     } else {
                         geminiHistory.push({ role: role, parts: [{ text: msg.text }] });
                     }
                 });
-                // ----------------------------------------------------
 
                 let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiApiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         "systemInstruction": {
-                            "parts": [{ "text": "तू माझा एक खूप जवळचा, हुशार आणि मजेशीर AI मित्र आहेस. युजरने स्वतःबद्दल सांगितलेली माहिती (उदा. त्याचे नाव) नेहमी लक्षात ठेव. मराठीत मैत्रीपूर्ण भाषेत Emojis वापरून उत्तरे दे." }]
+                            // ही सूचना बॉटला सांगेल की कॉपी करण्यासाठी काळ्या बॉक्सचा वापर कर
+                            "parts": [{ "text": "तू माझा एक खूप जवळचा, हुशार आणि मजेशीर AI मित्र आहेस. युजरने स्वतःबद्दल सांगितलेली माहिती (उदा. त्याचे नाव) नेहमी लक्षात ठेव. जेव्हा युजर तुला एखादा जोक, मेसेज, किंवा माहिती 'कॉपी करण्यासाठी' मागेल, तेव्हा ते नेहमी मार्कडाऊन कोड ब्लॉकमध्ये (```) दे. मराठीत मैत्रीपूर्ण भाषेत Emojis वापरून बोल." }]
                         },
-                        "contents": geminiHistory // हा आहे तुझा परफेक्ट जुना इतिहास
+                        "contents": geminiHistory
                     })
                 });
 
                 let data = await response.json();
-                
                 let loadElem = document.getElementById(loadingId);
                 if(loadElem) loadElem.remove();
 
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     let botReply = data.candidates[0].content.parts[0].text;
-                    // बॉटचा रिप्लाय Firebase मध्ये सेव्ह करणे
                     push(chatRef, { sender: 'bot', text: botReply });
                 } else if (data.error) {
-                    appendMessage('bot', 'गुगल एरर: ' + data.error.message);
-                } else {
-                    throw new Error("डेटा मिळाला नाही");
+                    push(chatRef, { sender: 'bot', text: 'गुगल एरर: ' + data.error.message });
                 }
             } catch (error) {
                 let loadElem = document.getElementById(loadingId);
                 if(loadElem) loadElem.remove();
-                appendMessage('bot', 'काहीतरी तांत्रिक अडचण आली भावा!');
+                push(chatRef, { sender: 'bot', text: 'काहीतरी तांत्रिक अडचण आली भावा!' });
             }
         }
 
@@ -179,13 +211,18 @@
         function appendMessage(sender, text) {
             if (sender === 'user') {
                 chatContainer.innerHTML += `
-                    <div class="flex justify-end">
-                        <div class="bg-cyan-600 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow whitespace-pre-wrap">${text}</div>
+                    <div class="flex justify-end mb-4">
+                        <div class="bg-cyan-600 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[85%] md:max-w-md shadow-md whitespace-pre-wrap">${text}</div>
                     </div>`;
             } else {
+                let formattedText = marked.parse(text); 
                 chatContainer.innerHTML += `
-                    <div class="flex justify-start">
-                        <div class="bg-slate-700 text-white p-3 rounded-2xl max-w-xs md:max-w-md shadow whitespace-pre-wrap">${text}</div>
+                    <div class="flex justify-start mb-4 group w-full">
+                        <div class="bg-slate-800 text-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm max-w-[95%] md:max-w-2xl shadow-lg border border-slate-700 hover:border-slate-600 transition-colors">
+                            <div class="prose prose-invert prose-cyan max-w-none text-sm md:text-base leading-relaxed">
+                                ${formattedText}
+                            </div>
+                        </div>
                     </div>`;
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
