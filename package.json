@@ -1,8 +1,4 @@
 {
-  "name": "kumar-gmail-cloud",
-  "version": "1.0.0",
-  "dependencies": {
-    "nodemailer": "^6.9.13",
-    "imapflow": "^1.0.162"
-  }
+  "name": "kurmurya-cloud-panel",
+  "version": "1.0.0"
 }
