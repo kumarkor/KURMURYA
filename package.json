@@ -1,0 +1,8 @@
+{
+  "name": "kumar-gmail-otp-cloud-hub",
+  "version": "1.0.0",
+  "dependencies": {
+    "nodemailer": "^6.9.13",
+    "imapflow": "^1.0.162"
+  }
+}
