@@ -1,18 +1,4 @@
-// ============================================================================
-// 👑 KUMAR GMAIL CLOUD OS - ANTI-CRASH ENGINE (ZERO 500 ERRORS)
-// ============================================================================
-let nodemailer = null;
-let ImapFlow = null;
-let dependencyError = null;
-
-try {
-  nodemailer = require("nodemailer");
-  const imapModule = require("imapflow");
-  ImapFlow = imapModule.ImapFlow;
-} catch (err) {
-  dependencyError = err.message;
-  console.error("Missing packages in package.json: ", err.message);
-}
+const tls = require("tls");
 
 // ============================================================================
 // 1. CONFIGURATION & FIREBASE REALTIME DATABASE REST ENGINE
@@ -44,7 +30,285 @@ async function fbSet(path, data) {
 }
 
 // ============================================================================
-// 2. DOT (.) & PLUS (+) UNLIMITED GMAIL GENERATOR ALGORITHM
+// 2. NATIVE NODE.JS TLS GMAIL SMTP ENGINE (NO NODEMAILER NEEDED!)
+// ============================================================================
+function nativeGmailSmtpSend(options) {
+  return new Promise(function (resolve, reject) {
+    const user = String(options.user || "").trim();
+    const pass = String(options.pass || "").replace(/\s+/g, "").trim();
+    const toEmail = String(options.to || "").trim();
+    const fromName = String(options.fromName || "KUMAR CLOUD OTP").trim();
+    const subject = String(options.subject || "Verification Code").trim();
+    const htmlBody = String(options.html || "").trim();
+    const verifyOnly = Boolean(options.verifyOnly);
+
+    const socket = tls.connect(
+      {
+        host: "smtp.gmail.com",
+        port: 465,
+        servername: "smtp.gmail.com",
+        rejectUnauthorized: false
+      },
+      function () {}
+    );
+
+    let step = 0;
+    let buffer = "";
+    let finished = false;
+
+    const timer = setTimeout(function () {
+      if (!finished) {
+        finished = true;
+        try { socket.destroy(); } catch (e) {}
+        reject(new Error("Gmail SMTP connection timed out (8s)."));
+      }
+    }, 8500);
+
+    function finishOk(resObj) {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      try { socket.end("QUIT\r\n"); } catch (e) {}
+      resolve(resObj);
+    }
+
+    function finishErr(msg) {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      try { socket.destroy(); } catch (e) {}
+      reject(new Error(msg));
+    }
+
+    socket.on("error", function (err) {
+      finishErr("SMTP Socket Error: " + err.message);
+    });
+
+    socket.on("data", function (chunk) {
+      buffer += chunk.toString("utf8");
+      const lines = buffer.split("\r\n");
+      buffer = lines.pop() || "";
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.length < 3) continue;
+        const code = line.substring(0, 3);
+        const isLastLine = line.charAt(3) === " " || line.length === 3;
+        if (!isLastLine) continue;
+
+        if (code.charAt(0) === "4" || code.charAt(0) === "5") {
+          return finishErr("Gmail SMTP Rejected (" + code + "): " + line + " (Check your 16-digit Google App Password!)");
+        }
+
+        if (step === 0 && code === "220") {
+          step = 1;
+          socket.write("EHLO localhost\r\n");
+        } else if (step === 1 && code === "250") {
+          step = 2;
+          socket.write("AUTH LOGIN\r\n");
+        } else if (step === 2 && code === "334") {
+          step = 3;
+          socket.write(Buffer.from(user).toString("base64") + "\r\n");
+        } else if (step === 3 && code === "334") {
+          step = 4;
+          socket.write(Buffer.from(pass).toString("base64") + "\r\n");
+        } else if (step === 4 && code === "235") {
+          if (verifyOnly) {
+            return finishOk({ authenticated: true });
+          }
+          step = 5;
+          socket.write("MAIL FROM:<" + user + ">\r\n");
+        } else if (step === 5 && code === "250") {
+          step = 6;
+          socket.write("RCPT TO:<" + toEmail + ">\r\n");
+        } else if (step === 6 && code === "250") {
+          step = 7;
+          socket.write("DATA\r\n");
+        } else if (step === 7 && code === "354") {
+          step = 8;
+          const b64Subject = "=?UTF-8?B?" + Buffer.from(subject).toString("base64") + "?=";
+          const mimeMsg =
+            'From: "' + fromName.replace(/"/g, "") + '" <' + user + ">\r\n" +
+            "To: <" + toEmail + ">\r\n" +
+            "Subject: " + b64Subject + "\r\n" +
+            "MIME-Version: 1.0\r\n" +
+            "Content-Type: text/html; charset=UTF-8\r\n" +
+            "\r\n" +
+            htmlBody + "\r\n" +
+            ".\r\n";
+          socket.write(mimeMsg);
+        } else if (step === 8 && code === "250") {
+          return finishOk({ sent: true });
+        }
+      }
+    });
+  });
+}
+
+// ============================================================================
+// 3. NATIVE NODE.JS TLS GMAIL IMAP OTP READER ENGINE (NO IMAPFLOW NEEDED!)
+// ============================================================================
+function extractOtpFromText(subject, bodyText) {
+  const combined = String(subject || "") + " " + String(bodyText || "");
+  const keywordMatch = combined.match(
+    /(?:code|otp|pin|verification|passcode|password|verify)[^0-9]{0,25}\b(\d{4,8})\b/i
+  );
+  if (keywordMatch && keywordMatch[1]) {
+    return keywordMatch[1];
+  }
+  const allNums = combined.match(/\b(\d{5,6})\b/g);
+  if (allNums && allNums.length > 0) {
+    for (let i = 0; i < allNums.length; i++) {
+      const n = allNums[i];
+      if (n !== "2024" && n !== "2025" && n !== "2026" && n !== "2027" && n !== "000000") {
+        return n;
+      }
+    }
+  }
+  return "NO-OTP";
+}
+
+function nativeGmailImapRead(emailUser, appPassword, limitCount) {
+  return new Promise(function (resolve, reject) {
+    const user = String(emailUser || "").trim();
+    const pass = String(appPassword || "").replace(/\s+/g, "").trim();
+    const maxFetch = Math.min(10, Math.max(1, parseInt(limitCount, 10) || 6));
+
+    const socket = tls.connect(
+      {
+        host: "imap.gmail.com",
+        port: 993,
+        servername: "imap.gmail.com",
+        rejectUnauthorized: false
+      },
+      function () {}
+    );
+
+    let step = 0;
+    let rawBuffer = "";
+    let fetchBuffer = "";
+    let totalExists = 0;
+    let finished = false;
+
+    const timer = setTimeout(function () {
+      if (!finished) {
+        finished = true;
+        try { socket.destroy(); } catch (e) {}
+        reject(new Error("Gmail IMAP read timed out (8.5s)."));
+      }
+    }, 8500);
+
+    function doneOk(items) {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      try { socket.end("A4 LOGOUT\r\n"); } catch (e) {}
+      resolve(items);
+    }
+
+    function doneErr(msg) {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      try { socket.destroy(); } catch (e) {}
+      reject(new Error(msg));
+    }
+
+    socket.on("error", function (err) {
+      doneErr("IMAP Socket Error: " + err.message);
+    });
+
+    socket.on("data", function (chunk) {
+      const str = chunk.toString("utf8");
+      rawBuffer += str;
+
+      if (step === 0 && rawBuffer.indexOf("* OK") !== -1) {
+        step = 1;
+        rawBuffer = "";
+        socket.write('A1 LOGIN "' + user + '" "' + pass + '"\r\n');
+      } else if (step === 1) {
+        if (rawBuffer.indexOf("A1 OK") !== -1) {
+          step = 2;
+          rawBuffer = "";
+          socket.write("A2 SELECT INBOX\r\n");
+        } else if (rawBuffer.indexOf("A1 NO") !== -1 || rawBuffer.indexOf("A1 BAD") !== -1) {
+          return doneErr("IMAP Login Failed! Check your 16-digit Google App Password.");
+        }
+      } else if (step === 2) {
+        const existsMatch = rawBuffer.match(/\*\s+(\d+)\s+EXISTS/i);
+        if (existsMatch) {
+          totalExists = parseInt(existsMatch[1], 10) || 0;
+        }
+        if (rawBuffer.indexOf("A2 OK") !== -1) {
+          if (totalExists === 0) {
+            return doneOk([]);
+          }
+          step = 3;
+          rawBuffer = "";
+          const startSeq = Math.max(1, totalExists - maxFetch + 1);
+          socket.write(
+            "A3 FETCH " +
+              startSeq +
+              ":" +
+              totalExists +
+              " (BODY.PEEK[HEADER.FIELDS (FROM TO SUBJECT DATE)] BODY.PEEK[TEXT]<0.1200>)\r\n"
+          );
+        }
+      } else if (step === 3) {
+        fetchBuffer += str;
+        if (fetchBuffer.indexOf("A3 OK") !== -1 || fetchBuffer.indexOf("A3 NO") !== -1 || fetchBuffer.indexOf("A3 BAD") !== -1) {
+          const parsedEmails = [];
+          const blocks = fetchBuffer.split(/\*\s+\d+\s+FETCH\s+\(/i);
+
+          for (let b = 1; b < blocks.length; b++) {
+            const blk = blocks[b];
+            const subjMatch = blk.match(/Subject:\s*([^\r\n]+)/i);
+            const fromMatch = blk.match(/From:\s*([^\r\n]+)/i);
+            const toMatch = blk.match(/To:\s*([^\r\n]+)/i);
+            const dateMatch = blk.match(/Date:\s*([^\r\n]+)/i);
+
+            let subject = subjMatch ? subjMatch[1].trim() : "(No Subject)";
+            const fromStr = fromMatch ? fromMatch[1].trim() : "Unknown Sender";
+            const toStr = toMatch ? toMatch[1].trim() : user;
+            const dateStr = dateMatch ? dateMatch[1].substring(0, 25).trim() : "Recent";
+
+            // Decode UTF-8 Base64 Subject if encoded
+            if (subject.indexOf("=?UTF-8?B?") !== -1 || subject.indexOf("=?utf-8?B?") !== -1) {
+              try {
+                const b64Part = subject.split("?B?")[1].split("?=")[0];
+                subject = Buffer.from(b64Part, "base64").toString("utf8");
+              } catch (e) {}
+            }
+
+            let cleanText = blk
+              .replace(/[\r\n]+/g, " ")
+              .replace(/=3D/g, "=")
+              .replace(/<style[^>]*>.*?<\/style>/gi, " ")
+              .replace(/<[^>]+>/g, " ")
+              .replace(/\s+/g, " ")
+              .trim();
+
+            const otpCode = extractOtpFromText(subject, cleanText);
+
+            parsedEmails.push({
+              from: fromStr,
+              to: toStr,
+              subject: subject,
+              date: dateStr,
+              otp: otpCode,
+              snippet: cleanText.substring(0, 260)
+            });
+          }
+
+          return doneOk(parsedEmails.reverse());
+        }
+      }
+    });
+  });
+}
+
+// ============================================================================
+// 4. DOT (.) & PLUS (+) UNLIMITED GMAIL GENERATOR ALGORITHM
 // ============================================================================
 function generateGmailVariations(baseEmail, maxCount, mode, customTag) {
   const clean = String(baseEmail || "").trim().toLowerCase();
@@ -85,122 +349,30 @@ function generateGmailVariations(baseEmail, maxCount, mode, customTag) {
 }
 
 // ============================================================================
-// 3. SMART OTP CODE EXTRACTOR FROM EMAIL SUBJECT / BODY
-// ============================================================================
-function extractOtpFromText(subject, bodyText) {
-  const combined = String(subject || "") + " " + String(bodyText || "");
-  const keywordMatch = combined.match(
-    /(?:code|otp|pin|verification|passcode|password|शिवाय|कोड)[^0-9]{0,25}\b(\d{4,8})\b/i
-  );
-  if (keywordMatch && keywordMatch[1]) {
-    return keywordMatch[1];
-  }
-  const allNums = combined.match(/\b(\d{5,6})\b/g);
-  if (allNums && allNums.length > 0) {
-    for (let i = 0; i < allNums.length; i++) {
-      if (allNums[i] !== "2024" && allNums[i] !== "2025" && allNums[i] !== "2026" && allNums[i] !== "2027") {
-        return allNums[i];
-      }
-    }
-  }
-  return "NO-OTP";
-}
-
-// ============================================================================
-// 4. IMAP LIVE GMAIL INBOX & OTP READER ENGINE
-// ============================================================================
-async function fetchGmailInboxOtps(emailUser, appPassword, limitCount) {
-  if (!ImapFlow) throw new Error("imapflow package is missing in package.json");
-
-  const client = new ImapFlow({
-    host: "imap.gmail.com",
-    port: 993,
-    secure: true,
-    auth: {
-      user: String(emailUser).trim(),
-      pass: String(appPassword).replace(/\s+/g, "").trim()
-    },
-    logger: false
-  });
-
-  const messagesList = [];
-  await client.connect();
-
-  let lock = await client.getMailboxLock("INBOX");
-  try {
-    const totalMessages = client.mailbox.exists || 0;
-    if (totalMessages === 0) return [];
-    
-    const fetchCount = Math.min(12, Math.max(1, parseInt(limitCount, 10) || 8));
-    const startSeq = Math.max(1, totalMessages - fetchCount + 1);
-    const seqRange = startSeq + ":*";
-
-    for await (let msg of client.fetch(seqRange, { envelope: true, source: true })) {
-      const rawSource = msg.source ? msg.source.toString("utf8") : "";
-      let cleanBody = rawSource
-        .replace(/[\r\n]+/g, " ")
-        .replace(/<style[^>]*>.*?<\/style>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      if (cleanBody.length > 500) cleanBody = cleanBody.substring(cleanBody.length - 500);
-
-      const subject = (msg.envelope && msg.envelope.subject) || "(No Subject)";
-      const fromObj = msg.envelope && msg.envelope.from && msg.envelope.from[0] ? msg.envelope.from[0] : {};
-      const fromSender = (fromObj.name ? fromObj.name + " " : "") + "<" + (fromObj.address || "unknown") + ">";
-      const toObj = msg.envelope && msg.envelope.to && msg.envelope.to[0] ? msg.envelope.to[0] : {};
-      const deliveredTo = toObj.address || emailUser;
-      const dateStr = msg.envelope && msg.envelope.date ? new Date(msg.envelope.date).toLocaleString("en-IN") : "Just now";
-
-      const detectedOtp = extractOtpFromText(subject, cleanBody);
-
-      messagesList.push({
-        seq: msg.seq,
-        from: fromSender,
-        to: deliveredTo,
-        subject: subject,
-        date: dateStr,
-        otp: detectedOtp,
-        snippet: cleanBody.substring(0, 240)
-      });
-    }
-  } finally {
-    lock.release();
-    await client.logout().catch(function () {});
-  }
-
-  return messagesList.reverse();
-}
-
-// ============================================================================
 // 5. SUPER STYLISH HTML EMAIL TEMPLATE FOR SENDING OTP
 // ============================================================================
 function buildOtpHtmlEmail(otpCode, brandName, recipientEmail) {
-  return String.raw`
-  <div style="background:#050814;padding:32px 16px;font-family:'Segoe UI',Arial,sans-serif;color:#f8fafc;">
-    <div style="max-width:480px;margin:0 auto;background:#0f172a;border:2px solid #00f0ff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 0 35px rgba(0,240,255,0.25);">
-      <div style="display:inline-block;background:rgba(0,240,255,0.12);border:1px solid #00f0ff;color:#00f0ff;padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:1.5px;margin-bottom:14px;">
-        ⚡ ${brandName || "KUMAR OTP SECURITY CLOUD"} ⚡
-      </div>
-      <h2 style="margin:0 0 10px;color:#ffffff;font-size:22px;">Email Verification Code</h2>
-      <p style="color:#94a3b8;font-size:14px;line-height:1.5;margin:0 0 22px;">
-        Hello <b>${recipientEmail}</b>,<br/>Use the 6-digit verification code below to complete your login or verification:
-      </p>
-      <div style="background:#020617;border:2px dashed #10b981;border-radius:16px;padding:18px;margin-bottom:22px;">
-        <span style="font-family:monospace;font-size:34px;font-weight:900;letter-spacing:8px;color:#10b981;">
-          ${otpCode}
-        </span>
-      </div>
-      <p style="color:#64748b;font-size:12px;margin:0;">
-        ⏳ This OTP is valid for 10 minutes. Do not share this code with anyone.
-      </p>
-    </div>
-  </div>`;
+  return (
+    '<div style="background:#050814;padding:32px 16px;font-family:Segoe UI,Arial,sans-serif;color:#f8fafc;">' +
+    '<div style="max-width:480px;margin:0 auto;background:#0f172a;border:2px solid #00f0ff;border-radius:20px;padding:28px;text-align:center;">' +
+    '<div style="display:inline-block;background:rgba(0,240,255,0.12);border:1px solid #00f0ff;color:#00f0ff;padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:1.5px;margin-bottom:14px;">' +
+    "⚡ " + (brandName || "KUMAR OTP SECURITY CLOUD") + " ⚡" +
+    "</div>" +
+    '<h2 style="margin:0 0 10px;color:#ffffff;font-size:22px;">Email Verification Code</h2>' +
+    '<p style="color:#94a3b8;font-size:14px;line-height:1.5;margin:0 0 22px;">Hello <b>' +
+    recipientEmail +
+    "</b>,<br/>Use the 6-digit verification code below to complete your verification:</p>" +
+    '<div style="background:#020617;border:2px dashed #10b981;border-radius:16px;padding:18px;margin-bottom:22px;">' +
+    '<span style="font-family:monospace;font-size:34px;font-weight:900;letter-spacing:8px;color:#10b981;">' +
+    otpCode +
+    "</span></div>" +
+    '<p style="color:#64748b;font-size:12px;margin:0;">⏳ Valid for 10 minutes. Do not share this code with anyone.</p>' +
+    "</div></div>"
+  );
 }
 
 // ============================================================================
-// 6. MASTER WEB UI (100% GLITCH-FREE USING String.raw)
+// 6. MASTER WEB UI (100% GLITCH-FREE & ZERO EXTERNAL DEPENDENCIES)
 // ============================================================================
 function renderGmailMasterWebUI() {
   return String.raw`<!DOCTYPE html>
@@ -214,7 +386,7 @@ function renderGmailMasterWebUI() {
     :root {
       --bg-deep: #030712;
       --bg-surface: #0b1325;
-      --bg-card: rgba(15, 23, 42, 0.9);
+      --bg-card: rgba(15, 23, 42, 0.92);
       --bg-input: #060b16;
       --accent: #00f0ff;
       --accent-glow: rgba(0, 240, 255, 0.4);
@@ -227,8 +399,8 @@ function renderGmailMasterWebUI() {
       --text-main: #f8fafc;
       --text-sub: #cbd5e1;
       --text-dim: #94a3b8;
-      --border-glass: rgba(0, 240, 255, 0.26);
-      --border-strong: rgba(0, 240, 255, 0.75);
+      --border-glass: rgba(0, 240, 255, 0.28);
+      --border-strong: rgba(0, 240, 255, 0.78);
       --grad-main: linear-gradient(135deg, #00f0ff 0%, #3b82f6 50%, #8b5cf6 100%);
       --grad-btn: linear-gradient(90deg, #00f0ff, #0284c7);
     }
@@ -236,7 +408,7 @@ function renderGmailMasterWebUI() {
     body.theme-gold {
       --bg-deep: #080414;
       --bg-surface: #140a29;
-      --bg-card: rgba(24, 12, 48, 0.9);
+      --bg-card: rgba(24, 12, 48, 0.92);
       --bg-input: #090414;
       --accent: #f59e0b;
       --accent-glow: rgba(245, 158, 11, 0.42);
@@ -250,7 +422,7 @@ function renderGmailMasterWebUI() {
     body.theme-matrix {
       --bg-deep: #020d07;
       --bg-surface: #062114;
-      --bg-card: rgba(8, 35, 22, 0.9);
+      --bg-card: rgba(8, 35, 22, 0.92);
       --bg-input: #03120a;
       --accent: #10b981;
       --accent-glow: rgba(16, 185, 129, 0.42);
@@ -335,7 +507,7 @@ function renderGmailMasterWebUI() {
     .brand-titles h1 { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
     .brand-titles p { font-size: 12.5px; color: var(--text-sub); margin-top: 2px; }
     .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    
+
     .pill-select, .pill-stat { background: var(--bg-input); border: 1px solid var(--border-glass); color: var(--accent); padding: 8px 12px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; outline: none; }
     .btn-lock { background: rgba(244, 63, 94, 0.18); border: 1px solid var(--danger); color: #fda4af; padding: 8px 14px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; cursor: pointer; }
 
@@ -356,7 +528,7 @@ function renderGmailMasterWebUI() {
     .card-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
     .card-title { font-size: 14.5px; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 8px; }
     .chip-tag { background: rgba(0, 240, 255, 0.14); border: 1px solid var(--accent); color: var(--accent); padding: 3px 10px; border-radius: 99px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; }
-    
+
     .field { margin-bottom: 12px; }
     .field label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 5px; text-transform: uppercase; }
     .field label span { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
@@ -392,9 +564,7 @@ function renderGmailMasterWebUI() {
 </head>
 <body>
 
-  <!-- ======================================================================
-       1. SECURITY LOCK OVERLAY (PIN: 252010)
-       ====================================================================== -->
+  <!-- 1. SECURITY LOCK OVERLAY (PIN: 252010) -->
   <div id="vault-overlay">
     <div class="vault-card">
       <div class="vault-badge">📧 GMAIL QUANTUM CLOUD VAULT 📧</div>
@@ -429,20 +599,18 @@ function renderGmailMasterWebUI() {
         <button type="button" class="k-btn" data-digit="0">0</button>
         <button type="button" class="k-btn" id="btn-k-ok" style="background:#10b981;color:#fff;font-size:13px;">OPEN 🔓</button>
       </div>
-      <div id="vault-msg" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);">🛡️ PROTECTED BY KUMAR CLOUD FIREWALL</div>
+      <div id="vault-msg" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);">🛡️ NATIVE TLS ENGINE • ZERO 500 ERRORS</div>
     </div>
   </div>
 
-  <!-- ======================================================================
-       2. MAIN GMAIL CLOUD HUB DASHBOARD
-       ====================================================================== -->
+  <!-- 2. MAIN GMAIL CLOUD HUB DASHBOARD -->
   <div class="shell">
     <header class="top-header">
       <div class="brand-left">
         <div class="brand-icon">📧</div>
         <div class="brand-titles">
           <h1>KUMAR GMAIL OTP & UNLIMITED ALIAS HUB</h1>
-          <p>Live Gmail OTP Reader • Verification Engine • Unlimited Dot/Plus Generator • REST API</p>
+          <p>Native TLS Engine • Live OTP Reader • OTP Verification • Unlimited Dot/Plus Generator</p>
         </div>
       </div>
       <div class="header-right">
@@ -460,7 +628,7 @@ function renderGmailMasterWebUI() {
       <div class="stat-tile">
         <div class="lbl">📧 Connected Gmails</div>
         <div class="val" id="stat-gmails">0</div>
-        <div class="sub">🟢 Active SMTP & IMAP</div>
+        <div class="sub">🟢 Direct TLS 465 & 993</div>
       </div>
       <div class="stat-tile">
         <div class="lbl">♾️ Generated Aliases</div>
@@ -479,7 +647,6 @@ function renderGmailMasterWebUI() {
       </div>
     </section>
 
-    <!-- 5 MASTER NAVIGATION TABS -->
     <div class="nav-tabs">
       <button type="button" class="nav-btn active" data-pane="pane-reader">📩 1. LIVE GMAIL OTP READER</button>
       <button type="button" class="nav-btn" data-pane="pane-verify">🛡️ 2. OTP VERIFICATION & SENDER</button>
@@ -488,33 +655,32 @@ function renderGmailMasterWebUI() {
       <button type="button" class="nav-btn" data-pane="pane-api-docs">🔌 5. API & BOT CODE</button>
     </div>
 
-    <!-- LIVE CONSOLE -->
     <div class="card-box">
       <div class="card-head">
-        <div class="card-title">🖥️ LIVE EXECUTION TERMINAL (ZERO CRASH)</div>
+        <div class="card-title">🖥️ LIVE EXECUTION TERMINAL (100% NATIVE TLS • ZERO DEPENDENCIES)</div>
         <div style="display:flex;gap:8px;">
           <button type="button" class="btn btn-outline btn-sm" id="btn-clear-term">🧹 CLEAR</button>
           <button type="button" class="btn btn-outline btn-sm" id="btn-sync-hub">🔄 SYNC DATA</button>
         </div>
       </div>
-      <div class="terminal-log" id="term-log">⚡ [GMAIL CLOUD OS ONLINE]: Anti-500 Engine Active! First add your Gmail & 16-Digit App Password in Tab 4, then read or send OTPs anywhere!</div>
+      <div class="terminal-log" id="term-log">⚡ [GMAIL NATIVE TLS OS ONLINE]: Zero external npm packages required! Add your Gmail & 16-Digit App Password in Tab 4.</div>
     </div>
 
     <!-- PANE 1: LIVE GMAIL OTP READER -->
     <div id="pane-reader" class="tab-pane active">
       <div class="info-note">
-        📩 <b>LIVE GMAIL OTP READER:</b> Select your connected Gmail account below and click <b>SCAN INBOX FOR LIVE OTPs</b>.
+        📩 <b>LIVE GMAIL OTP READER:</b> Select your connected Gmail account below and click <b>SCAN INBOX FOR LIVE OTPs</b>. Any OTP sent to your Dot (`.`) or Plus (`+`) aliases will appear right here!
       </div>
       <div class="card-box">
-        <div class="card-head"><div class="card-title">🔍 SELECT GMAIL INBOX TO READ OTP</div><span class="chip-tag">REALTIME IMAP</span></div>
+        <div class="card-head"><div class="card-title">🔍 SELECT GMAIL INBOX TO READ OTP</div><span class="chip-tag">DIRECT IMAP TLS:993</span></div>
         <div class="grid-2">
           <div class="field">
             <label><span>SELECT CONNECTED GMAIL ACCOUNT</span><span>DROPDOWN</span></label>
             <select id="sel-reader-gmail" class="sel"><option value="ALL">🔍 SCAN ALL CONNECTED GMAIL ACCOUNTS</option></select>
           </div>
           <div class="field">
-            <label><span>NUMBER OF LATEST EMAILS TO SCAN</span><span>1 TO 12</span></label>
-            <input type="number" id="inp-reader-limit" class="inp" value="6" min="1" max="12" />
+            <label><span>NUMBER OF LATEST EMAILS TO SCAN</span><span>1 TO 10</span></label>
+            <input type="number" id="inp-reader-limit" class="inp" value="6" min="1" max="10" />
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
@@ -525,7 +691,7 @@ function renderGmailMasterWebUI() {
       <div class="card-box">
         <div class="card-head"><div class="card-title">📬 INCOMING EMAILS & EXTRACTED OTP CODES</div></div>
         <div class="otp-grid" id="inbox-otp-cards">
-          <div style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:12.5px;">📭 Click <b>"SCAN INBOX FOR LIVE OTP CODES NOW"</b> above to load.</div>
+          <div style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:12.5px;">📭 Click <b>"SCAN INBOX FOR LIVE OTP CODES NOW"</b> above to load your latest OTP emails.</div>
         </div>
       </div>
     </div>
@@ -534,7 +700,7 @@ function renderGmailMasterWebUI() {
     <div id="pane-verify" class="tab-pane">
       <div class="grid-2">
         <div class="card-box">
-          <div class="card-head"><div class="card-title">📤 STEP 1: SEND VERIFICATION OTP</div><span class="chip-tag">SMTP ENGINE</span></div>
+          <div class="card-head"><div class="card-title">📤 STEP 1: SEND VERIFICATION OTP</div><span class="chip-tag">DIRECT SMTP TLS:465</span></div>
           <div class="field">
             <label><span>SEND FROM (YOUR CONNECTED GMAIL)</span><span>SENDER</span></label>
             <select id="sel-sender-gmail" class="sel"></select>
@@ -567,7 +733,7 @@ function renderGmailMasterWebUI() {
         <div class="card-head"><div class="card-title">📢 SEND CUSTOM / BULK MESSAGE TO GMAILS</div><span class="chip-tag">MULTI-RECIPIENT</span></div>
         <div class="grid-2">
           <div class="field">
-            <label><span>RECIPIENT EMAILS (COMMA/NEWLINE)</span><span>UP TO 50</span></label>
+            <label><span>RECIPIENT EMAILS (COMMA/NEWLINE)</span><span>UP TO 30</span></label>
             <textarea id="inp-bulk-emails" class="txtarea" placeholder="friend1@gmail.com&#10;friend2@gmail.com"></textarea>
           </div>
           <div>
@@ -632,7 +798,7 @@ function renderGmailMasterWebUI() {
     <div id="pane-accounts" class="tab-pane">
       <div class="grid-2">
         <div class="card-box">
-          <div class="card-head"><div class="card-title">➕ CONNECT GMAIL & APP PASSWORD</div><span class="chip-tag">SMTP + IMAP</span></div>
+          <div class="card-head"><div class="card-title">➕ CONNECT GMAIL & APP PASSWORD</div><span class="chip-tag">NATIVE TLS</span></div>
           <div class="field">
             <label><span>1. YOUR GMAIL ADDRESS</span><span>*REQUIRED</span></label>
             <input type="email" id="inp-add-gmail" class="inp" placeholder="e.g. kumarkor06@gmail.com" />
@@ -652,7 +818,7 @@ function renderGmailMasterWebUI() {
           <div style="font-size:13px;color:var(--text-sub);line-height:1.7;">
             1️⃣ Open Google Account settings: <code>myaccount.google.com/security</code><br/>
             2️⃣ Ensure <b>2-Step Verification</b> is <b>ON</b>.<br/>
-            3️⃣ Search for <b>"App passwords"</b>.<br/>
+            3️⃣ Search for <b>"App passwords"</b> (<code>myaccount.google.com/apppasswords</code>).<br/>
             4️⃣ Type an App Name (e.g. <code>KumarBot</code>) and click <b>Create</b>.<br/>
             5️⃣ Copy the <b>16-letter App Password</b> (<code>abcd efgh ijkl mnop</code>).<br/>
             6️⃣ Paste it in Box 2 and click Save!
@@ -703,9 +869,6 @@ function renderGmailMasterWebUI() {
 
   <div id="toast-box"></div>
 
-  <!-- ======================================================================
-       3. FRONTEND JAVASCRIPT ENGINE
-       ====================================================================== -->
   <script>
     function copyCodeBlock(elId) {
       navigator.clipboard.writeText(document.getElementById(elId).textContent);
@@ -765,19 +928,19 @@ function renderGmailMasterWebUI() {
         'fetch("' + apiEndpointUrl + '", {\n' +
         '  method: "POST",\n' +
         '  headers: { "Content-Type": "application/json" },\n' +
-        "  body: JSON.stringify({ action: \"send_otp\", webPin: \"252010\", toEmail: \"user@gmail.com\", brandName: \"KUMAR APP\" })\n" +
+        '  body: JSON.stringify({ action: "send_otp", webPin: "252010", toEmail: "user@gmail.com", brandName: "KUMAR APP" })\n' +
         "}).then(r => r.json()).then(console.log);\n\n" +
         "// 2. VERIFY 6-DIGIT OTP CODE\n" +
         'fetch("' + apiEndpointUrl + '", {\n' +
         '  method: "POST",\n' +
         '  headers: { "Content-Type": "application/json" },\n' +
-        "  body: JSON.stringify({ action: \"verify_otp\", webPin: \"252010\", toEmail: \"user@gmail.com\", otpCode: \"123456\" })\n" +
+        '  body: JSON.stringify({ action: "verify_otp", webPin: "252010", toEmail: "user@gmail.com", otpCode: "123456" })\n' +
         "}).then(r => r.json()).then(console.log);\n\n" +
         "// 3. READ LIVE OTP FROM GMAIL INBOX\n" +
         'fetch("' + apiEndpointUrl + '", {\n' +
         '  method: "POST",\n' +
         '  headers: { "Content-Type": "application/json" },\n' +
-        "  body: JSON.stringify({ action: \"read_inbox\", webPin: \"252010\", email: \"ALL\", limit: 5 })\n" +
+        '  body: JSON.stringify({ action: "read_inbox", webPin: "252010", email: "ALL", limit: 5 })\n' +
         "}).then(r => r.json()).then(console.log);";
 
       function toast(msg, color) {
@@ -799,7 +962,7 @@ function renderGmailMasterWebUI() {
       function updateLedCells() {
         for (var i = 0; i < 6; i++) {
           var c = document.getElementById("led-" + i);
-          if (i < typedPin.length) { c.textContent = "★"; c.classList.add("filled"); } 
+          if (i < typedPin.length) { c.textContent = "★"; c.classList.add("filled"); }
           else { c.textContent = "-"; c.classList.remove("filled"); }
         }
         var inp = document.getElementById("direct-pin-inp");
@@ -925,7 +1088,7 @@ function renderGmailMasterWebUI() {
         var targetMail = document.getElementById("sel-reader-gmail").value;
         var lim = document.getElementById("inp-reader-limit").value;
         var container = document.getElementById("inbox-otp-cards");
-        container.innerHTML = "<div style='color:#00f0ff;font-family:monospace;'>⏳ Connecting to Gmail IMAP (imap.gmail.com:993) and scanning latest emails...</div>";
+        container.innerHTML = "<div style='color:#00f0ff;font-family:monospace;'>⏳ Connecting to Gmail IMAP (imap.gmail.com:993 via Native TLS) and scanning latest emails...</div>";
         var d = await callGmailApi("read_inbox", { email: targetMail, limit: lim });
         if (!d || !Array.isArray(d.emails) || d.emails.length === 0) { container.innerHTML = "<div style='color:#94a3b8;font-family:monospace;'>📭 No emails found or no Gmail account connected in Tab 4.</div>"; return; }
         container.innerHTML = "";
@@ -934,14 +1097,14 @@ function renderGmailMasterWebUI() {
             var hasCode = mail.otp && mail.otp !== "NO-OTP";
             var card = document.createElement("div"); card.className = "email-otp-card" + (hasCode ? " has-otp" : "");
             var otpSection = hasCode ? '<div class="otp-big-badge"><div><div style="font-size:10px;color:#94a3b8;">EXTRACTED OTP CODE</div><div class="otp-digits">' + mail.otp + '</div></div><button type="button" class="btn btn-green btn-sm" onclick="copyTextValue(\'' + mail.otp + '\');alert(\'✅ Copied OTP: ' + mail.otp + '\')">📋 COPY OTP</button></div>' : '<div style="margin:8px 0;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:11px;color:#94a3b8;">ℹ️ Standard Email (No 6-digit OTP detected)</div>';
-            card.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:11px;color:#00f0ff;font-family:monospace;margin-bottom:6px;"><span>📥 To: ' + mail.to + '</span><span>🕒 ' + mail.date + '</span></div><div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px;">' + mail.subject + '</div><div style="font-size:11.5px;color:#cbd5e1;margin-bottom:6px;">👤 From: ' + mail.from.replace(/</g, "&lt;") + '</div>' + otpSection + '<div style="font-size:11.5px;color:#94a3b8;line-height:1.45;background:#03060f;padding:10px;border-radius:10px;font-family:monospace;">' + mail.snippet.replace(/</g, "&lt;") + '</div>';
+            card.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:11px;color:#00f0ff;font-family:monospace;margin-bottom:6px;"><span>📥 To: ' + mail.to.replace(/</g, "&lt;") + '</span><span>🕒 ' + mail.date + '</span></div><div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px;">' + mail.subject.replace(/</g, "&lt;") + '</div><div style="font-size:11.5px;color:#cbd5e1;margin-bottom:6px;">👤 From: ' + mail.from.replace(/</g, "&lt;") + '</div>' + otpSection + '<div style="font-size:11.5px;color:#94a3b8;line-height:1.45;background:#03060f;padding:10px;border-radius:10px;font-family:monospace;">' + mail.snippet.replace(/</g, "&lt;") + '</div>';
             container.appendChild(card);
           })(d.emails[i]);
         }
       }
       document.getElementById("btn-scan-inbox").addEventListener("click", scanInboxNow);
       document.getElementById("btn-toggle-radar").addEventListener("click", function () {
-        if (radarTimer) { clearInterval(radarTimer); radarTimer = null; this.textContent = "📡 START AUTO-REFRESH OTP RADAR (EVERY 12s)"; document.getElementById("stat-radar").textContent = "STANDBY"; document.getElementById("stat-radar").style.color = "#94a3b8"; toast("⏹️ Live OTP Radar Stopped.", "#f59e0b"); } 
+        if (radarTimer) { clearInterval(radarTimer); radarTimer = null; this.textContent = "📡 START AUTO-REFRESH OTP RADAR (EVERY 12s)"; document.getElementById("stat-radar").textContent = "STANDBY"; document.getElementById("stat-radar").style.color = "#94a3b8"; toast("⏹️ Live OTP Radar Stopped.", "#f59e0b"); }
         else { scanInboxNow(); radarTimer = setInterval(scanInboxNow, 12000); this.textContent = "⏹️ STOP AUTO-REFRESH OTP RADAR (ACTIVE)"; document.getElementById("stat-radar").textContent = "🟢 SCANNING"; document.getElementById("stat-radar").style.color = "#10b981"; toast("📡 Auto-Refresh OTP Radar Started (Every 12s)!", "#10b981"); }
       });
       document.getElementById("btn-send-verify-otp").addEventListener("click", async function () {
@@ -985,7 +1148,7 @@ function renderGmailMasterWebUI() {
 }
 
 // ============================================================================
-// 7. MAIN SERVERLESS API HANDLER (ANTI-500 ENGINE)
+// 7. MAIN SERVERLESS API HANDLER (100% NATIVE TLS • ZERO NPM PACKAGES)
 // ============================================================================
 module.exports = async (req, res) => {
   if (req.method === "GET") {
@@ -997,11 +1160,10 @@ module.exports = async (req, res) => {
   const { action, webPin } = body;
 
   if (webPin !== undefined && String(webPin) !== MASTER_PIN) {
-    return res.status(403).json({ success: false, reply: "❌ <b>SECURITY ALERT:</b> Invalid Master PIN (252010 Required)!" });
-  }
-
-  if (dependencyError) {
-    return res.status(200).json({ success: false, reply: "❌ <b>SERVER ERROR:</b> " + dependencyError + ".<br/>Please make sure you have added <code>nodemailer</code> and <code>imapflow</code> to your <code>package.json</code>!" });
+    return res.status(403).json({
+      success: false,
+      reply: "❌ <b>SECURITY ALERT:</b> Invalid Master PIN (252010 Required)!"
+    });
   }
 
   try {
@@ -1012,42 +1174,82 @@ module.exports = async (req, res) => {
     if (action === "hub_stats") {
       const safeList = accounts.map(function (a) {
         const cleanP = String(a.appPassword || "");
-        return { email: a.email, label: a.label || "Main Mail", maskedPass: cleanP.substring(0, 4) + " •••• •••• " + cleanP.slice(-4), addedOn: a.addedOn };
+        return {
+          email: a.email,
+          label: a.label || "Main Mail",
+          maskedPass: cleanP.substring(0, 4) + " •••• •••• " + cleanP.slice(-4),
+          addedOn: a.addedOn
+        };
       });
       const otpStore = (await fbGet("gmail_hub/otp_sessions")) || {};
-      return res.status(200).json({ success: true, accounts: safeList, activeOtpsCount: Object.keys(otpStore).length });
+      return res.status(200).json({
+        success: true,
+        accounts: safeList,
+        activeOtpsCount: Object.keys(otpStore).length
+      });
     }
 
-    // ================= 1. ADD & VERIFY GMAIL ACCOUNT =================
+    // ================= 1. ADD & VERIFY GMAIL ACCOUNT (NATIVE TLS) =================
     if (action === "add_gmail") {
-      if (!nodemailer) throw new Error("nodemailer is missing in package.json");
       const email = String(body.email || "").trim().toLowerCase();
       const appPassword = String(body.appPassword || "").replace(/\s+/g, "").trim();
       const label = String(body.label || "Official OTP Mail").trim();
 
       if (!email.includes("@") || appPassword.length < 8) {
-        return res.status(200).json({ success: false, reply: "❌ <b>Invalid Gmail or App Password!</b> Make sure you enter the 16-character Google App Password." });
+        return res.status(200).json({
+          success: false,
+          reply: "❌ <b>Invalid Gmail or App Password!</b> Enter your 16-letter Google App Password."
+        });
       }
 
-      const transporter = nodemailer.createTransport({ service: "gmail", auth: { user: email, pass: appPassword } });
-      await transporter.verify();
+      await nativeGmailSmtpSend({
+        user: email,
+        pass: appPassword,
+        verifyOnly: true
+      });
 
       let updated = false;
       for (let i = 0; i < accounts.length; i++) {
-        if (accounts[i].email === email) { accounts[i].appPassword = appPassword; accounts[i].label = label; updated = true; break; }
+        if (accounts[i].email === email) {
+          accounts[i].appPassword = appPassword;
+          accounts[i].label = label;
+          updated = true;
+          break;
+        }
       }
-      if (!updated) { accounts.push({ email: email, appPassword: appPassword, label: label, addedOn: new Date().toLocaleDateString("en-IN") }); }
+      if (!updated) {
+        accounts.push({
+          email: email,
+          appPassword: appPassword,
+          label: label,
+          addedOn: new Date().toLocaleDateString("en-IN")
+        });
+      }
       await fbSet("gmail_hub/accounts", accounts);
 
-      return res.status(200).json({ success: true, reply: "╔════════════════════════════╗\n   ✅ <b>GMAIL ACCOUNT CONNECTED!</b>\n╚════════════════════════════╝\n📧 <b>Gmail:</b> <code>" + email + "</code>\n🏷️ <b>Label:</b> " + label + "\n🟢 <b>SMTP & IMAP Status:</b> <code>VERIFIED & SAVED</code>" });
+      return res.status(200).json({
+        success: true,
+        reply:
+          "╔════════════════════════════╗\n" +
+          "   ✅ <b>GMAIL ACCOUNT CONNECTED!</b>\n" +
+          "╚════════════════════════════╝\n" +
+          "📧 <b>Gmail:</b> <code>" + email + "</code>\n" +
+          "🏷️ <b>Label:</b> " + label + "\n" +
+          "🟢 <b>Native TLS Status:</b> <code>VERIFIED & SAVED</code>"
+      });
     }
 
     // ================= 2. REMOVE GMAIL ACCOUNT =================
     if (action === "remove_gmail") {
       const targetEmail = String(body.email || "").trim().toLowerCase();
-      accounts = accounts.filter(function (a) { return a.email !== targetEmail; });
+      accounts = accounts.filter(function (a) {
+        return a.email !== targetEmail;
+      });
       await fbSet("gmail_hub/accounts", accounts);
-      return res.status(200).json({ success: true, reply: "🗑️ <b>Removed Gmail Account:</b> <code>" + targetEmail + "</code>" });
+      return res.status(200).json({
+        success: true,
+        reply: "🗑️ <b>Removed Gmail Account:</b> <code>" + targetEmail + "</code>"
+      });
     }
 
     // ================= 3. UNLIMITED DOT (.) & PLUS (+) GENERATOR =================
@@ -1057,37 +1259,82 @@ module.exports = async (req, res) => {
       const mode = body.mode || "both";
       const tag = body.tag || "id";
       const aliases = generateGmailVariations(baseEmail, count, mode, tag);
-      const previewList = aliases.slice(0, 25).map(function (m, i) { return (i + 1) + ". <code>" + m + "</code>"; }).join("\n");
+      const previewList = aliases
+        .slice(0, 25)
+        .map(function (m, i) {
+          return (i + 1) + ". <code>" + m + "</code>";
+        })
+        .join("\n");
 
-      return res.status(200).json({ success: true, baseEmail: baseEmail, totalGenerated: aliases.length, aliases: aliases, reply: "╔════════════════════════════╗\n   ♾️ <b>UNLIMITED GMAILS GENERATED!</b>\n╚════════════════════════════╝\n📧 <b>Main Inbox:</b> <code>" + baseEmail + "</code>\n🔢 <b>Total Generated:</b> <code>" + aliases.length + " Valid Gmails</code>\n\n" + previewList + (aliases.length > 25 ? "\n\n<i>...and " + (aliases.length - 25) + " more!</i>" : "") });
+      return res.status(200).json({
+        success: true,
+        baseEmail: baseEmail,
+        totalGenerated: aliases.length,
+        aliases: aliases,
+        reply:
+          "╔════════════════════════════╗\n" +
+          "   ♾️ <b>UNLIMITED GMAILS GENERATED!</b>\n" +
+          "╚════════════════════════════╝\n" +
+          "📧 <b>Main Inbox:</b> <code>" + baseEmail + "</code>\n" +
+          "🔢 <b>Total Generated:</b> <code>" + aliases.length + " Valid Gmails</code>\n\n" +
+          previewList +
+          (aliases.length > 25 ? "\n\n<i>...and " + (aliases.length - 25) + " more!</i>" : "")
+      });
     }
 
     if (accounts.length === 0) {
-      return res.status(200).json({ success: false, reply: "⚠️ <b>No Gmail Account Connected!</b> Open Tab 4 (➕ ADD GMAIL & APP PASSWORD) and connect your Gmail first." });
+      return res.status(200).json({
+        success: false,
+        reply: "⚠️ <b>No Gmail Account Connected!</b> Open Tab 4 (➕ ADD GMAIL & APP PASS) and connect your Gmail first."
+      });
     }
 
     // ================= 4. SEND 6-DIGIT OTP VERIFICATION EMAIL =================
     if (action === "send_otp") {
-      if (!nodemailer) throw new Error("nodemailer is missing in package.json");
       const toEmail = String(body.toEmail || "").trim().toLowerCase();
       const brandName = String(body.brandName || "KUMAR OTP SECURITY").trim();
-      const senderAcc = accounts.find(function (a) { return a.email === body.fromEmail; }) || accounts[0];
+      const senderAcc =
+        accounts.find(function (a) {
+          return a.email === body.fromEmail;
+        }) || accounts[0];
 
-      if (!toEmail || !toEmail.includes("@")) return res.status(200).json({ success: false, reply: "❌ <b>Invalid Recipient Email Address!</b>" });
+      if (!toEmail || !toEmail.includes("@")) {
+        return res.status(200).json({
+          success: false,
+          reply: "❌ <b>Invalid Recipient Email Address!</b>"
+        });
+      }
 
       const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
       const emailKey = Buffer.from(toEmail).toString("base64").replace(/=/g, "");
-      await fbSet("gmail_hub/otp_sessions/" + emailKey, { email: toEmail, otp: generatedOtp, createdAt: Date.now(), expiresAt: Date.now() + 10 * 60 * 1000 });
+      await fbSet("gmail_hub/otp_sessions/" + emailKey, {
+        email: toEmail,
+        otp: generatedOtp,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 10 * 60 * 1000
+      });
 
-      const transporter = nodemailer.createTransport({ service: "gmail", auth: { user: senderAcc.email, pass: senderAcc.appPassword } });
-      await transporter.sendMail({
-        from: '"' + brandName + '" <' + senderAcc.email + ">",
+      await nativeGmailSmtpSend({
+        user: senderAcc.email,
+        pass: senderAcc.appPassword,
         to: toEmail,
-        subject: "🔐 Your Verification OTP Code is " + generatedOtp + " — " + brandName,
+        fromName: brandName,
+        subject: "Your Verification OTP Code is " + generatedOtp + " - " + brandName,
         html: buildOtpHtmlEmail(generatedOtp, brandName, toEmail)
       });
 
-      return res.status(200).json({ success: true, toEmail: toEmail, senderEmail: senderAcc.email, reply: "╔════════════════════════════╗\n   📤 <b>VERIFICATION OTP SENT!</b>\n╚════════════════════════════╝\n📧 <b>Sent To:</b> <code>" + toEmail + "</code>\n📨 <b>Sent From:</b> <code>" + senderAcc.email + "</code>\n⏳ <b>Validity:</b> <code>10 Minutes</code>\n\n👉 <i>Ask the user to enter their 6-digit OTP to complete verification!</i>" });
+      return res.status(200).json({
+        success: true,
+        toEmail: toEmail,
+        senderEmail: senderAcc.email,
+        reply:
+          "╔════════════════════════════╗\n" +
+          "   📤 <b>VERIFICATION OTP SENT!</b>\n" +
+          "╚════════════════════════════╝\n" +
+          "📧 <b>Sent To:</b> <code>" + toEmail + "</code>\n" +
+          "📨 <b>Sent From:</b> <code>" + senderAcc.email + "</code>\n" +
+          "⏳ <b>Validity:</b> <code>10 Minutes</code>"
+      });
     }
 
     // ================= 5. VERIFY 6-DIGIT OTP CODE =================
@@ -1097,65 +1344,142 @@ module.exports = async (req, res) => {
       const emailKey = Buffer.from(toEmail).toString("base64").replace(/=/g, "");
 
       const record = await fbGet("gmail_hub/otp_sessions/" + emailKey);
-      if (!record || !record.otp) return res.status(200).json({ success: false, verified: false, reply: "❌ <b>No active OTP found for</b> <code>" + toEmail + "</code>! Please request a new OTP." });
-      if (Date.now() > record.expiresAt) { await fbSet("gmail_hub/otp_sessions/" + emailKey, null); return res.status(200).json({ success: false, verified: false, reply: "⌛ <b>OTP Expired!</b> Please send a new OTP." }); }
-      if (String(record.otp) !== otpCode) return res.status(200).json({ success: false, verified: false, reply: "❌ <b>Invalid OTP Code!</b> Please check and try again." });
+      if (!record || !record.otp) {
+        return res.status(200).json({
+          success: false,
+          verified: false,
+          reply: "❌ <b>No active OTP found for</b> <code>" + toEmail + "</code>!"
+        });
+      }
+      if (Date.now() > record.expiresAt) {
+        await fbSet("gmail_hub/otp_sessions/" + emailKey, null);
+        return res.status(200).json({
+          success: false,
+          verified: false,
+          reply: "⌛ <b>OTP Expired!</b> Please request a new OTP."
+        });
+      }
+      if (String(record.otp) !== otpCode) {
+        return res.status(200).json({
+          success: false,
+          verified: false,
+          reply: "❌ <b>Invalid OTP Code!</b>"
+        });
+      }
       await fbSet("gmail_hub/otp_sessions/" + emailKey, null);
 
-      return res.status(200).json({ success: true, verified: true, email: toEmail, reply: "╔════════════════════════════╗\n   🎉 <b>EMAIL OTP VERIFIED!</b>\n╚════════════════════════════╝\n✅ <b>Verified Email:</b> <code>" + toEmail + "</code>\n🔑 <b>OTP Code:</b> <code>" + otpCode + " (MATCHED)</code>\n🛡️ <b>Status:</b> <code>100% AUTHENTICATED</code>" });
+      return res.status(200).json({
+        success: true,
+        verified: true,
+        email: toEmail,
+        reply:
+          "╔════════════════════════════╗\n" +
+          "   🎉 <b>EMAIL OTP VERIFIED!</b>\n" +
+          "╚════════════════════════════╝\n" +
+          "✅ <b>Verified Email:</b> <code>" + toEmail + "</code>\n" +
+          "🔑 <b>OTP Code:</b> <code>" + otpCode + " (MATCHED)</code>"
+      });
     }
 
-    // ================= 6. LIVE GMAIL INBOX & OTP READER (IMAP) =================
+    // ================= 6. LIVE GMAIL INBOX & OTP READER (NATIVE IMAP) =================
     if (action === "read_inbox") {
-      if (!ImapFlow) throw new Error("imapflow is missing in package.json");
       const targetEmail = body.email || "ALL";
       const limitCount = parseInt(body.limit, 10) || 6;
-      const scanAccounts = targetEmail === "ALL" ? accounts : accounts.filter(function (a) { return a.email === targetEmail; });
+      const scanAccounts =
+        targetEmail === "ALL"
+          ? accounts
+          : accounts.filter(function (a) {
+              return a.email === targetEmail;
+            });
       let allEmails = [];
 
       for (let i = 0; i < scanAccounts.length; i++) {
         const acc = scanAccounts[i];
         try {
-          const fetched = await fetchGmailInboxOtps(acc.email, acc.appPassword, limitCount);
+          const fetched = await nativeGmailImapRead(acc.email, acc.appPassword, limitCount);
           allEmails = allEmails.concat(fetched);
         } catch (imapErr) {
-          allEmails.push({ seq: 0, from: "IMAP System", to: acc.email, subject: "⚠️ Could not read inbox: " + imapErr.message, date: new Date().toLocaleTimeString(), otp: "NO-OTP", snippet: "Check if IMAP is enabled and App Password is valid." });
+          allEmails.push({
+            from: "IMAP System",
+            to: acc.email,
+            subject: "⚠️ Could not read inbox: " + imapErr.message,
+            date: new Date().toLocaleTimeString(),
+            otp: "NO-OTP",
+            snippet: "Verify your 16-digit Google App Password."
+          });
         }
       }
 
-      let botFormatted = "╔════════════════════════════╗\n   📩 <b>LIVE GMAIL OTP READER</b>\n╚════════════════════════════╝\n\n";
+      let botFormatted =
+        "╔════════════════════════════╗\n" +
+        "   📩 <b>LIVE GMAIL OTP READER</b>\n" +
+        "╚════════════════════════════╝\n\n";
+
       if (allEmails.length === 0) {
         botFormatted += "📭 No recent emails found in inbox.";
       } else {
         for (let j = 0; j < Math.min(8, allEmails.length); j++) {
           const m = allEmails[j];
-          botFormatted += "<b>[" + (j + 1) + "] " + m.subject + "</b>\n ┣ 📥 <b>To:</b> <code>" + m.to + "</code>\n ┣ 🔑 <b>OTP Code:</b> <code>" + m.otp + "</code>\n ┗ 🕒 " + m.date + "\n\n";
+          botFormatted +=
+            "<b>[" + (j + 1) + "] " + m.subject + "</b>\n" +
+            " ┣ 📥 <b>To:</b> <code>" + m.to + "</code>\n" +
+            " ┣ 🔑 <b>OTP Code:</b> <code>" + m.otp + "</code>\n" +
+            " ┗ 🕒 " + m.date + "\n\n";
         }
       }
-      return res.status(200).json({ success: true, emails: allEmails, reply: botFormatted });
+      return res.status(200).json({
+        success: true,
+        emails: allEmails,
+        reply: botFormatted
+      });
     }
 
     // ================= 7. CUSTOM / BULK EMAIL SENDER =================
     if (action === "send_custom_email") {
-      if (!nodemailer) throw new Error("nodemailer is missing in package.json");
-      const senderAcc = accounts.find(function (a) { return a.email === body.fromEmail; }) || accounts[0];
-      const recipients = String(body.recipients || "").split(/,|\r?\n/).map(function (s) { return s.trim(); }).filter(function (s) { return s.includes("@"); });
+      const senderAcc =
+        accounts.find(function (a) {
+          return a.email === body.fromEmail;
+        }) || accounts[0];
+      const recipients = String(body.recipients || "")
+        .split(/,|\r?\n/)
+        .map(function (s) {
+          return s.trim();
+        })
+        .filter(function (s) {
+          return s.includes("@");
+        });
       const subject = String(body.subject || "Notification").trim();
       const messageHtml = String(body.messageHtml || "").trim();
 
-      const transporter = nodemailer.createTransport({ service: "gmail", auth: { user: senderAcc.email, pass: senderAcc.appPassword } });
       let sentCount = 0;
       for (let i = 0; i < recipients.length; i++) {
         try {
-          await transporter.sendMail({ from: '"' + (senderAcc.label || "Kumar Mail") + '" <' + senderAcc.email + ">", to: recipients[i], subject: subject, html: messageHtml.replace(/\n/g, "<br/>") });
+          await nativeGmailSmtpSend({
+            user: senderAcc.email,
+            pass: senderAcc.appPassword,
+            to: recipients[i],
+            fromName: senderAcc.label || "Kumar Mail",
+            subject: subject,
+            html: messageHtml.replace(/\n/g, "<br/>")
+          });
           sentCount++;
         } catch (e) {}
       }
-      return res.status(200).json({ success: true, sentCount: sentCount, reply: "✅ <b>Email Broadcast Completed!</b>\n📨 <b>Sent From:</b> <code>" + senderAcc.email + "</code>\n🟢 <b>Delivered:</b> <code>" + sentCount + " / " + recipients.length + " Emails</code>" });
+      return res.status(200).json({
+        success: true,
+        sentCount: sentCount,
+        reply:
+          "✅ <b>Email Broadcast Completed!</b>\n" +
+          "📨 <b>Sent From:</b> <code>" + senderAcc.email + "</code>\n" +
+          "🟢 <b>Delivered:</b> <code>" + sentCount + " / " + recipients.length + " Emails</code>"
+      });
     }
 
     return res.status(200).json({ success: false, reply: "⚠️ Unknown API action." });
   } catch (err) {
-    return res.status(200).json({ success: false, reply: "❌ <b>GMAIL ENGINE ERROR:</b> <code>" + (err.message || "Execution failed") + "</code>" });
+    return res.status(200).json({
+      success: false,
+      reply: "❌ <b>GMAIL ENGINE ERROR:</b> <code>" + (err.message || "Execution failed") + "</code>"
+    });
   }
 };
