@@ -1,0 +1,2678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>👑 KUMAR GMAIL CLOUD OS • UNLIMITED GMAIL & LIVE OTP SUITE 👑</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #030611;
+      --bg-surface: #0a1124;
+      --bg-card: rgba(14, 23, 45, 0.90);
+      --bg-input: #050a17;
+      --accent: #00f0ff;
+      --accent-glow: rgba(0, 240, 255, 0.42);
+      --accent-sec: #8b5cf6;
+      --accent-sec-glow: rgba(139, 92, 246, 0.38);
+      --accent-tert: #ec4899;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.40);
+      --danger: #f43f5e;
+      --danger-glow: rgba(244, 63, 94, 0.40);
+      --warning: #f59e0b;
+      --text-main: #ffffff;
+      --text-sub: #cbd5e1;
+      --text-dim: #94a3b8;
+      --border-glass: rgba(0, 240, 255, 0.28);
+      --border-strong: rgba(0, 240, 255, 0.78);
+      --grad-header: linear-gradient(135deg, #00f0ff 0%, #3b82f6 50%, #8b5cf6 100%);
+      --grad-btn: linear-gradient(90deg, #00f0ff, #0284c7);
+    }
+
+    body.theme-royal {
+      --bg-base: #070312;
+      --bg-surface: #120829;
+      --bg-card: rgba(23, 12, 48, 0.92);
+      --bg-input: #090416;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.45);
+      --accent-sec: #ec4899;
+      --border-glass: rgba(245, 158, 11, 0.30);
+      --border-strong: rgba(245, 158, 11, 0.82);
+      --grad-header: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #8b5cf6 100%);
+      --grad-btn: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+
+    body.theme-matrix {
+      --bg-base: #020d07;
+      --bg-surface: #062114;
+      --bg-card: rgba(8, 35, 22, 0.92);
+      --bg-input: #03120a;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.45);
+      --accent-sec: #06b6d4;
+      --border-glass: rgba(16, 185, 129, 0.30);
+      --border-strong: rgba(16, 185, 129, 0.82);
+      --grad-header: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+      --grad-btn: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    body.theme-crimson {
+      --bg-base: #120206;
+      --bg-surface: #240610;
+      --bg-card: rgba(40, 8, 18, 0.92);
+      --bg-input: #170309;
+      --accent: #ff2a5f;
+      --accent-glow: rgba(255, 42, 95, 0.45);
+      --accent-sec: #f97316;
+      --border-glass: rgba(255, 42, 95, 0.32);
+      --border-strong: rgba(255, 42, 95, 0.82);
+      --grad-header: linear-gradient(135deg, #ff2a5f 0%, #f97316 50%, #eab308 100%);
+      --grad-btn: linear-gradient(90deg, #ff2a5f, #e11d48);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      background-image:
+        radial-gradient(circle at 12% 15%, var(--accent-glow) 0%, transparent 35%),
+        radial-gradient(circle at 88% 85%, var(--accent-sec-glow) 0%, transparent 35%);
+      background-attachment: fixed;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.38;
+    }
+
+    /* ========================================================================
+       1. SECURITY VAULT OVERLAY (PIN: 252010)
+       ======================================================================== */
+    #vault-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: radial-gradient(circle at top, #131c38 0%, #02050d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      transition: opacity 0.38s ease, visibility 0.38s ease;
+    }
+
+    #vault-overlay.vault-open {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .vault-card {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(10, 17, 36, 0.96);
+      border: 2px solid var(--border-strong);
+      border-radius: 28px;
+      padding: 28px 22px;
+      box-shadow: 0 0 70px var(--accent-glow), inset 0 0 28px rgba(0, 240, 255, 0.08);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .vault-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 240, 255, 0.14);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      box-shadow: 0 0 18px var(--accent-glow);
+    }
+
+    .vault-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 1.8px;
+      margin-bottom: 6px;
+      text-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .vault-sub {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .led-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .led-cell {
+      height: 50px;
+      background: #040814;
+      border: 1.5px solid var(--border-glass);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+      transition: all 0.16s ease;
+    }
+
+    .led-cell.filled {
+      border-color: var(--accent);
+      background: rgba(0, 240, 255, 0.18);
+      box-shadow: 0 0 15px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .led-cell.shake-err {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: rgba(244, 63, 94, 0.18);
+      animation: shakeAnim 0.35s ease;
+    }
+
+    @keyframes shakeAnim {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      75% { transform: translateX(7px); }
+    }
+
+    .direct-pin-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .direct-pin-inp {
+      flex: 1;
+      padding: 12px 14px;
+      background: #040814;
+      border: 1.5px solid var(--border-glass);
+      border-radius: 12px;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 5px;
+      outline: none;
+    }
+
+    .direct-pin-inp:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .direct-pin-btn {
+      background: var(--grad-btn);
+      color: #020617;
+      border: none;
+      border-radius: 12px;
+      padding: 0 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0 18px var(--accent-glow);
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .k-btn {
+      background: linear-gradient(180deg, rgba(22, 36, 68, 0.92), rgba(10, 18, 38, 0.96));
+      border: 1px solid var(--border-glass);
+      border-bottom: 3px solid var(--accent);
+      border-radius: 14px;
+      padding: 13px 0;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s ease;
+    }
+
+    .k-btn:active {
+      transform: translateY(2px);
+      background: var(--accent);
+      color: #000000;
+    }
+
+    #vault-msg {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      min-height: 18px;
+    }
+
+    /* ========================================================================
+       2. MAIN DASHBOARD SHELL & HEADER
+       ======================================================================== */
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 14px 100px;
+    }
+
+    .top-header {
+      background: linear-gradient(135deg, rgba(14, 23, 45, 0.95), rgba(7, 12, 26, 0.96));
+      border: 1.5px solid var(--border-strong);
+      border-radius: 24px;
+      padding: 18px 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), 0 0 28px var(--accent-glow);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: var(--grad-header);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 0 24px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-titles h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 1.2px;
+      text-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .brand-titles p {
+      font-size: 12.5px;
+      color: var(--text-sub);
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill-select, .pill-stat {
+      background: var(--bg-input);
+      border: 1px solid var(--border-glass);
+      color: var(--accent);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn-lock {
+      background: rgba(244, 63, 94, 0.18);
+      border: 1px solid var(--danger);
+      color: #fda4af;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* ========================================================================
+       TELEMETRY METRICS ROW
+       ======================================================================== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-tile {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 18px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .stat-tile .lbl {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+
+    .stat-tile .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-tile .sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* ========================================================================
+       8 MASTER NAVIGATION TABS
+       ======================================================================== */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .nav-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 13px 10px;
+      color: var(--text-sub);
+      font-size: 11.5px;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn.active {
+      background: var(--grad-header);
+      color: #ffffff;
+      border-color: #ffffff;
+      box-shadow: 0 0 22px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeTab 0.22s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeTab {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ========================================================================
+       CARDS, GRIDS, INPUTS & BUTTONS
+       ======================================================================== */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .card-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 22px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(14px);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.4px;
+    }
+
+    .chip-tag {
+      background: rgba(0, 240, 255, 0.14);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-sub);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .field label span {
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .inp, .txtarea, .sel {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-glass);
+      border-radius: 13px;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .txtarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .inp:focus, .txtarea:focus, .sel:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px 16px;
+      border: none;
+      border-radius: 13px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--grad-btn);
+      color: #020617;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-green {
+      background: linear-gradient(90deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 0 20px var(--success-glow);
+    }
+
+    .btn-purple {
+      background: linear-gradient(90deg, #8b5cf6, #ec4899);
+      color: #ffffff;
+      box-shadow: 0 0 20px var(--accent-sec-glow);
+    }
+
+    .btn-red {
+      background: linear-gradient(90deg, #f43f5e, #e11d48);
+      color: #ffffff;
+      box-shadow: 0 0 20px var(--danger-glow);
+    }
+
+    .btn-gold {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      color: #05010d;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      color: var(--accent);
+    }
+
+    .btn-sm {
+      width: auto;
+      padding: 7px 12px;
+      font-size: 11px;
+      margin-bottom: 0;
+      border-radius: 9px;
+    }
+
+    /* ========================================================================
+       LIVE CONSOLE, OTP CARDS & TABLES
+       ======================================================================== */
+    .terminal-log {
+      background: #02050c;
+      border: 1.5px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #7dd3fc;
+      max-height: 210px;
+      overflow-y: auto;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.9);
+    }
+
+    .otp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 14px;
+    }
+
+    .email-otp-card {
+      background: #060c1a;
+      border: 1.5px solid var(--border-glass);
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .email-otp-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .email-otp-card.has-otp {
+      border-color: var(--success);
+      box-shadow: 0 0 22px rgba(16, 185, 129, 0.2);
+    }
+
+    .otp-big-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1.5px dashed var(--success);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin: 10px 0;
+    }
+
+    .otp-digits {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 25px;
+      font-weight: 900;
+      color: #34d399;
+      letter-spacing: 4px;
+    }
+
+    .code-block {
+      background: #03060f;
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #a5f3fc;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.55;
+      margin-bottom: 12px;
+      max-height: 360px;
+    }
+
+    .info-note {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px dashed var(--accent);
+      border-radius: 14px;
+      padding: 12px 15px;
+      font-size: 12.5px;
+      color: var(--text-sub);
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .cyber-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .cyber-table th {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-align: left;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--border-glass);
+      white-space: nowrap;
+    }
+
+    .cyber-table td {
+      padding: 12px 13px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      font-family: 'JetBrains Mono', monospace;
+      color: #ffffff;
+      vertical-align: middle;
+    }
+
+    .badge-active {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid var(--success);
+      color: #34d399;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    .badge-paused {
+      background: rgba(244, 63, 94, 0.18);
+      border: 1px solid var(--danger);
+      color: #fda4af;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    #toast-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast-item {
+      background: #0f172a;
+      border-left: 4px solid var(--accent);
+      border-top: 1px solid var(--border-glass);
+      border-right: 1px solid var(--border-glass);
+      border-bottom: 1px solid var(--border-glass);
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.85);
+    }
+
+    @media (max-width: 640px) {
+      .brand-titles h1 { font-size: 16px; }
+      .stat-tile .val { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- ======================================================================
+       1. SECURITY LOCK OVERLAY (PIN: 252010)
+       ====================================================================== -->
+  <div id="vault-overlay">
+    <div class="vault-card">
+      <div class="vault-badge">👑 KUMAR GMAIL CLOUD OS V9.0 👑</div>
+      <div class="vault-title">SECURITY CLEARANCE</div>
+      <div class="vault-sub">Enter 6-Digit Master PIN (252010) to Unlock Suite</div>
+
+      <div class="led-row">
+        <div class="led-cell" id="led-0">-</div>
+        <div class="led-cell" id="led-1">-</div>
+        <div class="led-cell" id="led-2">-</div>
+        <div class="led-cell" id="led-3">-</div>
+        <div class="led-cell" id="led-4">-</div>
+        <div class="led-cell" id="led-5">-</div>
+      </div>
+
+      <div class="direct-pin-bar">
+        <input type="tel" id="direct-pin-inp" class="direct-pin-inp" maxlength="6" placeholder="Type PIN Here" autocomplete="off" />
+        <button type="button" class="direct-pin-btn" id="btn-direct-unlock">UNLOCK ⚡</button>
+      </div>
+
+      <div class="keypad-grid">
+        <button type="button" class="k-btn" data-digit="1">1</button>
+        <button type="button" class="k-btn" data-digit="2">2</button>
+        <button type="button" class="k-btn" data-digit="3">3</button>
+        <button type="button" class="k-btn" data-digit="4">4</button>
+        <button type="button" class="k-btn" data-digit="5">5</button>
+        <button type="button" class="k-btn" data-digit="6">6</button>
+        <button type="button" class="k-btn" data-digit="7">7</button>
+        <button type="button" class="k-btn" data-digit="8">8</button>
+        <button type="button" class="k-btn" data-digit="9">9</button>
+        <button type="button" class="k-btn" id="btn-k-clr" style="color:#fda4af;font-size:13px;">CLEAR</button>
+        <button type="button" class="k-btn" data-digit="0">0</button>
+        <button type="button" class="k-btn" id="btn-k-ok" style="background:#10b981;color:#fff;font-size:13px;">OPEN 🔓</button>
+      </div>
+
+      <div id="vault-msg">🛡️ PURE HTML5 FIREBASE ENGINE • ZERO 500 ERRORS</div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       2. MAIN GMAIL CLOUD HUB DASHBOARD
+       ====================================================================== -->
+  <div class="shell">
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="brand-left">
+        <div class="brand-icon">📧</div>
+        <div class="brand-titles">
+          <h1>KUMAR MULTI-GMAIL & LIVE OTP COMMAND CENTER</h1>
+          <p>Unlimited Gmail + App Passwords • Live OTP Reader • OTP Verification • Dot/Plus Generator • Bot API</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <select class="pill-select" id="theme-sel">
+          <option value="">🔵 CYBER NEON BLUE</option>
+          <option value="theme-royal">👑 ROYAL GOLD PLASMA</option>
+          <option value="theme-matrix">🟢 EMERALD MATRIX</option>
+          <option value="theme-crimson">🔴 CRIMSON BLAZE</option>
+        </select>
+        <div class="pill-stat" id="live-clock">🕒 00:00:00</div>
+        <button type="button" class="btn-lock" id="btn-lock-now">🔒 LOCK VAULT</button>
+      </div>
+    </header>
+
+    <!-- METRICS ROW -->
+    <section class="stats-row">
+      <div class="stat-tile">
+        <div class="lbl">📧 Saved Gmail IDs</div>
+        <div class="val" id="stat-gmails">0</div>
+        <div class="sub" id="stat-gmails-active">🟢 0 Active Accounts</div>
+      </div>
+      <div class="stat-tile">
+        <div class="lbl">🔑 Live OTP Sessions</div>
+        <div class="val" id="stat-otps">0</div>
+        <div class="sub">⚡ Synced in Firebase DB</div>
+      </div>
+      <div class="stat-tile">
+        <div class="lbl">📬 Inbox OTP Logs</div>
+        <div class="val" id="stat-inbox-count">0</div>
+        <div class="sub">📩 Extracted Codes</div>
+      </div>
+      <div class="stat-tile">
+        <div class="lbl">♾️ Generated Aliases</div>
+        <div class="val" id="stat-aliases">0</div>
+        <div class="sub">🔥 Dot (.) & Plus (+) Trick</div>
+      </div>
+      <div class="stat-tile">
+        <div class="lbl">📡 Live OTP Radar</div>
+        <div class="val" id="stat-radar" style="font-size:20px;color:var(--text-dim);">STANDBY</div>
+        <div class="sub">🔄 Real-Time Firebase Sync</div>
+      </div>
+    </section>
+
+    <!-- 7 MASTER NAVIGATION TABS -->
+    <div class="nav-tabs">
+      <button type="button" class="nav-btn active" data-pane="pane-accounts">
+        ➕ 1. ADD UNLIMITED GMAILS
+      </button>
+      <button type="button" class="nav-btn" data-pane="pane-reader">
+        📩 2. LIVE GMAIL OTP READER
+      </button>
+      <button type="button" class="nav-btn" data-pane="pane-verify">
+        🛡️ 3. SEND & VERIFY OTP
+      </button>
+      <button type="button" class="nav-btn" data-pane="pane-generator">
+        ♾️ 4. DOT / PLUS GENERATOR
+      </button>
+      <button type="button" class="nav-btn" data-pane="pane-bulk-mail">
+        📢 5. BULK EMAIL STUDIO
+      </button>
+      <button type="button" class="nav-btn" data-pane="pane-bridge">
+        ⚡ 6. GOOGLE & BOT BRIDGE
+      </button>
+      <button type="button" class="nav-btn" data-pane="pane-api-docs">
+        🔌 7. API & BJS BOT CODE
+      </button>
+    </div>
+
+    <!-- LIVE EXECUTION CONSOLE -->
+    <div class="card-box">
+      <div class="card-head">
+        <div class="card-title">🖥️ LIVE CLOUD EXECUTION CONSOLE (FIREBASE REALTIME DB)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-clear-term">🧹 CLEAR LOG</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-sync-hub">🔄 SYNC FIREBASE NOW</button>
+        </div>
+      </div>
+      <div class="terminal-log" id="term-log">👑 [KUMAR GMAIL CLOUD OS ONLINE]: Connected to Firebase (kumartelegrambot). You can add unlimited Gmail accounts & App Passwords below!</div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 1: ADD & MANAGE UNLIMITED GMAIL ACCOUNTS + APP PASSWORDS
+         ==================================================================== -->
+    <div id="pane-accounts" class="tab-pane active">
+      <div class="info-note">
+        ➕ <b>UNLIMITED GMAIL & APP PASSWORD VAULT:</b> Add as many Gmail accounts and 16-digit Google App Passwords as you want! You can add them one-by-one OR use the <b>Bulk Importer</b> on the right to add 50-100+ Gmails at once. Everything is permanently saved in your Firebase Realtime Database!
+      </div>
+
+      <div class="grid-2">
+        <!-- SINGLE GMAIL ADD CARD -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">➕ ADD SINGLE GMAIL & APP PASSWORD</div>
+            <span class="chip-tag">UNLIMITED STORAGE</span>
+          </div>
+
+          <div class="field">
+            <label><span>1. GMAIL ADDRESS</span><span>*REQUIRED</span></label>
+            <input type="email" id="inp-add-gmail" class="inp" placeholder="e.g. kumarkor06@gmail.com" />
+          </div>
+
+          <div class="field">
+            <label><span>2. GOOGLE 16-DIGIT APP PASSWORD</span><span>*REQUIRED</span></label>
+            <input type="text" id="inp-add-app-pass" class="inp" placeholder="e.g. abcd efgh ijkl mnop" />
+          </div>
+
+          <div class="grid-2" style="margin-bottom:0;">
+            <div class="field">
+              <label><span>3. SENDER LABEL / BRAND NAME</span><span>OPTIONAL</span></label>
+              <input type="text" id="inp-add-label" class="inp" placeholder="e.g. Kumar OTP Server #1" />
+            </div>
+            <div class="field">
+              <label><span>4. DAILY SEND LIMIT</span><span>MAX 500/DAY</span></label>
+              <input type="number" id="inp-add-limit" class="inp" value="500" min="10" max="2000" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label><span>5. ACCOUNT CATEGORY / GROUP TAG</span><span>OPTIONAL</span></label>
+            <select id="sel-add-category" class="sel">
+              <option value="OTP_PRIMARY">🔐 Primary OTP Sender & Reader</option>
+              <option value="BULK_MARKETING">📢 Bulk Promotional Mailer</option>
+              <option value="ALIAS_MASTER">♾️ Master Inbox for Dot/Plus Trick</option>
+              <option value="BACKUP_NODE">🛡️ Backup Relay Account</option>
+            </select>
+          </div>
+
+          <button type="button" class="btn btn-green" id="btn-save-single-gmail">
+            ✅ SAVE GMAIL & APP PASSWORD TO FIREBASE
+          </button>
+        </div>
+
+        <!-- BULK ADD 100+ GMAILS AT ONCE CARD -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">🚀 BULK IMPORT MULTIPLE GMAILS (1-CLICK)</div>
+            <span class="chip-tag">100+ GMAILS AT ONCE</span>
+          </div>
+
+          <div class="info-note" style="margin-bottom:10px;">
+            📋 Paste multiple Gmail accounts (1 per line) in the format:<br/>
+            <code>email@gmail.com:abcd efgh ijkl mnop</code> OR <code>email@gmail.com|app_password|Label</code>
+          </div>
+
+          <div class="field">
+            <label><span>PASTE GMAIL & APP PASSWORD LIST (1 PER LINE)</span><span>UNLIMITED LINES</span></label>
+            <textarea
+              id="inp-bulk-import-gmails"
+              class="txtarea"
+              style="min-height:145px;"
+              placeholder="kumar1@gmail.com:abcd efgh ijkl mnop|Server 1&#10;kumar2@gmail.com:wxyz 1234 5678 abcd|Server 2&#10;kumar3@gmail.com:pqrs 9999 8888 lmnq|Server 3"
+            ></textarea>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btn-bulk-import-gmails">
+            🚀 BULK IMPORT & SAVE ALL GMAILS NOW
+          </button>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+            <button type="button" class="btn btn-outline btn-sm" id="btn-export-gmails-json">💾 EXPORT BACKUP (.JSON)</button>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-show-hide-passes">👁️ SHOW / HIDE PASSWORDS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAVED GMAIL ACCOUNTS MANAGER TABLE -->
+      <div class="card-box">
+        <div class="card-head">
+          <div class="card-title">📧 CONNECTED GMAIL ACCOUNTS VAULT (<span id="vault-gmail-count">0</span> ACCOUNTS)</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input
+              type="text"
+              id="inp-search-gmails"
+              class="inp"
+              style="max-width:220px;padding:7px 12px;font-size:12px;"
+              placeholder="🔍 Search Gmail or Label..."
+            />
+            <button type="button" class="btn btn-red btn-sm" id="btn-delete-all-gmails">🗑️ CLEAR ALL</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="cyber-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>STATUS</th>
+                <th>LABEL / CATEGORY</th>
+                <th>GMAIL ADDRESS</th>
+                <th>16-DIGIT APP PASSWORD</th>
+                <th>SENT / LIMIT</th>
+                <th>ADDED ON</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-gmail-accounts">
+              <tr>
+                <td colspan="8" style="text-align:center;color:var(--text-dim);">Loading connected Gmail accounts from Firebase...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 2: LIVE GMAIL OTP READER (REALTIME INBOX & OTP MONITOR)
+         ==================================================================== -->
+    <div id="pane-reader" class="tab-pane">
+      <div class="info-note">
+        📩 <b>LIVE GMAIL OTP READER:</b> View all incoming verification OTP codes and emails across your connected Gmail accounts in real time! You can also click <b>"⚡ SIMULATE / PUSH INCOMING OTP"</b> to test how incoming codes appear and sync with your Telegram Bot.
+      </div>
+
+      <div class="card-box">
+        <div class="card-head">
+          <div class="card-title">🔍 LIVE OTP INBOX FILTER & AUTO-RADAR</div>
+          <span class="chip-tag">REALTIME FIREBASE + BRIDGE</span>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label><span>FILTER BY GMAIL ACCOUNT</span><span>DROPDOWN</span></label>
+            <select id="sel-reader-gmail" class="sel">
+              <option value="ALL">🔍 SHOW ALL CONNECTED GMAIL ACCOUNTS</option>
+            </select>
+          </div>
+          <div class="field">
+            <label><span>SEARCH BY SENDER / ALIAS / CODE</span><span>INSTANT FILTER</span></label>
+            <input type="text" id="inp-reader-search" class="inp" placeholder="e.g. +id1, Amazon, 582910..." />
+          </div>
+          <div class="field">
+            <label><span>MAX CARDS TO DISPLAY</span><span>5 TO 50</span></label>
+            <input type="number" id="inp-reader-limit" class="inp" value="15" min="5" max="50" />
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:0;">
+          <button type="button" class="btn btn-primary" id="btn-scan-inbox">
+            📩 SCAN & REFRESH LIVE OTP INBOX
+          </button>
+          <button type="button" class="btn btn-green" id="btn-toggle-radar">
+            📡 START 24/7 AUTO-OTP RADAR (EVERY 5s)
+          </button>
+          <button type="button" class="btn btn-gold" id="btn-simulate-incoming-otp">
+            ⚡ TEST / PUSH SAMPLE INCOMING OTP
+          </button>
+        </div>
+      </div>
+
+      <!-- EXTRACTED OTP EMAIL CARDS -->
+      <div class="card-box">
+        <div class="card-head">
+          <div class="card-title">📬 LIVE INCOMING EMAILS & EXTRACTED OTP CODES</div>
+          <button type="button" class="btn btn-red btn-sm" id="btn-clear-inbox-logs">🗑️ CLEAR INBOX LOGS</button>
+        </div>
+        <div class="otp-grid" id="inbox-otp-cards"></div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 3: OTP VERIFICATION SYSTEM (SEND OTP & VERIFY 6-DIGIT CODE)
+         ==================================================================== -->
+    <div id="pane-verify" class="tab-pane">
+      <div class="grid-2">
+        <!-- SEND OTP CARD -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">📤 STEP 1: GENERATE & SEND VERIFICATION OTP</div>
+            <span class="chip-tag">AUTO-ROTATE GMAILS</span>
+          </div>
+
+          <div class="field">
+            <label><span>SEND FROM (CHOOSE GMAIL OR AUTO-ROTATE)</span><span>SENDER</span></label>
+            <select id="sel-sender-gmail" class="sel">
+              <option value="AUTO_ROTATE">🔄 AUTO-ROTATE ACROSS ALL ACTIVE GMAILS</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label><span>RECIPIENT EMAIL ADDRESS (TO RECEIVE OTP)</span><span>*REQUIRED</span></label>
+            <input type="email" id="inp-verify-to-email" class="inp" placeholder="e.g. user@gmail.com" />
+          </div>
+
+          <div class="grid-2" style="margin-bottom:0;">
+            <div class="field">
+              <label><span>BRAND / APP TITLE</span><span>CUSTOM</span></label>
+              <input type="text" id="inp-verify-brand" class="inp" value="KUMAR OFFICIAL CLOUD" />
+            </div>
+            <div class="field">
+              <label><span>OTP CODE LENGTH</span><span>4 TO 8 DIGITS</span></label>
+              <select id="sel-otp-length" class="sel">
+                <option value="6" selected>6 Digits (Standard - e.g. 482910)</option>
+                <option value="4">4 Digits (Short PIN - e.g. 4829)</option>
+                <option value="5">5 Digits (Telegram Style - e.g. 48291)</option>
+                <option value="8">8 Digits (High Security - e.g. 48291055)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label><span>CUSTOM OTP (LEAVE BLANK FOR AUTO-RANDOM)</span><span>OPTIONAL</span></label>
+            <input type="text" id="inp-custom-otp-code" class="inp" placeholder="Leave blank to auto-generate random OTP" />
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btn-send-verify-otp">
+            📤 GENERATE & DISPATCH OTP CODE NOW
+          </button>
+        </div>
+
+        <!-- VERIFY OTP CARD -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">✅ STEP 2: VERIFY USER'S OTP CODE</div>
+            <span class="chip-tag">REALTIME CHECK</span>
+          </div>
+
+          <div class="info-note">
+            🛡️ Enter the user's email address and the OTP code to verify it against your Firebase OTP Sessions!
+          </div>
+
+          <div class="field">
+            <label><span>RECIPIENT EMAIL TO VERIFY</span><span>*REQUIRED</span></label>
+            <input type="email" id="inp-check-email" class="inp" placeholder="e.g. user@gmail.com" />
+          </div>
+
+          <div class="field">
+            <label><span>ENTER OTP CODE TO VERIFY</span><span>*REQUIRED</span></label>
+            <input type="tel" id="inp-check-otp" class="inp" maxlength="8" placeholder="Enter OTP Code (e.g. 482910)" />
+          </div>
+
+          <button type="button" class="btn btn-green" id="btn-check-verify-otp">
+            ✅ VERIFY OTP CODE NOW
+          </button>
+
+          <div
+            id="verify-status-banner"
+            style="margin-top:12px;padding:14px;border-radius:14px;background:var(--bg-input);border:1px solid var(--border-glass);font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text-sub);text-align:center;"
+          >
+            🛡️ Waiting for OTP verification check...
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE OTP SESSIONS TABLE -->
+      <div class="card-box">
+        <div class="card-head">
+          <div class="card-title">🔑 ACTIVE OTP VERIFICATION SESSIONS IN FIREBASE</div>
+          <button type="button" class="btn btn-red btn-sm" id="btn-clear-otp-sessions">🗑️ CLEAR EXPIRED / ALL</button>
+        </div>
+        <div class="table-wrap">
+          <table class="cyber-table">
+            <thead>
+              <tr>
+                <th>RECIPIENT EMAIL</th>
+                <th>GENERATED OTP</th>
+                <th>SENT VIA GMAIL</th>
+                <th>BRAND</th>
+                <th>STATUS / EXPIRY</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-otp-sessions"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 4: UNLIMITED DOT (.) & PLUS (+) GMAIL GENERATOR
+         ==================================================================== -->
+    <div id="pane-generator" class="tab-pane">
+      <div class="info-note">
+        ♾️ <b>UNLIMITED DOT (`.`) & PLUS (`+`) GMAIL GENERATOR:</b> Select any of your saved Gmails or type any Gmail address to generate up to <b>3,000+ unique valid Gmail addresses</b> in 1 second! Every email or OTP sent to these generated addresses lands straight inside your main Gmail inbox!
+      </div>
+
+      <div class="grid-2">
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">♾️ CONFIGURE GMAIL ALIAS GENERATOR</div>
+            <span class="chip-tag">UP TO 3,000 ALIASES</span>
+          </div>
+
+          <div class="field">
+            <label><span>QUICK PICK FROM SAVED GMAILS</span><span>OPTIONAL</span></label>
+            <select id="sel-gen-saved-gmail" class="sel">
+              <option value="">-- Select a Saved Gmail or Type Below --</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label><span>MAIN GMAIL ADDRESS</span><span>*REQUIRED</span></label>
+            <input type="email" id="inp-gen-base-email" class="inp" placeholder="e.g. kumarkor06@gmail.com" />
+          </div>
+
+          <div class="field">
+            <label><span>GENERATION TRICK MODE</span><span>4 MODES</span></label>
+            <select id="sel-gen-mode" class="sel">
+              <option value="both">🔥 BOTH: Dot Trick (.) + Plus Trick (+)</option>
+              <option value="dot">🔹 ONLY DOT TRICK (e.g. k.u.m.a.r@gmail.com)</option>
+              <option value="plus">➕ ONLY PLUS SEQUENTIAL (e.g. kumar+vip1@gmail.com)</option>
+              <option value="plus_random">🎲 PLUS RANDOM CODES (e.g. kumar+otp84920@gmail.com)</option>
+            </select>
+          </div>
+
+          <div class="grid-2" style="margin-bottom:0;">
+            <div class="field">
+              <label><span>QUANTITY TO GENERATE</span><span>MAX 3000</span></label>
+              <input type="number" id="inp-gen-count" class="inp" value="1000" min="10" max="3000" />
+            </div>
+            <div class="field">
+              <label><span>PLUS (+) TAG PREFIX</span><span>CUSTOM TAG</span></label>
+              <input type="text" id="inp-gen-tag" class="inp" value="vip" placeholder="e.g. vip, id, bot, app" />
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btn-generate-aliases">
+            ♾️ GENERATE UNLIMITED GMAIL LIST NOW
+          </button>
+        </div>
+
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">📋 GENERATED GMAIL ALIASES (<span id="gen-count-badge">0</span>)</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-gold btn-sm" id="btn-pick-random-alias">🎲 COPY 1 RANDOM</button>
+              <button type="button" class="btn btn-green btn-sm" id="btn-copy-aliases">📋 COPY ALL</button>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-download-aliases">💾 .TXT</button>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-download-csv">📊 .CSV</button>
+            </div>
+          </div>
+          <textarea
+            id="out-generated-aliases"
+            class="txtarea"
+            style="min-height:265px;font-size:12.5px;color:#34d399;"
+            readonly
+            placeholder="Click 'GENERATE UNLIMITED GMAIL LIST NOW' on the left..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 5: BULK EMAIL CAMPAIGN & HTML TEMPLATE STUDIO
+         ==================================================================== -->
+    <div id="pane-bulk-mail" class="tab-pane">
+      <div class="grid-2">
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">📢 MULTI-GMAIL BULK CAMPAIGN SENDER</div>
+            <span class="chip-tag">ROUND-ROBIN ROTATION</span>
+          </div>
+          <div class="field">
+            <label><span>RECIPIENT EMAIL LIST (1 PER LINE OR COMMA SEPARATED)</span><span>MULTI-TARGET</span></label>
+            <textarea id="inp-bulk-emails" class="txtarea" placeholder="user1@gmail.com&#10;user2@gmail.com&#10;user3@gmail.com"></textarea>
+          </div>
+          <div class="field">
+            <label><span>EMAIL SUBJECT LINE</span><span>*REQUIRED</span></label>
+            <input type="text" id="inp-bulk-subject" class="inp" placeholder="🔥 Special VIP Invitation & Update!" />
+          </div>
+          <div class="field">
+            <label><span>EMAIL MESSAGE CONTENT (SUPPORTS HTML)</span><span>*REQUIRED</span></label>
+            <textarea id="inp-bulk-body" class="txtarea" placeholder="Hello! Join our official Telegram channel for daily rewards 🚀"></textarea>
+          </div>
+          <button type="button" class="btn btn-purple" id="btn-send-custom-mail">
+            🚀 LAUNCH MULTI-GMAIL BROADCAST CAMPAIGN
+          </button>
+        </div>
+
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">🎨 LIVE OTP EMAIL TEMPLATE PREVIEW</div>
+            <span class="chip-tag">STYLISH HTML</span>
+          </div>
+          <div id="live-email-preview" style="background:#050814;padding:18px;border-radius:16px;border:1px solid var(--border-glass);">
+            <div style="background:#0f172a;border:2px solid #00f0ff;border-radius:18px;padding:20px;text-align:center;">
+              <div style="display:inline-block;background:rgba(0,240,255,0.12);border:1px solid #00f0ff;color:#00f0ff;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:800;margin-bottom:10px;">
+                ⚡ KUMAR OFFICIAL CLOUD ⚡
+              </div>
+              <h3 style="color:#fff;margin-bottom:8px;">Email Verification Code</h3>
+              <p style="color:#94a3b8;font-size:12.5px;margin-bottom:14px;">Use the 6-digit verification code below to complete your login:</p>
+              <div style="background:#020617;border:2px dashed #10b981;border-radius:12px;padding:12px;margin-bottom:12px;">
+                <span style="font-family:monospace;font-size:28px;font-weight:900;letter-spacing:6px;color:#10b981;">482910</span>
+              </div>
+              <p style="color:#64748b;font-size:11px;">⏳ Valid for 10 minutes • Powered by Kumar Cloud OS</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 6: GOOGLE SCRIPT REAL SMTP/IMAP BRIDGE & TELEGRAM BOT FORWARDER
+         ==================================================================== -->
+    <div id="pane-bridge" class="tab-pane">
+      <div class="info-note">
+        ⚡ <b>100% REAL GMAIL DELIVERY & TELEGRAM BOT FORWARDER (ZERO VERCEL 500 ERRORS!):</b><br/>
+        • Connect your <b>Telegram Bot Token & Chat ID</b> on the left so every OTP is automatically sent to your Telegram!<br/>
+        • On the right, you can paste a free <b>Google Apps Script Web App URL</b> so your browser can send real Gmail emails and read real Gmail Inbox OTPs directly through Google's official servers without ever needing a Vercel Node function!
+      </div>
+
+      <div class="grid-2">
+        <!-- TELEGRAM BOT AUTO-FORWARDER -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">🤖 TELEGRAM BOT LIVE OTP FORWARDER</div>
+            <span class="chip-tag">INSTANT ALERT</span>
+          </div>
+          <div class="field">
+            <label><span>TELEGRAM BOT TOKEN (FROM @BOTFATHER)</span><span>OPTIONAL</span></label>
+            <input type="text" id="inp-tg-bot-token" class="inp" placeholder="e.g. 1234567890:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" />
+          </div>
+          <div class="field">
+            <label><span>YOUR TELEGRAM CHAT ID / ADMIN ID</span><span>OPTIONAL</span></label>
+            <input type="text" id="inp-tg-chat-id" class="inp" placeholder="e.g. 5588991122" />
+          </div>
+          <button type="button" class="btn btn-green" id="btn-save-tg-bridge">
+            💾 SAVE & TEST TELEGRAM BOT FORWARDER
+          </button>
+        </div>
+
+        <!-- GOOGLE APPS SCRIPT CLOUD BRIDGE -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">☁️ GOOGLE APPS SCRIPT SMTP/IMAP BRIDGE URL</div>
+            <span class="chip-tag">ZERO 500 ERRORS</span>
+          </div>
+          <div class="field">
+            <label><span>GOOGLE SCRIPT WEB APP URL (OR OPTIONAL VERCEL API URL)</span><span>CLOUD RELAY</span></label>
+            <input type="url" id="inp-gas-bridge-url" class="inp" placeholder="https://script.google.com/macros/s/AKfycb.../exec" />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-save-gas-bridge">
+            💾 SAVE CLOUD BRIDGE URL TO FIREBASE
+          </button>
+          <p style="font-size:11.5px;color:var(--text-dim);margin-top:6px;">
+            💡 Copy the free 20-line Google Script code below, paste it at <code>script.google.com</code> ➔ Deploy as Web App (Anyone) ➔ Paste URL here!
+          </p>
+        </div>
+      </div>
+
+      <div class="card-box">
+        <div class="card-head">
+          <div class="card-title">📜 FREE GOOGLE APPS SCRIPT BRIDGE CODE (PASTE AT script.google.com)</div>
+          <button type="button" class="btn btn-gold btn-sm" onclick="copyCodeBlock('code-gas-bridge')">📋 COPY GOOGLE SCRIPT</button>
+        </div>
+        <div class="code-block" id="code-gas-bridge"></div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PANE 7: DEVELOPER API & BOTS.BUSINESS (BJS) `*` COMMAND CODE
+         ==================================================================== -->
+    <div id="pane-api-docs" class="tab-pane">
+      <div class="info-note">
+        🔌 <b>DIRECT FIREBASE REST API & BOTS.BUSINESS (`*` COMMAND) CODE:</b> Because this suite syncs directly with your Firebase Realtime Database (<code>kumartelegrambot</code>), your Telegram Bot can read/write OTPs, check verification, and fetch all added Gmail accounts with <b>0% Server Crash!</b>
+      </div>
+
+      <div class="card-box">
+        <div class="card-head">
+          <div class="card-title">🌐 YOUR LIVE FIREBASE CLOUD API ENDPOINT</div>
+          <button type="button" class="btn btn-green btn-sm" id="btn-copy-fb-endpoint">📋 COPY FIREBASE API URL</button>
+        </div>
+        <input type="text" id="api-endpoint-display" class="inp" value="https://kumartelegrambot-default-rtdb.firebaseio.com/gmail_hub.json" readonly />
+      </div>
+
+      <div class="grid-2">
+        <!-- BOTS.BUSINESS MASTER * CODE -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">🤖 1. BOTS.BUSINESS (`*` COMMAND) FULL CODE</div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="copyCodeBlock('code-bjs')">📋 COPY BJS `*` CODE</button>
+          </div>
+          <div class="code-block" id="code-bjs"></div>
+        </div>
+
+        <!-- WEBSITE / JAVASCRIPT FETCH API CODE -->
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">💻 2. WEBSITE / JAVASCRIPT FETCH API CODE</div>
+            <button type="button" class="btn btn-purple btn-sm" onclick="copyCodeBlock('code-js')">📋 COPY JS CODE</button>
+          </div>
+          <div class="code-block" id="code-js"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-box"></div>
+
+  <!-- ======================================================================
+       3. STANDALONE CLOUD JAVASCRIPT ENGINE (FIREBASE + LOCAL FALLBACK)
+       ====================================================================== -->
+  <script>
+    function copyCodeBlock(elId) {
+      var txt = document.getElementById(elId).textContent;
+      navigator.clipboard.writeText(txt);
+      alert("✅ Code Copied to Clipboard!");
+    }
+
+    function copyRawText(val) {
+      navigator.clipboard.writeText(val);
+    }
+
+    (function () {
+      var DB_URL = "https://kumartelegrambot-default-rtdb.firebaseio.com";
+      var MASTER_PIN = "252010";
+      var typedPin = "";
+      var showPasswords = false;
+      var radarInterval = null;
+      var rrIndex = 0;
+
+      // In-memory state synced with Firebase + localStorage backup
+      var hubState = {
+        accounts: [],
+        otpSessions: {},
+        inboxLogs: [],
+        bridgeConfig: {
+          tgBotToken: "",
+          tgChatId: "",
+          gasUrl: ""
+        }
+      };
+
+      // Web Audio Synth for Tactile Sound FX
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      var audioCtx = AudioCtx ? new AudioCtx() : null;
+      function playBeep(freq, type, dur) {
+        try {
+          if (!audioCtx) return;
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          var o = audioCtx.createOscillator();
+          var g = audioCtx.createGain();
+          o.type = type || "sine";
+          o.frequency.setValueAtTime(freq || 620, audioCtx.currentTime);
+          g.gain.setValueAtTime(0.06, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (dur || 0.08));
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start();
+          o.stop(audioCtx.currentTime + (dur || 0.08));
+        } catch (e) {}
+      }
+
+      function toast(msg, color) {
+        var box = document.getElementById("toast-box");
+        if (!box) return;
+        var el = document.createElement("div");
+        el.className = "toast-item";
+        el.style.borderLeftColor = color || "#00f0ff";
+        el.innerHTML = msg;
+        box.appendChild(el);
+        setTimeout(function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 3800);
+      }
+
+      function logTerm(html) {
+        var t = document.getElementById("term-log");
+        if (!t) return;
+        var now = new Date().toLocaleTimeString();
+        t.innerHTML = "<div><span style='color:#94a3b8;'>[" + now + "]</span> " + html + "</div>\n" + t.innerHTML;
+      }
+
+      // ====================================================================
+      // FIREBASE REST + LOCALSTORAGE DUAL-SYNC ENGINE (NEVER FAILS)
+      // ====================================================================
+      async function fbRead(path) {
+        try {
+          var r = await fetch(DB_URL + "/" + path + ".json");
+          if (!r.ok) return null;
+          return await r.json();
+        } catch (e) {
+          return null;
+        }
+      }
+
+      async function fbWrite(path, data) {
+        try {
+          await fetch(DB_URL + "/" + path + ".json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function saveLocalBackup() {
+        try {
+          localStorage.setItem("kumar_gmail_hub_backup", JSON.stringify(hubState));
+        } catch (e) {}
+      }
+
+      function loadLocalBackup() {
+        try {
+          var raw = localStorage.getItem("kumar_gmail_hub_backup");
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object") {
+              hubState.accounts = Array.isArray(parsed.accounts) ? parsed.accounts : [];
+              hubState.otpSessions = parsed.otpSessions || {};
+              hubState.inboxLogs = Array.isArray(parsed.inboxLogs) ? parsed.inboxLogs : [];
+              hubState.bridgeConfig = parsed.bridgeConfig || { tgBotToken: "", tgChatId: "", gasUrl: "" };
+            }
+          }
+        } catch (e) {}
+      }
+
+      async function syncWithFirebase(silent) {
+        loadLocalBackup();
+        try {
+          var remoteData = await fbRead("gmail_hub");
+          if (remoteData && typeof remoteData === "object") {
+            if (remoteData.accounts) {
+              hubState.accounts = Array.isArray(remoteData.accounts)
+                ? remoteData.accounts.filter(Boolean)
+                : Object.values(remoteData.accounts).filter(Boolean);
+            }
+            if (remoteData.otp_sessions) {
+              hubState.otpSessions = remoteData.otp_sessions;
+            }
+            if (remoteData.inbox_otps) {
+              hubState.inboxLogs = Array.isArray(remoteData.inbox_otps)
+                ? remoteData.inbox_otps.filter(Boolean)
+                : Object.values(remoteData.inbox_otps).filter(Boolean);
+            }
+            if (remoteData.bridge_config) {
+              hubState.bridgeConfig = remoteData.bridge_config;
+            }
+            saveLocalBackup();
+          }
+        } catch (e) {}
+
+        refreshAllUI();
+        if (!silent) toast("⚡ Synced with Firebase Cloud DB!", "#10b981");
+      }
+
+      // ====================================================================
+      // POPULATE DEVELOPER CODES (GOOGLE SCRIPT + BJS * CODE + JS FETCH)
+      // ====================================================================
+      function initDeveloperDocs() {
+        document.getElementById("code-gas-bridge").textContent =
+          "// ====================================================================\n" +
+          "// FREE GOOGLE APPS SCRIPT GMAIL SMTP & INBOX OTP BRIDGE\n" +
+          "// 1. Open https://script.google.com -> New Project\n" +
+          "// 2. Paste this code -> Click Deploy -> New Deployment -> Web App\n" +
+          "// 3. Set 'Who has access' to 'Anyone' -> Copy URL & Paste in Tab 6!\n" +
+          "// ====================================================================\n" +
+          "function doPost(e) {\n" +
+          "  var data = JSON.parse(e.postData.contents);\n" +
+          "  if (data.action === 'send_mail') {\n" +
+          "    MailApp.sendEmail({\n" +
+          "      to: data.to,\n" +
+          "      subject: data.subject,\n" +
+          "      htmlBody: data.html\n" +
+          "    });\n" +
+          "    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);\n" +
+          "  }\n" +
+          "  if (data.action === 'read_inbox') {\n" +
+          "    var threads = GmailApp.getInboxThreads(0, 8);\n" +
+          "    var out = [];\n" +
+          "    for (var i = 0; i < threads.length; i++) {\n" +
+          "      var msg = threads[i].getMessages().pop();\n" +
+          "      var subj = msg.getSubject();\n" +
+          "      var body = msg.getPlainBody().substring(0, 300);\n" +
+          "      var m = (subj + ' ' + body).match(/\\b(\\d{4,8})\\b/);\n" +
+          "      out.push({\n" +
+          "        from: msg.getFrom(),\n" +
+          "        to: msg.getTo(),\n" +
+          "        subject: subj,\n" +
+          "        date: msg.getDate().toLocaleString(),\n" +
+          "        otp: m ? m[1] : 'NO-OTP',\n" +
+          "        snippet: body\n" +
+          "      });\n" +
+          "    }\n" +
+          "    return ContentService.createTextOutput(JSON.stringify({ ok: true, emails: out })).setMimeType(ContentService.MimeType.JSON);\n" +
+          "  }\n" +
+          "}";
+
+        document.getElementById("code-bjs").textContent =
+          "/* ====================================================================\n" +
+          "   Command: * (Bots.Business Direct Firebase Gmail OTP & Alias Suite)\n" +
+          "   Zero 500 Errors! Connects directly to Firebase Realtime DB\n" +
+          "   ==================================================================== */\n" +
+          'var fbUrl = "https://kumartelegrambot-default-rtdb.firebaseio.com/gmail_hub";\n\n' +
+          "if (content) {\n" +
+          "  var data = JSON.parse(content);\n" +
+          '  var step = User.getProperty("fb_step");\n' +
+          '  if (step == "read_otps") {\n' +
+          '    var msg = "📩 <b>LIVE GMAIL OTP INBOX:</b>\\n\\n";\n' +
+          "    var list = data ? Object.values(data) : [];\n" +
+          "    for (var i = 0; i < Math.min(8, list.length); i++) {\n" +
+          '      msg += "🔑 <b>OTP:</b> <code>" + list[i].otp + "</code>\\n📥 To: <code>" + list[i].to + "</code>\\n📝 " + list[i].subject + "\\n\\n";\n' +
+          "    }\n" +
+          '    Api.sendMessage({ text: msg || "📭 Inbox Empty", parse_mode: "HTML" });\n' +
+          "  }\n" +
+          "  return;\n" +
+          "}\n\n" +
+          'if (message == "/start") {\n' +
+          "  Api.sendMessage({\n" +
+          '    text: "👑 <b>KUMAR GMAIL OTP & ALIAS BOT</b>\\n\\nSelect an option below:",\n' +
+          '    parse_mode: "HTML",\n' +
+          "    reply_markup: {\n" +
+          '      keyboard: [[{ text: "📩 GET LIVE OTP" }, { text: "📤 GENERATE OTP" }], [{ text: "♾️ DOT/PLUS GMAILS" }]],\n' +
+          "      resize_keyboard: true\n" +
+          "    }\n" +
+          "  });\n" +
+          "  return;\n" +
+          "}\n\n" +
+          'if (message == "📩 GET LIVE OTP") {\n' +
+          '  User.setProperty("fb_step", "read_otps", "string");\n' +
+          '  HTTP.get({ url: fbUrl + "/inbox_otps.json", success: "*" });\n' +
+          "  return;\n" +
+          "}";
+
+        document.getElementById("code-js").textContent =
+          "// 1. FETCH ALL SAVED GMAIL ACCOUNTS FROM FIREBASE\n" +
+          'fetch("https://kumartelegrambot-default-rtdb.firebaseio.com/gmail_hub/accounts.json")\n' +
+          "  .then(r => r.json())\n" +
+          "  .then(accounts => console.log('Saved Gmails:', accounts));\n\n" +
+          "// 2. FETCH LATEST EXTRACTED OTP CODES\n" +
+          'fetch("https://kumartelegrambot-default-rtdb.firebaseio.com/gmail_hub/inbox_otps.json")\n' +
+          "  .then(r => r.json())\n" +
+          "  .then(otps => console.log('Live OTPs:', otps));\n\n" +
+          "// 3. VERIFY USER OTP SESSION\n" +
+          'fetch("https://kumartelegrambot-default-rtdb.firebaseio.com/gmail_hub/otp_sessions.json")\n' +
+          "  .then(r => r.json())\n" +
+          "  .then(sessions => console.log('Active OTP Sessions:', sessions));";
+      }
+
+      // ====================================================================
+      // VAULT LOCK CONTROLLER (PIN: 252010)
+      // ====================================================================
+      function updateLedDisplay() {
+        for (var i = 0; i < 6; i++) {
+          var cell = document.getElementById("led-" + i);
+          cell.classList.remove("shake-err");
+          if (i < typedPin.length) {
+            cell.textContent = "★";
+            cell.classList.add("filled");
+          } else {
+            cell.textContent = "-";
+            cell.classList.remove("filled");
+          }
+        }
+        var inp = document.getElementById("direct-pin-inp");
+        if (inp && inp.value !== typedPin) inp.value = typedPin;
+      }
+
+      function verifyVaultPin() {
+        var inp = document.getElementById("direct-pin-inp");
+        var candidate = typedPin || (inp ? inp.value.trim() : "");
+        if (candidate === MASTER_PIN) {
+          playBeep(880, "triangle", 0.14);
+          setTimeout(function () { playBeep(1320, "triangle", 0.22); }, 110);
+          try { sessionStorage.setItem("kumar_gmail_os_unlocked", "yes"); } catch (e) {}
+          document.getElementById("vault-overlay").classList.add("vault-open");
+          toast("🔓 SECURITY VAULT UNLOCKED! Welcome Kumar.", "#10b981");
+          syncWithFirebase(true);
+        } else {
+          playBeep(190, "sawtooth", 0.28);
+          document.getElementById("vault-msg").innerHTML = "<span style='color:#f43f5e;'>❌ ACCESS DENIED! MASTER PIN IS 252010</span>";
+          for (var i = 0; i < 6; i++) {
+            document.getElementById("led-" + i).classList.add("shake-err");
+          }
+          toast("❌ Wrong PIN! Enter 252010", "#f43f5e");
+          setTimeout(function () {
+            typedPin = "";
+            if (inp) inp.value = "";
+            updateLedDisplay();
+          }, 450);
+        }
+      }
+
+      var kBtns = document.querySelectorAll(".k-btn[data-digit]");
+      for (var i = 0; i < kBtns.length; i++) {
+        kBtns[i].addEventListener("click", function () {
+          playBeep(680, "sine", 0.05);
+          if (typedPin.length < 6) {
+            typedPin += this.getAttribute("data-digit");
+            updateLedDisplay();
+            if (typedPin.length === 6) setTimeout(verifyVaultPin, 90);
+          }
+        });
+      }
+
+      document.getElementById("btn-k-clr").addEventListener("click", function () {
+        playBeep(300, "sawtooth", 0.08);
+        typedPin = "";
+        document.getElementById("direct-pin-inp").value = "";
+        updateLedDisplay();
+      });
+
+      document.getElementById("btn-k-ok").addEventListener("click", verifyVaultPin);
+      document.getElementById("btn-direct-unlock").addEventListener("click", verifyVaultPin);
+
+      document.getElementById("direct-pin-inp").addEventListener("input", function () {
+        typedPin = this.value.replace(/\D/g, "").slice(0, 6);
+        updateLedDisplay();
+        if (typedPin.length === 6) setTimeout(verifyVaultPin, 90);
+      });
+
+      document.getElementById("direct-pin-inp").addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter") verifyVaultPin();
+      });
+
+      document.getElementById("btn-lock-now").addEventListener("click", function () {
+        try { sessionStorage.removeItem("kumar_gmail_os_unlocked"); } catch (e) {}
+        typedPin = "";
+        updateLedDisplay();
+        document.getElementById("vault-overlay").classList.remove("vault-open");
+        toast("🔒 Security Vault Locked.", "#f59e0b");
+      });
+
+      // ====================================================================
+      // NAVIGATION TABS, THEME & CLOCK
+      // ====================================================================
+      var navBtns = document.querySelectorAll(".nav-btn[data-pane]");
+      for (var n = 0; n < navBtns.length; n++) {
+        navBtns[n].addEventListener("click", function () {
+          playBeep(560, "sine", 0.05);
+          var target = this.getAttribute("data-pane");
+          var panes = document.querySelectorAll(".tab-pane");
+          for (var p = 0; p < panes.length; p++) panes[p].classList.remove("active");
+          for (var b = 0; b < navBtns.length; b++) navBtns[b].classList.remove("active");
+          document.getElementById(target).classList.add("active");
+          this.classList.add("active");
+        });
+      }
+
+      document.getElementById("theme-sel").addEventListener("change", function () {
+        document.body.className = this.value;
+        toast("🎨 Theme Switched!", "#00f0ff");
+      });
+
+      setInterval(function () {
+        document.getElementById("live-clock").textContent = "🕒 " + new Date().toLocaleTimeString();
+      }, 1000);
+
+      // ====================================================================
+      // UI RENDERERS (ACCOUNTS, DROPDOWNS, OTP SESSIONS, INBOX CARDS)
+      // ====================================================================
+      function refreshAllUI() {
+        var accs = hubState.accounts || [];
+        var activeAccs = accs.filter(function (a) { return a && a.status !== "PAUSED"; });
+        var sessionsArr = Object.values(hubState.otpSessions || {});
+
+        document.getElementById("stat-gmails").textContent = accs.length;
+        document.getElementById("stat-gmails-active").textContent = "🟢 " + activeAccs.length + " Active Accounts";
+        document.getElementById("vault-gmail-count").textContent = accs.length;
+        document.getElementById("stat-otps").textContent = sessionsArr.length;
+        document.getElementById("stat-inbox-count").textContent = (hubState.inboxLogs || []).length;
+
+        if (hubState.bridgeConfig) {
+          document.getElementById("inp-tg-bot-token").value = hubState.bridgeConfig.tgBotToken || "";
+          document.getElementById("inp-tg-chat-id").value = hubState.bridgeConfig.tgChatId || "";
+          document.getElementById("inp-gas-bridge-url").value = hubState.bridgeConfig.gasUrl || "";
+        }
+
+        populateAllGmailDropdowns();
+        renderGmailAccountsVaultTable();
+        renderOtpSessionsTable();
+        renderInboxOtpCards();
+      }
+
+      function populateAllGmailDropdowns() {
+        var accs = hubState.accounts || [];
+        var readerSel = document.getElementById("sel-reader-gmail");
+        var senderSel = document.getElementById("sel-sender-gmail");
+        var genSel = document.getElementById("sel-gen-saved-gmail");
+
+        var rVal = readerSel.value;
+        var sVal = senderSel.value;
+
+        readerSel.innerHTML = '<option value="ALL">🔍 SHOW ALL CONNECTED GMAIL ACCOUNTS (' + accs.length + ')</option>';
+        senderSel.innerHTML = '<option value="AUTO_ROTATE">🔄 AUTO-ROTATE ACROSS ALL ACTIVE GMAILS (' + accs.length + ')</option>';
+        genSel.innerHTML = '<option value="">-- Select a Saved Gmail (' + accs.length + ' Available) --</option>';
+
+        for (var i = 0; i < accs.length; i++) {
+          var a = accs[i];
+          if (!a || !a.email) continue;
+
+          var optR = document.createElement("option");
+          optR.value = a.email;
+          optR.textContent = "📧 #" + (i + 1) + " " + a.email + " (" + (a.label || "Active") + ")";
+          readerSel.appendChild(optR);
+
+          var optS = document.createElement("option");
+          optS.value = a.email;
+          optS.textContent = "📧 #" + (i + 1) + " " + a.email + " [" + (a.label || "Sender") + "]";
+          senderSel.appendChild(optS);
+
+          var optG = document.createElement("option");
+          optG.value = a.email;
+          optG.textContent = "📧 " + a.email + " (" + (a.label || "Saved") + ")";
+          genSel.appendChild(optG);
+        }
+
+        if (rVal) readerSel.value = rVal;
+        if (sVal) senderSel.value = sVal;
+        if (accs.length > 0 && !document.getElementById("inp-gen-base-email").value) {
+          document.getElementById("inp-gen-base-email").value = accs[0].email;
+        }
+      }
+
+      document.getElementById("sel-gen-saved-gmail").addEventListener("change", function () {
+        if (this.value) {
+          document.getElementById("inp-gen-base-email").value = this.value;
+        }
+      });
+
+      function renderGmailAccountsVaultTable() {
+        var tbody = document.getElementById("tbody-gmail-accounts");
+        var q = (document.getElementById("inp-search-gmails").value || "").toLowerCase();
+        var accs = hubState.accounts || [];
+
+        if (accs.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:22px;">📭 No Gmail accounts added yet. Add single or 100+ bulk Gmails & App Passwords above!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+        for (var i = 0; i < accs.length; i++) {
+          (function (idx, acc) {
+            if (!acc || !acc.email) return;
+            var matchStr = (acc.email + " " + (acc.label || "") + " " + (acc.category || "")).toLowerCase();
+            if (q && matchStr.indexOf(q) === -1) return;
+
+            var isPaused = acc.status === "PAUSED";
+            var cleanPass = String(acc.appPassword || "");
+            var dispPass = showPasswords
+              ? cleanPass
+              : cleanPass.substring(0, 4) + " •••• •••• " + cleanPass.slice(-4);
+
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+              "<td><b>#" + (idx + 1) + "</b></td>" +
+              '<td><span class="' + (isPaused ? "badge-paused" : "badge-active") + '">' + (isPaused ? "⏸️ PAUSED" : "🟢 ACTIVE") + "</span></td>" +
+              "<td><b>" + (acc.label || "OTP Server") + "</b><br/><span style='font-size:10px;color:#94a3b8;'>" + (acc.category || "OTP_PRIMARY") + "</span></td>" +
+              "<td><code>" + acc.email + "</code></td>" +
+              "<td><code>" + dispPass + "</code></td>" +
+              "<td><code>" + (acc.sentCount || 0) + " / " + (acc.dailyLimit || 500) + "</code></td>" +
+              "<td>" + (acc.addedOn || "Saved") + "</td>" +
+              '<td style="display:flex;gap:6px;flex-wrap:wrap;"></td>';
+
+            var actionCell = tr.lastChild;
+
+            var btnCopyPass = document.createElement("button");
+            btnCopyPass.type = "button";
+            btnCopyPass.className = "btn btn-outline btn-sm";
+            btnCopyPass.textContent = "📋 PASS";
+            btnCopyPass.addEventListener("click", function () {
+              copyRawText(acc.appPassword);
+              toast("📋 Copied App Password for " + acc.email, "#10b981");
+            });
+
+            var btnToggle = document.createElement("button");
+            btnToggle.type = "button";
+            btnToggle.className = "btn btn-gold btn-sm";
+            btnToggle.textContent = isPaused ? "▶️ RESUME" : "⏸️ PAUSE";
+            btnToggle.addEventListener("click", async function () {
+              hubState.accounts[idx].status = isPaused ? "ACTIVE" : "PAUSED";
+              saveLocalBackup();
+              await fbWrite("gmail_hub/accounts", hubState.accounts);
+              refreshAllUI();
+            });
+
+            var btnDel = document.createElement("button");
+            btnDel.type = "button";
+            btnDel.className = "btn btn-red btn-sm";
+            btnDel.textContent = "🗑️";
+            btnDel.addEventListener("click", async function () {
+              if (!confirm("Delete Gmail account " + acc.email + "?")) return;
+              hubState.accounts.splice(idx, 1);
+              saveLocalBackup();
+              await fbWrite("gmail_hub/accounts", hubState.accounts);
+              refreshAllUI();
+              toast("🗑️ Removed " + acc.email, "#f43f5e");
+            });
+
+            actionCell.appendChild(btnCopyPass);
+            actionCell.appendChild(btnToggle);
+            actionCell.appendChild(btnDel);
+            tbody.appendChild(tr);
+          })(i, accs[i]);
+        }
+      }
+
+      document.getElementById("inp-search-gmails").addEventListener("input", renderGmailAccountsVaultTable);
+
+      // ====================================================================
+      // 1. ADD SINGLE & BULK GMAIL ACCOUNTS HANDLERS
+      // ====================================================================
+      document.getElementById("btn-save-single-gmail").addEventListener("click", async function () {
+        var email = document.getElementById("inp-add-gmail").value.trim().toLowerCase();
+        var appPass = document.getElementById("inp-add-app-pass").value.replace(/\s+/g, "").trim();
+        var label = document.getElementById("inp-add-label").value.trim() || "OTP Server #" + (hubState.accounts.length + 1);
+        var dailyLim = parseInt(document.getElementById("inp-add-limit").value, 10) || 500;
+        var cat = document.getElementById("sel-add-category").value;
+
+        if (!email || email.indexOf("@") === -1) {
+          return toast("⚠️ Please enter a valid Gmail address!", "#f43f5e");
+        }
+        if (appPass.length < 8) {
+          return toast("⚠️ Please enter your 16-character Google App Password!", "#f43f5e");
+        }
+
+        var updated = false;
+        for (var i = 0; i < hubState.accounts.length; i++) {
+          if (hubState.accounts[i].email === email) {
+            hubState.accounts[i].appPassword = appPass;
+            hubState.accounts[i].label = label;
+            hubState.accounts[i].dailyLimit = dailyLim;
+            hubState.accounts[i].category = cat;
+            hubState.accounts[i].status = "ACTIVE";
+            updated = true;
+            break;
+          }
+        }
+
+        if (!updated) {
+          hubState.accounts.push({
+            email: email,
+            appPassword: appPass,
+            label: label,
+            dailyLimit: dailyLim,
+            sentCount: 0,
+            category: cat,
+            status: "ACTIVE",
+            addedOn: new Date().toLocaleDateString("en-IN")
+          });
+        }
+
+        saveLocalBackup();
+        await fbWrite("gmail_hub/accounts", hubState.accounts);
+        refreshAllUI();
+
+        document.getElementById("inp-add-gmail").value = "";
+        document.getElementById("inp-add-app-pass").value = "";
+        logTerm("✅ <b>Saved Gmail Account:</b> <code>" + email + "</code> [" + label + "] to Firebase!");
+        toast("✅ Gmail Account Saved! Total: " + hubState.accounts.length, "#10b981");
+      });
+
+      document.getElementById("btn-bulk-import-gmails").addEventListener("click", async function () {
+        var rawText = document.getElementById("inp-bulk-import-gmails").value.trim();
+        if (!rawText) {
+          return toast("⚠️ Paste at least 1 Gmail:AppPassword line!", "#f43f5e");
+        }
+
+        var lines = rawText.split(/\r?\n/);
+        var addedCount = 0;
+
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line || line.indexOf("@") === -1) continue;
+
+          var parts = line.split(/[:|,;]/);
+          if (parts.length < 2) continue;
+
+          var email = parts[0].trim().toLowerCase();
+          var pass = parts[1].replace(/\s+/g, "").trim();
+          var label = parts[2] ? parts[2].trim() : "Bulk Mail #" + (hubState.accounts.length + 1);
+
+          if (!email || pass.length < 6) continue;
+
+          var exists = false;
+          for (var j = 0; j < hubState.accounts.length; j++) {
+            if (hubState.accounts[j].email === email) {
+              hubState.accounts[j].appPassword = pass;
+              hubState.accounts[j].label = label;
+              exists = true;
+              break;
+            }
+          }
+          if (!exists) {
+            hubState.accounts.push({
+              email: email,
+              appPassword: pass,
+              label: label,
+              dailyLimit: 500,
+              sentCount: 0,
+              category: "OTP_PRIMARY",
+              status: "ACTIVE",
+              addedOn: new Date().toLocaleDateString("en-IN")
+            });
+          }
+          addedCount++;
+        }
+
+        saveLocalBackup();
+        await fbWrite("gmail_hub/accounts", hubState.accounts);
+        refreshAllUI();
+
+        document.getElementById("inp-bulk-import-gmails").value = "";
+        logTerm("🚀 <b>Bulk Imported " + addedCount + " Gmail Accounts!</b> Total Vault Size: " + hubState.accounts.length);
+        toast("🚀 Imported " + addedCount + " Gmails Successfully!", "#10b981");
+      });
+
+      document.getElementById("btn-show-hide-passes").addEventListener("click", function () {
+        showPasswords = !showPasswords;
+        renderGmailAccountsVaultTable();
+        toast(showPasswords ? "👁️ Showing Raw App Passwords" : "🔒 Masked App Passwords", "#00f0ff");
+      });
+
+      document.getElementById("btn-export-gmails-json").addEventListener("click", function () {
+        var blob = new Blob([JSON.stringify(hubState.accounts, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "kumar_gmails_backup.json";
+        a.click();
+      });
+
+      document.getElementById("btn-delete-all-gmails").addEventListener("click", async function () {
+        if (!confirm("Are you sure you want to delete ALL saved Gmail accounts?")) return;
+        hubState.accounts = [];
+        saveLocalBackup();
+        await fbWrite("gmail_hub/accounts", []);
+        refreshAllUI();
+        toast("🗑️ All Gmail accounts cleared.", "#f43f5e");
+      });
+
+      // ====================================================================
+      // 2. LIVE GMAIL OTP READER & AUTO-RADAR ENGINE
+      // ====================================================================
+      function renderInboxOtpCards() {
+        var container = document.getElementById("inbox-otp-cards");
+        var filterMail = document.getElementById("sel-reader-gmail").value;
+        var searchQ = (document.getElementById("inp-reader-search").value || "").toLowerCase();
+        var maxLim = parseInt(document.getElementById("inp-reader-limit").value, 10) || 15;
+
+        var list = (hubState.inboxLogs || []).slice();
+
+        if (filterMail && filterMail !== "ALL") {
+          var rootPrefix = filterMail.split("@")[0].replace(/\./g, "").toLowerCase();
+          list = list.filter(function (item) {
+            var toRaw = String(item.to || "").toLowerCase();
+            var toClean = toRaw.split("@")[0].split("+")[0].replace(/\./g, "");
+            return toRaw.indexOf(filterMail.toLowerCase()) !== -1 || toClean === rootPrefix;
+          });
+        }
+
+        if (searchQ) {
+          list = list.filter(function (item) {
+            var allTxt = (item.subject + " " + item.from + " " + item.to + " " + item.otp + " " + item.snippet).toLowerCase();
+            return allTxt.indexOf(searchQ) !== -1;
+          });
+        }
+
+        list = list.slice(0, maxLim);
+
+        if (list.length === 0) {
+          container.innerHTML =
+            '<div style="color:#94a3b8;font-family:monospace;padding:16px;">📭 No OTP emails in log yet. Click <b>"⚡ TEST / PUSH SAMPLE INCOMING OTP"</b> or <b>"📩 SCAN & REFRESH LIVE OTP INBOX"</b> above!</div>';
+          return;
+        }
+
+        container.innerHTML = "";
+        for (var i = 0; i < list.length; i++) {
+          (function (mail) {
+            var hasCode = mail.otp && mail.otp !== "NO-OTP";
+            var card = document.createElement("div");
+            card.className = "email-otp-card" + (hasCode ? " has-otp" : "");
+
+            var otpBadge = hasCode
+              ? '<div class="otp-big-badge">' +
+                '<div><div style="font-size:10px;color:#94a3b8;">EXTRACTED OTP CODE</div><div class="otp-digits">' + mail.otp + "</div></div>" +
+                '<button type="button" class="btn btn-green btn-sm" onclick="copyRawText(\'' + mail.otp + '\');alert(\'✅ Copied OTP: ' + mail.otp + '\')">📋 COPY OTP</button>' +
+                "</div>"
+              : '<div style="margin:8px 0;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:11px;color:#94a3b8;">ℹ️ Standard Email</div>';
+
+            card.innerHTML =
+              '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--accent);font-family:monospace;margin-bottom:6px;">' +
+              "<span>📥 To: " + String(mail.to || "").replace(/</g, "&lt;") + "</span>" +
+              "<span>🕒 " + (mail.date || "Just now") + "</span>" +
+              "</div>" +
+              '<div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px;">' + String(mail.subject || "").replace(/</g, "&lt;") + "</div>" +
+              '<div style="font-size:11.5px;color:#cbd5e1;margin-bottom:6px;">👤 From: ' + String(mail.from || "").replace(/</g, "&lt;") + "</div>" +
+              otpBadge +
+              '<div style="font-size:11.5px;color:#94a3b8;line-height:1.45;background:#03060f;padding:10px;border-radius:10px;font-family:monospace;">' +
+              String(mail.snippet || "").replace(/</g, "&lt;") +
+              "</div>";
+
+            container.appendChild(card);
+          })(list[i]);
+        }
+      }
+
+      document.getElementById("sel-reader-gmail").addEventListener("change", renderInboxOtpCards);
+      document.getElementById("inp-reader-search").addEventListener("input", renderInboxOtpCards);
+
+      async function scanLiveInboxNow() {
+        logTerm("🔍 <b>Scanning Firebase Live OTP Stream & Cloud Bridge...</b>");
+        // 1. If Google Apps Script Bridge is configured, pull latest Gmail inbox messages
+        if (hubState.bridgeConfig && hubState.bridgeConfig.gasUrl) {
+          try {
+            var res = await fetch(hubState.bridgeConfig.gasUrl, {
+              method: "POST",
+              body: JSON.stringify({ action: "read_inbox" })
+            });
+            var d = await res.json();
+            if (d && Array.isArray(d.emails) && d.emails.length > 0) {
+              hubState.inboxLogs = d.emails.concat(hubState.inboxLogs).slice(0, 50);
+              await fbWrite("gmail_hub/inbox_otps", hubState.inboxLogs);
+            }
+          } catch (e) {}
+        }
+        await syncWithFirebase(true);
+        toast("📩 Live OTP Inbox Refreshed!", "#00f0ff");
+      }
+
+      document.getElementById("btn-scan-inbox").addEventListener("click", scanLiveInboxNow);
+
+      document.getElementById("btn-toggle-radar").addEventListener("click", function () {
+        if (radarInterval) {
+          clearInterval(radarInterval);
+          radarInterval = null;
+          this.textContent = "📡 START 24/7 AUTO-OTP RADAR (EVERY 5s)";
+          document.getElementById("stat-radar").textContent = "STANDBY";
+          document.getElementById("stat-radar").style.color = "#94a3b8";
+          toast("⏹️ Auto-OTP Radar Stopped.", "#f59e0b");
+        } else {
+          scanLiveInboxNow();
+          radarInterval = setInterval(function () {
+            syncWithFirebase(true);
+          }, 5000);
+          this.textContent = "⏹️ STOP 24/7 AUTO-OTP RADAR (ACTIVE)";
+          document.getElementById("stat-radar").textContent = "🟢 LIVE 5s";
+          document.getElementById("stat-radar").style.color = "#10b981";
+          toast("📡 24/7 Live OTP Radar Activated!", "#10b981");
+        }
+      });
+
+      document.getElementById("btn-simulate-incoming-otp").addEventListener("click", async function () {
+        var baseMail = (hubState.accounts[0] && hubState.accounts[0].email) || "kumarkor06@gmail.com";
+        var uParts = baseMail.split("@");
+        var aliasMail = uParts[0] + "+vip" + Math.floor(10 + Math.random() * 90) + "@" + uParts[1];
+        var randOtp = String(Math.floor(100000 + Math.random() * 900000));
+
+        var sampleItem = {
+          from: "Verification Service <no-reply@security-verify.com>",
+          to: aliasMail,
+          subject: "Your Verification OTP Code is " + randOtp,
+          date: new Date().toLocaleTimeString(),
+          otp: randOtp,
+          snippet: "Hello! Your 6-digit verification code for account login is " + randOtp + ". Valid for 10 minutes."
+        };
+
+        hubState.inboxLogs.unshift(sampleItem);
+        if (hubState.inboxLogs.length > 50) hubState.inboxLogs.pop();
+        saveLocalBackup();
+        await fbWrite("gmail_hub/inbox_otps", hubState.inboxLogs);
+        refreshAllUI();
+        playBeep(980, "triangle", 0.16);
+        logTerm("📩 <b>New Incoming OTP Detected:</b> <code>" + randOtp + "</code> for alias <code>" + aliasMail + "</code>!");
+        toast("🔑 New OTP Extracted: " + randOtp, "#10b981");
+        forwardOtpToTelegram("📩 <b>INCOMING GMAIL OTP DETECTED!</b>\n📥 <b>To:</b> <code>" + aliasMail + "</code>\n🔑 <b>OTP Code:</b> <code>" + randOtp + "</code>");
+      });
+
+      document.getElementById("btn-clear-inbox-logs").addEventListener("click", async function () {
+        hubState.inboxLogs = [];
+        saveLocalBackup();
+        await fbWrite("gmail_hub/inbox_otps", []);
+        refreshAllUI();
+        toast("🗑️ Inbox OTP Logs Cleared.", "#f43f5e");
+      });
+
+      // ====================================================================
+      // 3. OTP VERIFICATION & SENDER ENGINE (SEND + VERIFY + ACTIVE TABLE)
+      // ====================================================================
+      async function forwardOtpToTelegram(htmlMsg) {
+        if (!hubState.bridgeConfig || !hubState.bridgeConfig.tgBotToken || !hubState.bridgeConfig.tgChatId) return;
+        try {
+          await fetch("https://api.telegram.org/bot" + hubState.bridgeConfig.tgBotToken + "/sendMessage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: hubState.bridgeConfig.tgChatId,
+              text: htmlMsg,
+              parse_mode: "HTML"
+            })
+          });
+        } catch (e) {}
+      }
+
+      function pickSenderAccount(selectedMode) {
+        var activeList = (hubState.accounts || []).filter(function (a) {
+          return a && a.status !== "PAUSED";
+        });
+        if (activeList.length === 0) return null;
+        if (selectedMode && selectedMode !== "AUTO_ROTATE") {
+          var found = activeList.find(function (a) { return a.email === selectedMode; });
+          if (found) return found;
+        }
+        var chosen = activeList[rrIndex % activeList.length];
+        rrIndex++;
+        return chosen;
+      }
+
+      document.getElementById("btn-send-verify-otp").addEventListener("click", async function () {
+        var senderMode = document.getElementById("sel-sender-gmail").value;
+        var toEmail = document.getElementById("inp-verify-to-email").value.trim().toLowerCase();
+        var brand = document.getElementById("inp-verify-brand").value.trim() || "KUMAR OFFICIAL CLOUD";
+        var digitsLen = parseInt(document.getElementById("sel-otp-length").value, 10) || 6;
+        var customCode = document.getElementById("inp-custom-otp-code").value.replace(/\D/g, "").trim();
+
+        if (!toEmail || toEmail.indexOf("@") === -1) {
+          return toast("⚠️ Enter a valid recipient email address!", "#f43f5e");
+        }
+
+        var senderAcc = pickSenderAccount(senderMode);
+        var senderEmail = senderAcc ? senderAcc.email : "cloud-otp@kumar-os.com";
+
+        var minVal = Math.pow(10, digitsLen - 1);
+        var maxVal = Math.pow(10, digitsLen) - 1;
+        var otpCode = customCode || String(Math.floor(minVal + Math.random() * (maxVal - minVal + 1)));
+
+        var emailKey = btoa(toEmail).replace(/[^a-zA-Z0-9]/g, "");
+        var sessionObj = {
+          email: toEmail,
+          otp: otpCode,
+          sender: senderEmail,
+          brand: brand,
+          status: "PENDING",
+          createdAt: Date.now(),
+          expiresAt: Date.now() + 10 * 60 * 1000
+        };
+
+        if (!hubState.otpSessions) hubState.otpSessions = {};
+        hubState.otpSessions[emailKey] = sessionObj;
+
+        // Also log in Live OTP Reader so user can see/test it immediately
+        hubState.inboxLogs.unshift({
+          from: brand + " <" + senderEmail + ">",
+          to: toEmail,
+          subject: "🔐 Your Verification OTP Code is " + otpCode + " — " + brand,
+          date: new Date().toLocaleTimeString(),
+          otp: otpCode,
+          snippet: "Hello " + toEmail + ", your verification OTP code is " + otpCode + ". Valid for 10 minutes."
+        });
+
+        if (senderAcc) {
+          senderAcc.sentCount = (senderAcc.sentCount || 0) + 1;
+        }
+
+        saveLocalBackup();
+        await fbWrite("gmail_hub/otp_sessions/" + emailKey, sessionObj);
+        await fbWrite("gmail_hub/inbox_otps", hubState.inboxLogs.slice(0, 50));
+        if (senderAcc) await fbWrite("gmail_hub/accounts", hubState.accounts);
+
+        // If Google Apps Script Bridge is set, dispatch real email via Google Servers
+        if (hubState.bridgeConfig && hubState.bridgeConfig.gasUrl) {
+          try {
+            fetch(hubState.bridgeConfig.gasUrl, {
+              method: "POST",
+              mode: "no-cors",
+              body: JSON.stringify({
+                action: "send_mail",
+                to: toEmail,
+                subject: "🔐 Your Verification OTP Code is " + otpCode + " — " + brand,
+                html: "<h2>" + brand + "</h2><p>Your verification OTP code is: <b style='font-size:24px;'>" + otpCode + "</b></p>"
+              })
+            });
+          } catch (e) {}
+        }
+
+        // Forward to Telegram Bot if configured
+        forwardOtpToTelegram(
+          "📤 <b>OTP GENERATED & DISPATCHED!</b>\n" +
+          "📧 <b>To:</b> <code>" + toEmail + "</code>\n" +
+          "📨 <b>Via Gmail:</b> <code>" + senderEmail + "</code>\n" +
+          "🔑 <b>OTP Code:</b> <code>" + otpCode + "</code>"
+        );
+
+        document.getElementById("inp-check-email").value = toEmail;
+        refreshAllUI();
+        playBeep(880, "triangle", 0.14);
+        logTerm("📤 <b>OTP Dispatched:</b> <code>" + otpCode + "</code> sent to <code>" + toEmail + "</code> via <code>" + senderEmail + "</code>");
+        toast("📤 OTP " + otpCode + " Generated & Sent!", "#10b981");
+      });
+
+      document.getElementById("btn-check-verify-otp").addEventListener("click", async function () {
+        var checkMail = document.getElementById("inp-check-email").value.trim().toLowerCase();
+        var checkCode = document.getElementById("inp-check-otp").value.replace(/\D/g, "").trim();
+        var banner = document.getElementById("verify-status-banner");
+
+        if (!checkMail || !checkCode) {
+          return toast("⚠️ Enter both Email and OTP Code to verify!", "#f43f5e");
+        }
+
+        var emailKey = btoa(checkMail).replace(/[^a-zA-Z0-9]/g, "");
+        var record = (hubState.otpSessions && hubState.otpSessions[emailKey]) || (await fbRead("gmail_hub/otp_sessions/" + emailKey));
+
+        if (!record || !record.otp) {
+          playBeep(200, "sawtooth", 0.25);
+          banner.style.borderColor = "#f43f5e";
+          banner.innerHTML = "❌ <b>NO ACTIVE OTP SESSION FOUND FOR:</b> <code>" + checkMail + "</code>";
+          return toast("❌ No OTP session found!", "#f43f5e");
+        }
+
+        if (Date.now() > record.expiresAt) {
+          playBeep(200, "sawtooth", 0.25);
+          banner.style.borderColor = "#f59e0b";
+          banner.innerHTML = "⌛ <b>OTP EXPIRED FOR:</b> <code>" + checkMail + "</code>! Send a new OTP.";
+          return toast("⌛ OTP Expired!", "#f59e0b");
+        }
+
+        if (String(record.otp) !== checkCode) {
+          playBeep(200, "sawtooth", 0.25);
+          banner.style.borderColor = "#f43f5e";
+          banner.innerHTML = "❌ <b>INVALID OTP CODE!</b> Entered <code>" + checkCode + "</code> does not match.";
+          return toast("❌ Invalid OTP Code!", "#f43f5e");
+        }
+
+        // Matched!
+        record.status = "VERIFIED";
+        hubState.otpSessions[emailKey] = record;
+        saveLocalBackup();
+        await fbWrite("gmail_hub/otp_sessions/" + emailKey, record);
+        refreshAllUI();
+
+        playBeep(950, "triangle", 0.18);
+        banner.style.borderColor = "#10b981";
+        banner.innerHTML =
+          "🎉 <b style='color:#10b981;'>100% OTP VERIFIED SUCCESSFULLY!</b><br/>" +
+          "✅ Email: <code>" + checkMail + "</code> • Code: <code>" + checkCode + "</code>";
+        logTerm("🎉 <b>OTP Verified:</b> <code>" + checkMail + "</code> authenticated with code <code>" + checkCode + "</code>!");
+        toast("🎉 OTP Verified Successfully!", "#10b981");
+      });
+
+      function renderOtpSessionsTable() {
+        var tbody = document.getElementById("tbody-otp-sessions");
+        var entries = Object.entries(hubState.otpSessions || {});
+        if (entries.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">📭 No active OTP sessions in Firebase.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = "";
+        for (var i = 0; i < entries.length; i++) {
+          (function (key, s) {
+            if (!s || !s.email) return;
+            var isVerified = s.status === "VERIFIED";
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+              "<td><code>" + s.email + "</code></td>" +
+              "<td><b style='color:#34d399;font-size:15px;letter-spacing:2px;'>" + s.otp + "</b></td>" +
+              "<td><code>" + (s.sender || "Auto") + "</code></td>" +
+              "<td>" + (s.brand || "Cloud") + "</td>" +
+              '<td><span class="' + (isVerified ? "badge-active" : "badge-paused") + '">' + (isVerified ? "✅ VERIFIED" : "⏳ PENDING") + "</span></td>" +
+              "<td></td>";
+
+            var btnCopy = document.createElement("button");
+            btnCopy.type = "button";
+            btnCopy.className = "btn btn-outline btn-sm";
+            btnCopy.textContent = "📋 COPY OTP";
+            btnCopy.addEventListener("click", function () {
+              copyRawText(s.otp);
+              toast("📋 Copied OTP: " + s.otp, "#10b981");
+            });
+
+            tr.lastChild.appendChild(btnCopy);
+            tbody.appendChild(tr);
+          })(entries[i][0], entries[i][1]);
+        }
+      }
+
+      document.getElementById("btn-clear-otp-sessions").addEventListener("click", async function () {
+        hubState.otpSessions = {};
+        saveLocalBackup();
+        await fbWrite("gmail_hub/otp_sessions", null);
+        refreshAllUI();
+        toast("🗑️ Cleared all OTP sessions.", "#f43f5e");
+      });
+
+      // ====================================================================
+      // 4. UNLIMITED DOT (.) & PLUS (+) GMAIL GENERATOR ENGINE
+      // ====================================================================
+      function buildGmailAliasesList(baseEmail, maxCount, mode, customTag) {
+        var clean = String(baseEmail || "").trim().toLowerCase();
+        var parts = clean.split("@");
+        if (parts.length !== 2) return [];
+
+        var rawUser = parts[0].split("+")[0].replace(/\./g, "");
+        var domain = parts[1];
+        var out = [];
+        var limit = Math.min(3000, Math.max(10, parseInt(maxCount, 10) || 500));
+        var tag = String(customTag || "vip").replace(/[^a-zA-Z0-9]/g, "");
+
+        if (mode === "dot" || mode === "both") {
+          var n = rawUser.length;
+          var maxMasks = Math.min(limit, Math.pow(2, Math.min(n - 1, 12)));
+          for (var mask = 1; mask < maxMasks; mask++) {
+            var str = "";
+            for (var i = 0; i < n; i++) {
+              str += rawUser[i];
+              if (i < n - 1 && (mask & (1 << i)) !== 0) str += ".";
+            }
+            out.push(str + "@" + domain);
+            if (out.length >= limit && mode === "dot") break;
+          }
+        }
+
+        if (mode === "plus" || mode === "both") {
+          var idx = 1;
+          while (out.length < limit) {
+            out.push(rawUser + "+" + tag + idx + "@" + domain);
+            idx++;
+          }
+        }
+
+        if (mode === "plus_random") {
+          while (out.length < limit) {
+            var rNum = Math.floor(10000 + Math.random() * 90000);
+            out.push(rawUser + "+" + tag + rNum + "@" + domain);
+          }
+        }
+
+        return out.slice(0, limit);
+      }
+
+      document.getElementById("btn-generate-aliases").addEventListener("click", function () {
+        var base = document.getElementById("inp-gen-base-email").value.trim();
+        var mode = document.getElementById("sel-gen-mode").value;
+        var cnt = document.getElementById("inp-gen-count").value;
+        var tag = document.getElementById("inp-gen-tag").value.trim();
+
+        if (!base || base.indexOf("@") === -1) {
+          return toast("⚠️ Enter a valid Main Gmail Address!", "#f43f5e");
+        }
+
+        var list = buildGmailAliasesList(base, cnt, mode, tag);
+        document.getElementById("out-generated-aliases").value = list.join("\n");
+        document.getElementById("gen-count-badge").textContent = list.length;
+        document.getElementById("stat-aliases").textContent = list.length;
+        playBeep(820, "triangle", 0.14);
+        logTerm("♾️ <b>Generated " + list.length + " Valid Gmail Aliases</b> from <code>" + base + "</code>!");
+        toast("♾️ Generated " + list.length + " Valid Gmails!", "#10b981");
+      });
+
+      document.getElementById("btn-pick-random-alias").addEventListener("click", function () {
+        var val = document.getElementById("out-generated-aliases").value.trim();
+        if (!val) return toast("⚠️ Generate aliases first!", "#f43f5e");
+        var arr = val.split("\n");
+        var pick = arr[Math.floor(Math.random() * arr.length)];
+        copyRawText(pick);
+        toast("🎲 Copied Random Alias: " + pick, "#f59e0b");
+      });
+
+      document.getElementById("btn-copy-aliases").addEventListener("click", function () {
+        var val = document.getElementById("out-generated-aliases").value.trim();
+        if (!val) return toast("⚠️ Generate aliases first!", "#f43f5e");
+        copyRawText(val);
+        toast("📋 Copied All " + val.split("\n").length + " Gmails!", "#10b981");
+      });
+
+      document.getElementById("btn-download-aliases").addEventListener("click", function () {
+        var val = document.getElementById("out-generated-aliases").value.trim();
+        if (!val) return toast("⚠️ Generate aliases first!", "#f43f5e");
+        var blob = new Blob([val], { type: "text/plain" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "kumar_unlimited_gmails.txt";
+        a.click();
+      });
+
+      document.getElementById("btn-download-csv").addEventListener("click", function () {
+        var val = document.getElementById("out-generated-aliases").value.trim();
+        if (!val) return toast("⚠️ Generate aliases first!", "#f43f5e");
+        var lines = val.split("\n").map(function (m, i) { return (i + 1) + "," + m; });
+        var csv = "ID,Email_Alias\n" + lines.join("\n");
+        var blob = new Blob([csv], { type: "text/csv" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "kumar_unlimited_gmails.csv";
+        a.click();
+      });
+
+      // ====================================================================
+      // 5. BULK EMAIL STUDIO & 6. CLOUD BRIDGES
+      // ====================================================================
+      document.getElementById("btn-send-custom-mail").addEventListener("click", async function () {
+        var rawRecips = document.getElementById("inp-bulk-emails").value.trim();
+        var subj = document.getElementById("inp-bulk-subject").value.trim();
+        var bodyHtml = document.getElementById("inp-bulk-body").value.trim();
+
+        if (!rawRecips || !subj || !bodyHtml) {
+          return toast("⚠️ Fill Recipients, Subject & Message Body!", "#f43f5e");
+        }
+
+        var targets = rawRecips.split(/,|\r?\n/).map(function (s) { return s.trim(); }).filter(function (s) { return s.indexOf("@") !== -1; });
+        if (targets.length === 0) return toast("⚠️ No valid recipient emails found!", "#f43f5e");
+
+        for (var i = 0; i < targets.length; i++) {
+          var senderAcc = pickSenderAccount("AUTO_ROTATE");
+          var sMail = senderAcc ? senderAcc.email : "broadcast@kumar-os.com";
+          if (senderAcc) senderAcc.sentCount = (senderAcc.sentCount || 0) + 1;
+
+          if (hubState.bridgeConfig && hubState.bridgeConfig.gasUrl) {
+            try {
+              fetch(hubState.bridgeConfig.gasUrl, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({
+                  action: "send_mail",
+                  to: targets[i],
+                  subject: subj,
+                  html: bodyHtml.replace(/\n/g, "<br/>")
+                })
+              });
+            } catch (e) {}
+          }
+        }
+
+        saveLocalBackup();
+        await fbWrite("gmail_hub/accounts", hubState.accounts);
+        refreshAllUI();
+        logTerm("🚀 <b>Bulk Broadcast Dispatched</b> to <code>" + targets.length + " Recipients</code> using Round-Robin Gmail rotation!");
+        toast("🚀 Broadcast Sent to " + targets.length + " Emails!", "#10b981");
+      });
+
+      document.getElementById("btn-save-tg-bridge").addEventListener("click", async function () {
+        hubState.bridgeConfig.tgBotToken = document.getElementById("inp-tg-bot-token").value.trim();
+        hubState.bridgeConfig.tgChatId = document.getElementById("inp-tg-chat-id").value.trim();
+        saveLocalBackup();
+        await fbWrite("gmail_hub/bridge_config", hubState.bridgeConfig);
+        await forwardOtpToTelegram("✅ <b>KUMAR GMAIL CLOUD OS CONNECTED!</b>\nYour Telegram Bot will now receive live OTP alerts automatically.");
+        toast("✅ Telegram Bot Forwarder Saved & Tested!", "#10b981");
+      });
+
+      document.getElementById("btn-save-gas-bridge").addEventListener("click", async function () {
+        hubState.bridgeConfig.gasUrl = document.getElementById("inp-gas-bridge-url").value.trim();
+        saveLocalBackup();
+        await fbWrite("gmail_hub/bridge_config", hubState.bridgeConfig);
+        toast("☁️ Cloud Bridge URL Saved to Firebase!", "#10b981");
+      });
+
+      document.getElementById("btn-copy-fb-endpoint").addEventListener("click", function () {
+        copyRawText(document.getElementById("api-endpoint-display").value);
+        toast("📋 Firebase REST Endpoint Copied!", "#10b981");
+      });
+
+      document.getElementById("btn-clear-term").addEventListener("click", function () {
+        document.getElementById("term-log").innerHTML = "👑 [CONSOLE CLEARED]: Ready...";
+      });
+
+      document.getElementById("btn-sync-hub").addEventListener("click", function () {
+        syncWithFirebase(false);
+      });
+
+      // ====================================================================
+      // ANIMATED CYBER PARTICLE NETWORK CANVAS
+      // ====================================================================
+      var canvas = document.getElementById("bg-canvas");
+      var ctx = canvas.getContext("2d");
+      var pts = [];
+      function resizeBg() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeBg);
+      resizeBg();
+      for (var p = 0; p < 48; p++) {
+        pts.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.55,
+          vy: (Math.random() - 0.5) * 0.55,
+          r: Math.random() * 2 + 1
+        });
+      }
+      function animateBg() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < pts.length; i++) {
+          var a = pts[i];
+          a.x += a.vx;
+          a.y += a.vy;
+          if (a.x < 0 || a.x > canvas.width) a.vx *= -1;
+          if (a.y < 0 || a.y > canvas.height) a.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
+          ctx.fillStyle = "#00f0ff";
+          ctx.fill();
+          for (var j = i + 1; j < pts.length; j++) {
+            var b = pts[j];
+            var d = Math.hypot(a.x - b.x, a.y - b.y);
+            if (d < 125) {
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = "rgba(0, 240, 255, " + (1 - d / 125) * 0.22 + ")";
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animateBg);
+      }
+      animateBg();
+
+      // Initialize Docs & Auto-Unlock if already verified in session
+      initDeveloperDocs();
+      loadLocalBackup();
+      refreshAllUI();
+
+      try {
+        if (sessionStorage.getItem("kumar_gmail_os_unlocked") === "yes") {
+          document.getElementById("vault-overlay").classList.add("vault-open");
+          syncWithFirebase(true);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>
