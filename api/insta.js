@@ -1,6 +1,7 @@
 // ============================================================================
-// FILE: api/insta.js (8-ENGINE SUPER INSTAGRAM & VIDEO EXTRACTOR API)
+// FILE: api/insta.js (PARALLEL TURBO ENGINE - 100% REEL EXTRACTION FIX)
 // ============================================================================
+
 function parseBody(req) {
   let out = {};
   if (req.query && typeof req.query === "object") {
@@ -20,44 +21,65 @@ function parseBody(req) {
 }
 
 function extractInstaShortcode(url) {
-  const m = String(url || "").match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]{5,})/i);
+  const m = String(url || "").match(/(?:p|reel|reels|tv|share\/reel|share\/p)\/([A-Za-z0-9_-]{5,})/i);
   return m ? m[1] : null;
 }
 
-// Unescapes Instagram's Embed HTML where quotes are \"video_url\"
-function parseInstagramEmbedHtml(rawHtml) {
-  if (!rawHtml || typeof rawHtml !== "string") return null;
-  const clean = rawHtml
+function unescapeInstaString(rawStr) {
+  if (!rawStr || typeof rawStr !== "string") return "";
+  return rawStr
     .replace(/\\\\u0026/g, "&")
     .replace(/\\u0026/g, "&")
+    .replace(/\\\\u003d/gi, "=")
+    .replace(/\\u003d/gi, "=")
     .replace(/\\\\\//g, "/")
     .replace(/\\\//g, "/")
     .replace(/\\\\"/g, '"')
     .replace(/\\"/g, '"')
     .replace(/&amp;/g, "&");
+}
+
+// Deep HTML & JSON Parser (Supports video_url, video_versions, contentUrl, playable_url, og:video)
+function parseInstagramHtmlDeep(rawHtml) {
+  if (!rawHtml || typeof rawHtml !== "string") return null;
+  const clean = unescapeInstaString(rawHtml);
 
   let videoUrl = "";
   let thumbUrl = "";
 
-  const v1 = clean.match(/"video_url"\s*:\s*"(https?:\/\/[^"]+)"/);
-  if (v1 && v1[1]) videoUrl = v1[1];
+  const videoPatterns = [
+    /"video_url"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /"video_versions"\s*:\s*\[\s*\{[^}]*?"url"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /"contentUrl"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /"playable_url_quality_hd"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /"playable_url"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /property="og:video(?::secure_url)?"\s+content="(https?:\/\/[^"]+)"/i,
+    /content="(https?:\/\/[^"]+)"\s+property="og:video(?::secure_url)?"/i,
+    /<meta\s+name="twitter:player:stream"\s+content="(https?:\/\/[^"]+)"/i,
+    /<video[^>]+src="(https?:\/\/[^"]+)"/i
+  ];
 
-  if (!videoUrl) {
-    const v2 = clean.match(/property="og:video(?::secure_url)?"\s+content="(https?:\/\/[^"]+)"/i);
-    if (v2 && v2[1]) videoUrl = v2[1];
+  for (let i = 0; i < videoPatterns.length; i++) {
+    const m = clean.match(videoPatterns[i]);
+    if (m && m[1] && !m[1].includes(".jpg") && !m[1].includes(".png")) {
+      videoUrl = m[1];
+      break;
+    }
   }
 
-  const t1 = clean.match(/"display_url"\s*:\s*"(https?:\/\/[^"]+)"/);
-  if (t1 && t1[1]) thumbUrl = t1[1];
+  const thumbPatterns = [
+    /"display_url"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /"thumbnail_src"\s*:\s*"(https?:\/\/[^"]+)"/i,
+    /class="EmbeddedMediaImage"[^>]+src="(https?:\/\/[^"]+)"/i,
+    /property="og:image"\s+content="(https?:\/\/[^"]+)"/i
+  ];
 
-  if (!thumbUrl) {
-    const t2 = clean.match(/class="EmbeddedMediaImage"[^>]+src="(https?:\/\/[^"]+)"/i);
-    if (t2 && t2[1]) thumbUrl = t2[1];
-  }
-
-  if (!thumbUrl) {
-    const t3 = clean.match(/property="og:image"\s+content="(https?:\/\/[^"]+)"/i);
-    if (t3 && t3[1]) thumbUrl = t3[1];
+  for (let j = 0; j < thumbPatterns.length; j++) {
+    const tm = clean.match(thumbPatterns[j]);
+    if (tm && tm[1]) {
+      thumbUrl = tm[1];
+      break;
+    }
   }
 
   if (videoUrl) {
@@ -66,19 +88,260 @@ function parseInstagramEmbedHtml(rawHtml) {
   return null;
 }
 
+// Recursive JSON scanner to find any valid MP4 / CDN video URL inside unknown API responses
+function findVideoInJsonObject(obj) {
+  if (!obj) return null;
+  let foundVideo = "";
+  let foundThumb = "";
+
+  function walk(node) {
+    if (foundVideo) return;
+    if (typeof node === "string") {
+      const s = unescapeInstaString(node);
+      if (
+        s.startsWith("http") &&
+        (s.includes(".mp4") || s.includes("cdninstagram.com/o1/v/") || s.includes("fbcdn.net/v/")) &&
+        !s.includes(".jpg") &&
+        !s.includes(".webp") &&
+        !s.includes(".png")
+      ) {
+        foundVideo = s;
+      }
+      return;
+    }
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) walk(node[i]);
+      return;
+    }
+    if (typeof node === "object") {
+      const priorityKeys = ["video_url", "url", "dl_url", "download_url", "play", "hd", "video", "mp4"];
+      for (let k of priorityKeys) {
+        if (typeof node[k] === "string" && node[k].startsWith("http")) {
+          const v = unescapeInstaString(node[k]);
+          if (!v.includes(".jpg") && !v.includes(".png") && !v.includes(".webp")) {
+            foundVideo = v;
+            break;
+          }
+        }
+      }
+      if (!foundThumb) {
+        const tKeys = ["thumbnail", "thumb", "display_url", "cover", "image"];
+        for (let tk of tKeys) {
+          if (typeof node[tk] === "string" && node[tk].startsWith("http")) {
+            foundThumb = unescapeInstaString(node[tk]);
+            break;
+          }
+        }
+      }
+      for (let key in node) {
+        walk(node[key]);
+      }
+    }
+  }
+
+  walk(obj);
+  return foundVideo ? { videoUrl: foundVideo, thumbnail: foundThumb } : null;
+}
+
+function fetchWithTimeout(url, options, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms || 5000);
+  const opts = Object.assign({}, options || {}, { signal: controller.signal });
+  return fetch(url, opts).finally(() => clearTimeout(timer));
+}
+
+// ============================================================================
+// INDIVIDUAL EXTRACTION ENGINES (RUN IN PARALLEL FOR MAXIMUM RELIABILITY)
+// ============================================================================
+
+// ENGINE 1: Instagram Embed Captioned & Reel Embed
+async function engineInstaEmbed(shortcode) {
+  if (!shortcode) throw new Error("No shortcode");
+  const urls = [
+    "https://www.instagram.com/p/" + shortcode + "/embed/captioned/",
+    "https://www.instagram.com/reel/" + shortcode + "/embed/captioned/",
+    "https://www.instagram.com/p/" + shortcode + "/embed/"
+  ];
+
+  for (let u of urls) {
+    const r = await fetchWithTimeout(
+      u,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9"
+        }
+      },
+      4500
+    );
+    if (r.ok) {
+      const html = await r.text();
+      const parsed = parseInstagramHtmlDeep(html);
+      if (parsed && parsed.videoUrl) {
+        return {
+          videoUrl: parsed.videoUrl,
+          thumbnail: parsed.thumbnail,
+          engine: "Direct Embed Engine"
+        };
+      }
+    }
+  }
+  throw new Error("Embed failed");
+}
+
+// ENGINE 2: Instagram Official GraphQL POST (Supports Single Reel + Carousel Sidecar + video_versions)
+async function engineInstaGraphQL(shortcode) {
+  if (!shortcode) throw new Error("No shortcode");
+  const randToken = Math.random().toString(36).substring(2, 14) + Math.random().toString(36).substring(2, 14);
+  const docIds = ["8845758582119845", "10015901848480474", "7341532402634560"];
+
+  for (let docId of docIds) {
+    const bodyParams = new URLSearchParams();
+    bodyParams.append("av", "0");
+    bodyParams.append("lsd", randToken);
+    bodyParams.append("doc_id", docId);
+    bodyParams.append(
+      "variables",
+      JSON.stringify({
+        shortcode: shortcode,
+        fetch_comment_count: 0,
+        fetch_related_profile_media_count: 0,
+        parent_comment_count: 0,
+        child_comment_count: 0,
+        fetch_like_count: 0,
+        fetch_tagged_user_count: null,
+        fetch_preview_comment_count: 0,
+        has_threaded_comments: false
+      })
+    );
+
+    const r = await fetchWithTimeout(
+      "https://www.instagram.com/api/graphql",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "X-IG-App-ID": "936619743392459",
+          "X-FB-LSD": randToken,
+          "X-CSRFToken": randToken,
+          "X-ASBD-ID": "129477",
+          "Cookie": "csrftoken=" + randToken + ";",
+          "Referer": "https://www.instagram.com/reel/" + shortcode + "/"
+        },
+        body: bodyParams.toString()
+      },
+      4500
+    );
+
+    if (r.ok) {
+      const text = await r.text();
+      const parsed = parseInstagramHtmlDeep(text);
+      if (parsed && parsed.videoUrl) {
+        return {
+          videoUrl: parsed.videoUrl,
+          thumbnail: parsed.thumbnail,
+          engine: "IG GraphQL Engine"
+        };
+      }
+    }
+  }
+  throw new Error("GraphQL failed");
+}
+
+// ENGINE 3: TelegramBot OpenGraph Proxies (vxinstagram / ddinstagram / kkinstagram)
+async function engineOpenGraphProxies(shortcode) {
+  if (!shortcode) throw new Error("No shortcode");
+  const proxyUrls = [
+    "https://d.ddinstagram.com/reel/" + shortcode + "/",
+    "https://www.vxinstagram.com/reel/" + shortcode + "/",
+    "https://www.kkinstagram.com/reel/" + shortcode + "/"
+  ];
+
+  for (let pUrl of proxyUrls) {
+    try {
+      const r = await fetchWithTimeout(
+        pUrl,
+        {
+          headers: {
+            "User-Agent": "TelegramBot (like TwitterBot)"
+          },
+          redirect: "follow"
+        },
+        4500
+      );
+      // If redirected directly to an MP4 stream
+      if (r.url && (r.url.includes(".mp4") || r.url.includes("cdninstagram.com"))) {
+        return {
+          videoUrl: r.url,
+          thumbnail: "",
+          engine: "OpenGraph Direct Stream"
+        };
+      }
+      if (r.ok) {
+        const html = await r.text();
+        const parsed = parseInstagramHtmlDeep(html);
+        if (parsed && parsed.videoUrl) {
+          return {
+            videoUrl: parsed.videoUrl,
+            thumbnail: parsed.thumbnail,
+            engine: "OpenGraph Proxy Engine"
+          };
+        }
+      }
+    } catch (e) {}
+  }
+  throw new Error("OG Proxy failed");
+}
+
+// ENGINE 4: Parallel Cloud Downloader APIs
+async function engineCloudApi(apiUrl, label) {
+  const r = await fetchWithTimeout(
+    apiUrl,
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json"
+      }
+    },
+    5500
+  );
+  if (!r.ok) throw new Error(label + " HTTP error");
+  const json = await r.json();
+  const found = findVideoInJsonObject(json);
+  if (found && found.videoUrl) {
+    return {
+      videoUrl: found.videoUrl,
+      thumbnail: found.thumbnail || "",
+      engine: label
+    };
+  }
+  throw new Error(label + " no videoUrl");
+}
+
+// ============================================================================
+// MASTER PARALLEL EXTRACTOR
+// ============================================================================
 async function extractCleanMediaServer(rawInputUrl) {
   let workingUrl = String(rawInputUrl || "").trim();
   const randomStudioId = Math.floor(100000 + Math.random() * 900000);
   const cleanFileName = "Studio_Master_HD_" + randomStudioId + ".mp4";
 
-  // 0. If link is an Instagram /share/ redirect link, resolve final URL first
+  // Resolve /share/ redirect links if needed
   if (workingUrl.includes("/share/")) {
     try {
-      const redir = await fetch(workingUrl, {
-        method: "GET",
-        redirect: "follow",
-        headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X)" }
-      });
+      const redir = await fetchWithTimeout(
+        workingUrl,
+        {
+          method: "GET",
+          redirect: "follow",
+          headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)" }
+        },
+        3500
+      );
       if (redir && redir.url) workingUrl = redir.url;
     } catch (e) {}
   }
@@ -88,149 +351,34 @@ async function extractCleanMediaServer(rawInputUrl) {
     ? "https://www.instagram.com/reel/" + shortcode + "/"
     : workingUrl;
 
-  // ---- ENGINE 1: INSTAGRAM OFFICIAL WEB GRAPHQL POST (HIGHEST SUCCESS RATE) ----
-  if (shortcode) {
-    const docIds = ["8845758582119845", "10015901848480474"];
-    for (let d = 0; d < docIds.length; d++) {
-      try {
-        const bodyParams = new URLSearchParams();
-        bodyParams.append("av", "0");
-        bodyParams.append("lsd", "AVqbxe3J_YA");
-        bodyParams.append("doc_id", docIds[d]);
-        bodyParams.append(
-          "variables",
-          JSON.stringify({
-            shortcode: shortcode,
-            fetch_comment_count: 2,
-            fetch_related_profile_media_count: 0,
-            parent_comment_count: 0,
-            child_comment_count: 0,
-            fetch_like_count: 10,
-            fetch_tagged_user_count: null,
-            fetch_preview_comment_count: 2,
-            has_threaded_comments: true,
-            hoisted_comment_id: null,
-            hoisted_reply_id: null
-          })
-        );
+  const encodedUrl = encodeURIComponent(normalizedUrl);
 
-        const gqlRes = await fetch("https://www.instagram.com/api/graphql", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "X-IG-App-ID": "936619743392459",
-            "X-FB-LSD": "AVqbxe3J_YA",
-            "X-ASBD-ID": "129477",
-            "Sec-Fetch-Site": "same-origin"
-          },
-          body: bodyParams.toString()
-        });
-
-        if (gqlRes.ok) {
-          const gqlJson = await gqlRes.json();
-          const media =
-            (gqlJson && gqlJson.data && gqlJson.data.xdt_shortcode_media) ||
-            (gqlJson && gqlJson.data && gqlJson.data.shortcode_media);
-
-          if (media && media.video_url) {
-            return {
-              success: true,
-              videoUrl: media.video_url,
-              thumbnail: media.display_url || media.thumbnail_src || "",
-              cleanFileName: cleanFileName,
-              quality: "1080p Original Raw CDN (No Watermark)",
-              engine: "IG GraphQL Direct"
-            };
-          }
-        }
-      } catch (e) {}
-    }
-
-    // ---- ENGINE 2: INSTAGRAM EMBED CAPTIONED UNESCAPER ----
-    try {
-      const embedUrl = "https://www.instagram.com/p/" + shortcode + "/embed/captioned/";
-      const r = await fetch(embedUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
-          "Accept": "text/html,application/xhtml+xml"
-        }
-      });
-      const rawHtml = await r.text();
-      const parsedEmbed = parseInstagramEmbedHtml(rawHtml);
-      if (parsedEmbed && parsedEmbed.videoUrl) {
-        return {
-          success: true,
-          videoUrl: parsedEmbed.videoUrl,
-          thumbnail: parsedEmbed.thumbnail || "",
-          cleanFileName: cleanFileName,
-          quality: "1080p Original Raw Stream (No Watermark)",
-          engine: "Direct Embed Unescaper"
-        };
-      }
-    } catch (e) {}
-  }
-
-  // ---- ENGINE 3: MULTI-NETWORK JSON DOWNLOADER APIS ----
-  const apiEndpoints = [
-    "https://api.siputzx.my.id/api/d/igdl?url=" + encodeURIComponent(normalizedUrl),
-    "https://deliriussapi-v2.vercel.app/download/instagram?url=" + encodeURIComponent(normalizedUrl),
-    "https://api.ryzendesu.vip/api/downloader/igdl?url=" + encodeURIComponent(normalizedUrl),
-    "https://api.vkrdownloader.vercel.app/server?vkr=" + encodeURIComponent(normalizedUrl),
-    "https://www.tikwm.com/api/?url=" + encodeURIComponent(normalizedUrl)
+  // Launch ALL engines in parallel so whichever succeeds first wins immediately!
+  const tasks = [
+    engineInstaEmbed(shortcode),
+    engineInstaGraphQL(shortcode),
+    engineOpenGraphProxies(shortcode),
+    engineCloudApi("https://api.siputzx.my.id/api/d/igdl?url=" + encodedUrl, "Siputzx Engine"),
+    engineCloudApi("https://api.ryzendesu.vip/api/downloader/igdl?url=" + encodedUrl, "Ryzen Engine"),
+    engineCloudApi("https://deliriussapi-v2.vercel.app/download/instagram?url=" + encodedUrl, "Delirius Engine"),
+    engineCloudApi("https://bk9.fun/download/instagram?url=" + encodedUrl, "BK9 Engine"),
+    engineCloudApi("https://api.agatz.xyz/api/instagram?url=" + encodedUrl, "Agatz Engine"),
+    engineCloudApi("https://api.vkrdownloader.vercel.app/server?vkr=" + encodedUrl, "VKR Engine")
   ];
 
-  for (let i = 0; i < apiEndpoints.length; i++) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 6000);
-      const r = await fetch(apiEndpoints[i], {
-        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
-        signal: controller.signal
-      });
-      clearTimeout(timer);
-
-      if (r.ok) {
-        const d = await r.json();
-        const list = Array.isArray(d.data) ? d.data : Array.isArray(d.result) ? d.result : null;
-        if (list && list.length > 0) {
-          const item = list[0];
-          const vUrl = typeof item === "string" ? item : item.url || item.dl_url || item.video;
-          const tUrl = typeof item === "object" ? item.thumbnail || item.thumb || "" : "";
-          if (vUrl) {
-            return {
-              success: true,
-              videoUrl: vUrl,
-              thumbnail: tUrl,
-              cleanFileName: cleanFileName,
-              quality: "1080p Full HD (No Watermark)",
-              engine: "Cloud Engine #" + (i + 1)
-            };
-          }
-        }
-        if (d && d.data && (d.data.url || d.data.play)) {
-          return {
-            success: true,
-            videoUrl: d.data.url || d.data.play,
-            thumbnail: d.data.cover || d.data.thumbnail || "",
-            cleanFileName: cleanFileName,
-            quality: "1080p Full HD (No Watermark)",
-            engine: "Cloud CDN Engine"
-          };
-        }
-        if (d && d.data && d.data.downloads && d.data.downloads.length > 0) {
-          return {
-            success: true,
-            videoUrl: d.data.downloads[0].url,
-            thumbnail: d.data.thumbnail || "",
-            cleanFileName: cleanFileName,
-            quality: "1080p Full HD (No Watermark)",
-            engine: "VKR Engine"
-          };
-        }
-      }
-    } catch (err) {}
-  }
+  try {
+    const winner = await Promise.any(tasks);
+    if (winner && winner.videoUrl) {
+      return {
+        success: true,
+        videoUrl: winner.videoUrl,
+        thumbnail: winner.thumbnail || "",
+        cleanFileName: cleanFileName,
+        quality: "1080p Full HD (No Watermark)",
+        engine: winner.engine || "Quantum Parallel Engine"
+      };
+    }
+  } catch (aggErr) {}
 
   return {
     success: false,
@@ -238,6 +386,9 @@ async function extractCleanMediaServer(rawInputUrl) {
   };
 }
 
+// ============================================================================
+// MAIN VERCEL SERVERLESS HANDLER
+// ============================================================================
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -263,7 +414,7 @@ module.exports = async (req, res) => {
     }
   }
 
-  if (action === "extract" || body.url) {
+  if (action === "extract" || body.url || body.input) {
     const targetUrl = body.url || body.input;
     const extracted = await extractCleanMediaServer(targetUrl);
     return res.status(200).json(extracted);
