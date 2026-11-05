@@ -8,7 +8,7 @@
   <style>
     :root {
       --bg-base: #040711;
-      --bg-card: rgba(15, 23, 42, 0.92);
+      --bg-card: rgba(15, 23, 42, 0.94);
       --bg-input: #060a17;
       --accent: #00f0ff;
       --accent-glow: rgba(0, 240, 255, 0.42);
@@ -20,14 +20,14 @@
       --text-sub: #cbd5e1;
       --text-dim: #94a3b8;
       --border-glass: rgba(0, 240, 255, 0.28);
-      --border-strong: rgba(0, 240, 255, 0.80);
+      --border-strong: rgba(0, 240, 255, 0.82);
       --grad-brand: linear-gradient(135deg, #00f0ff 0%, #ec4899 50%, #8b5cf6 100%);
       --grad-btn: linear-gradient(90deg, #00f0ff, #0284c7);
     }
 
     body.theme-insta {
       --bg-base: #0c0314;
-      --bg-card: rgba(28, 10, 42, 0.92);
+      --bg-card: rgba(28, 10, 42, 0.94);
       --bg-input: #11041c;
       --accent: #f43f5e;
       --accent-glow: rgba(244, 63, 94, 0.42);
@@ -39,7 +39,7 @@
 
     body.theme-emerald {
       --bg-base: #020d07;
-      --bg-card: rgba(8, 35, 22, 0.92);
+      --bg-card: rgba(8, 35, 22, 0.94);
       --bg-input: #03120a;
       --accent: #10b981;
       --accent-glow: rgba(16, 185, 129, 0.42);
@@ -180,10 +180,10 @@
     #video-result-stage { display: none; }
     .media-showcase { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
     .thumb-player-box { background: #03060f; border: 2px solid var(--border-strong); border-radius: 20px; overflow: hidden; position: relative; }
-    .thumb-cover-wrap { position: relative; width: 100%; cursor: pointer; }
+    .thumb-cover-wrap { position: relative; width: 100%; cursor: pointer; min-height: 280px; background: #050a18; display: flex; align-items: center; justify-content: center; }
     .thumb-cover-wrap img { width: 100%; max-height: 440px; object-fit: cover; display: block; }
     .play-overlay-badge { position: absolute; inset: 0; background: rgba(3, 7, 18, 0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-    .play-circle { width: 68px; height: 68px; border-radius: 50%; background: var(--grad-brand); display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; }
+    .play-circle { width: 68px; height: 68px; border-radius: 50%; background: var(--grad-brand); display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; box-shadow: 0 0 25px var(--accent-glow); }
     #live-video-player { width: 100%; max-height: 460px; display: none; background: #000; }
 
     .clean-meta-box { background: rgba(6, 11, 25, 0.9); border: 1px solid var(--border-glass); border-radius: 18px; padding: 18px; }
@@ -281,12 +281,13 @@
       <div class="card-box">
         <div class="card-head">
           <div class="card-title">🔗 PASTE INSTAGRAM REEL / VIDEO / SHORTS LINK</div>
-          <span class="chip-tag">100% NO WATERMARK</span>
+          <span class="chip-tag">8-ENGINE SUPER EXTRACTOR</span>
         </div>
 
         <div class="url-input-bar">
-          <input type="url" id="inp-video-url" class="inp" style="flex:1;min-width:240px;" placeholder="Paste Instagram Reel, Post, or Video Link here (e.g. https://www.instagram.com/reel/...)" />
-          <button type="button" class="btn btn-outline btn-sm" id="btn-paste-clipboard" style="padding:0 18px;">📋 PASTE</button>
+          <input type="url" id="inp-video-url" class="inp" style="flex:1;min-width:220px;" placeholder="Paste Instagram Reel, Post, or Video Link here..." />
+          <button type="button" class="btn btn-outline btn-sm" id="btn-paste-clipboard" style="padding:0 16px;">📋 PASTE</button>
+          <button type="button" class="btn btn-red btn-sm" id="btn-clear-input" style="padding:0 14px;">✖</button>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:10px;">
@@ -304,7 +305,7 @@
         </div>
 
         <div id="fetch-status-msg" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);margin-top:8px;">
-          ✨ Paste any Instagram Reel or Video link above and click <b>FETCH CLEAN VIDEO & THUMBNAIL</b>.
+          ✨ Paste any Public Instagram Reel or Video link above and click <b>FETCH CLEAN VIDEO & THUMBNAIL</b>.
         </div>
       </div>
 
@@ -319,13 +320,13 @@
           <div>
             <div class="thumb-player-box">
               <div class="thumb-cover-wrap" id="thumb-cover-wrap">
-                <img id="res-thumb-img" src="" alt="Video Thumbnail" />
+                <img id="res-thumb-img" src="" alt="Video Thumbnail" referrerpolicy="no-referrer" />
                 <div class="play-overlay-badge">
                   <div class="play-circle">▶</div>
-                  <div style="background:rgba(0,0,0,0.75);padding:5px 14px;border-radius:99px;font-size:12px;font-weight:800;">👁️ TAP THUMBNAIL TO PLAY VIDEO PREVIEW</div>
+                  <div style="background:rgba(0,0,0,0.8);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:800;">👁️ TAP THUMBNAIL TO PLAY VIDEO PREVIEW</div>
                 </div>
               </div>
-              <video id="live-video-player" controls playsinline preload="metadata"></video>
+              <video id="live-video-player" controls playsinline preload="metadata" referrerpolicy="no-referrer"></video>
             </div>
             <div style="display:flex;gap:8px;margin-top:10px;">
               <button type="button" class="btn btn-outline btn-sm" id="btn-toggle-preview" style="flex:1;">▶️ PLAY / PAUSE VIDEO</button>
@@ -594,7 +595,73 @@
         else toast("🚫 Still Banned by Admin.", "#f43f5e");
       });
 
+      // ====================================================================
+      // UNIVERSAL 8-ENGINE INSTAGRAM / SOCIAL EXTRACTOR (SERVER + BROWSER)
+      // ====================================================================
+      function extractShortcodeFromUrl(url) {
+        var m = String(url || "").match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]{5,})/i);
+        return m ? m[1] : null;
+      }
+
+      function normalizeInstaUrl(rawUrl) {
+        var sc = extractShortcodeFromUrl(rawUrl);
+        if (sc) return "https://www.instagram.com/reel/" + sc + "/";
+        return String(rawUrl || "").trim();
+      }
+
+      // Unescapes Instagram's Embed Captioned HTML where quotes are \"video_url\"
+      function parseInstagramEmbedHtmlClient(rawHtml) {
+        if (!rawHtml || typeof rawHtml !== "string") return null;
+        var clean = rawHtml
+          .replace(/\\\\u0026/g, "&")
+          .replace(/\\u0026/g, "&")
+          .replace(/\\\\\//g, "/")
+          .replace(/\\\//g, "/")
+          .replace(/\\\\"/g, '"')
+          .replace(/\\"/g, '"')
+          .replace(/&amp;/g, "&");
+
+        var videoUrl = "";
+        var thumbUrl = "";
+
+        var v1 = clean.match(/"video_url"\s*:\s*"(https?:\/\/[^"]+)"/);
+        if (v1 && v1[1]) videoUrl = v1[1];
+
+        if (!videoUrl) {
+          var v2 = clean.match(/property="og:video(?::secure_url)?"\s+content="(https?:\/\/[^"]+)"/i);
+          if (v2 && v2[1]) videoUrl = v2[1];
+        }
+
+        var t1 = clean.match(/"display_url"\s*:\s*"(https?:\/\/[^"]+)"/);
+        if (t1 && t1[1]) thumbUrl = t1[1];
+
+        if (!thumbUrl) {
+          var t2 = clean.match(/class="EmbeddedMediaImage"[^>]+src="(https?:\/\/[^"]+)"/i);
+          if (t2 && t2[1]) thumbUrl = t2[1];
+        }
+
+        if (!thumbUrl) {
+          var t3 = clean.match(/property="og:image"\s+content="(https?:\/\/[^"]+)"/i);
+          if (t3 && t3[1]) thumbUrl = t3[1];
+        }
+
+        if (videoUrl) {
+          return {
+            success: true,
+            videoUrl: videoUrl,
+            thumbnail: thumbUrl,
+            quality: "1080p Original Raw Stream (No Watermark)",
+            engine: "Direct Embed Unescaper"
+          };
+        }
+        return null;
+      }
+
       async function fetchCleanMediaUniversal(rawUrl) {
+        var cleanUrl = normalizeInstaUrl(rawUrl);
+        var shortcode = extractShortcodeFromUrl(rawUrl);
+
+        // ENGINE 1: Try our Backend Serverless API (/api/insta)
         try {
           var res = await fetch("/api/insta", {
             method: "POST",
@@ -607,11 +674,34 @@
           }
         } catch (e) {}
 
-        var cleanUrl = rawUrl.trim();
+        // ENGINE 2: Direct Browser Instagram Embed Captioned via CORS Proxies
+        if (shortcode) {
+          var embedTarget = "https://www.instagram.com/p/" + shortcode + "/embed/captioned/";
+          var corsProxies = [
+            "https://api.allorigins.win/raw?url=" + encodeURIComponent(embedTarget),
+            "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(embedTarget),
+            "https://corsproxy.io/?" + encodeURIComponent(embedTarget)
+          ];
+
+          for (var p = 0; p < corsProxies.length; p++) {
+            try {
+              var pr = await fetch(corsProxies[p]);
+              if (pr.ok) {
+                var htmlText = await pr.text();
+                var parsed = parseInstagramEmbedHtmlClient(htmlText);
+                if (parsed && parsed.videoUrl) return parsed;
+              }
+            } catch (e) {}
+          }
+        }
+
+        // ENGINE 3: Multi-Network JSON Downloader APIs
         var clientApis = [
-          "https://api.ryzendesu.vip/api/downloader/igdl?url=" + encodeURIComponent(cleanUrl),
           "https://api.siputzx.my.id/api/d/igdl?url=" + encodeURIComponent(cleanUrl),
-          "https://api.vkrdownloader.vercel.app/server?vkr=" + encodeURIComponent(cleanUrl)
+          "https://deliriussapi-v2.vercel.app/download/instagram?url=" + encodeURIComponent(cleanUrl),
+          "https://api.ryzendesu.vip/api/downloader/igdl?url=" + encodeURIComponent(cleanUrl),
+          "https://api.vkrdownloader.vercel.app/server?vkr=" + encodeURIComponent(cleanUrl),
+          "https://www.tikwm.com/api/?url=" + encodeURIComponent(cleanUrl)
         ];
 
         for (var i = 0; i < clientApis.length; i++) {
@@ -620,48 +710,76 @@
             if (r.ok) {
               var j = await r.json();
               var arr = Array.isArray(j.data) ? j.data : Array.isArray(j.result) ? j.result : null;
-              if (arr && arr.length > 0 && arr[0].url) {
+              if (arr && arr.length > 0) {
+                var first = arr[0];
+                var vUrl = typeof first === "string" ? first : first.url || first.dl_url || first.video;
+                var tUrl = typeof first === "object" ? first.thumbnail || first.thumb || "" : "";
+                if (vUrl) {
+                  return {
+                    success: true,
+                    videoUrl: vUrl,
+                    thumbnail: tUrl,
+                    quality: "1080p Full HD (No Watermark)",
+                    engine: "Cloud Engine #" + (i + 1)
+                  };
+                }
+              }
+              if (j && j.data && (j.data.url || j.data.play)) {
                 return {
                   success: true,
-                  videoUrl: arr[0].url,
-                  thumbnail: arr[0].thumbnail || arr[0].thumb || "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800&q=80",
+                  videoUrl: j.data.url || j.data.play,
+                  thumbnail: j.data.cover || j.data.thumbnail || "",
                   quality: "1080p Full HD (No Watermark)",
-                  engine: "Direct Engine #" + (i + 1)
+                  engine: "Quantum CDN Engine"
                 };
               }
               if (j && j.data && j.data.downloads && j.data.downloads.length > 0) {
                 return {
                   success: true,
                   videoUrl: j.data.downloads[0].url,
-                  thumbnail: j.data.thumbnail || "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800&q=80",
+                  thumbnail: j.data.thumbnail || "",
                   quality: "1080p Full HD (No Watermark)",
-                  engine: "Quantum VKR Engine"
+                  engine: "VKR Engine"
                 };
               }
             }
           } catch (err) {}
         }
-        return { success: false, error: "Could not extract video. Make sure the link is Public!" };
+
+        return {
+          success: false,
+          error: "Could not extract video. Make sure you copied the full public Reel/Post link!"
+        };
       }
 
       document.getElementById("btn-paste-clipboard").addEventListener("click", async function () {
         try {
           var t = await navigator.clipboard.readText();
-          if (t) document.getElementById("inp-video-url").value = t;
-        } catch (e) {}
+          if (t) {
+            document.getElementById("inp-video-url").value = t;
+            toast("📋 Link Pasted!", "#00f0ff");
+          }
+        } catch (e) {
+          toast("⚠️ Long-press inside the box to paste.", "#f59e0b");
+        }
+      });
+
+      document.getElementById("btn-clear-input").addEventListener("click", function () {
+        document.getElementById("inp-video-url").value = "";
+        document.getElementById("video-result-stage").style.display = "none";
       });
 
       document.getElementById("btn-fetch-video").addEventListener("click", async function () {
         var allowed = await syncUserWithFirebase(currentUser.uid, currentUser.name);
         if (!allowed) return;
         var rawUrl = document.getElementById("inp-video-url").value.trim();
-        if (!rawUrl || rawUrl.indexOf("http") === -1) return toast("⚠️ Paste a valid video link!", "#f43f5e");
+        if (!rawUrl || rawUrl.indexOf("http") === -1) return toast("⚠️ Paste a valid Instagram or Video link!", "#f43f5e");
 
         var statusBox = document.getElementById("fetch-status-msg");
         var btn = document.getElementById("btn-fetch-video");
         btn.disabled = true;
-        btn.textContent = "⏳ EXTRACTING CLEAN VIDEO...";
-        statusBox.innerHTML = "⏳ <b>Bypassing watermark & stripping metadata...</b>";
+        btn.textContent = "⏳ SCANNING ACROSS 8 QUANTUM ENGINES...";
+        statusBox.innerHTML = "⏳ <b>Bypassing watermark & extracting raw HD MP4 stream...</b>";
 
         var result = await fetchCleanMediaUniversal(rawUrl);
         btn.disabled = false;
@@ -675,9 +793,15 @@
         var prefix = document.getElementById("sel-filename-style").value || "Studio_Master_HD_";
         var cleanName = prefix + Math.floor(100000 + Math.random() * 900000) + ".mp4";
 
+        // Proxy Instagram Thumbnail via wsrv.nl so mobile browsers never block the image
+        var rawThumb = result.thumbnail || "";
+        var safeThumb = rawThumb
+          ? "https://wsrv.nl/?url=" + encodeURIComponent(rawThumb)
+          : "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800&q=80";
+
         currentMedia = {
           videoUrl: result.videoUrl,
-          thumbnail: result.thumbnail || "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800&q=80",
+          thumbnail: safeThumb,
           cleanFileName: cleanName,
           quality: result.quality || "1080p Full HD (No Watermark)"
         };
@@ -687,16 +811,22 @@
         var coverWrap = document.getElementById("thumb-cover-wrap");
 
         thumbImg.src = currentMedia.thumbnail;
+        thumbImg.onerror = function () {
+          this.src = "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800&q=80";
+        };
+
         vidPlayer.src = currentMedia.videoUrl;
+        vidPlayer.poster = currentMedia.thumbnail;
         vidPlayer.style.display = "none";
-        coverWrap.style.display = "block";
+        coverWrap.style.display = "flex";
 
         document.getElementById("res-clean-title").textContent = cleanName;
         document.getElementById("res-filename-text").textContent = cleanName;
         document.getElementById("res-quality-text").textContent = currentMedia.quality;
+        document.getElementById("res-engine-badge").textContent = result.engine || "1080P ORIGINAL";
         document.getElementById("video-result-stage").style.display = "block";
-        statusBox.innerHTML = "✅ <b style='color:#10b981;'>Clean Video Ready! Tap Thumbnail to Preview or Click Download.</b>";
-        toast("🎬 Clean Video Loaded!", "#10b981");
+        statusBox.innerHTML = "✅ <b style='color:#10b981;'>Clean Video Ready! Tap Thumbnail to Preview or Click Download below.</b>";
+        toast("🎬 Clean Video & Thumbnail Loaded!", "#10b981");
       });
 
       function toggleVideoPreview() {
@@ -743,13 +873,13 @@
         var dlBtn = document.getElementById("btn-download-to-phone");
 
         pWrap.style.display = "block";
-        pFill.style.width = "35%";
-        pFill.textContent = "35% • Downloading Clean Stream...";
+        pFill.style.width = "40%";
+        pFill.textContent = "40% • Downloading Clean MP4...";
         dlBtn.disabled = true;
 
         try {
           var response = await fetch(currentMedia.videoUrl);
-          if (!response.ok) throw new Error("Fallback");
+          if (!response.ok) throw new Error("CORS stream fallback");
           var blob = await response.blob();
           var blobUrl = URL.createObjectURL(new Blob([blob], { type: "video/mp4" }));
           var a = document.createElement("a");
@@ -763,7 +893,15 @@
           toast("✅ Saved as " + currentMedia.cleanFileName, "#10b981");
           await recordDownloadSuccess(currentMedia.cleanFileName);
         } catch (err) {
-          window.open(currentMedia.videoUrl, "_blank");
+          pFill.style.width = "100%";
+          pFill.textContent = "100% • Starting Direct Phone Download...";
+          var proxyUrl =
+            "/api/insta?action=stream_mp4&name=" +
+            encodeURIComponent(currentMedia.cleanFileName) +
+            "&url=" +
+            encodeURIComponent(currentMedia.videoUrl);
+          window.location.href = proxyUrl;
+          toast("📥 Downloading " + currentMedia.cleanFileName + " to Phone!", "#10b981");
           await recordDownloadSuccess(currentMedia.cleanFileName);
         } finally {
           dlBtn.disabled = false;
